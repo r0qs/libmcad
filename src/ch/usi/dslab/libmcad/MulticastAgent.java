@@ -1,5 +1,8 @@
 package ch.usi.dslab.libmcad;
 
-public class MulticastAgent {
-   Multicaster sender;
+import java.util.ArrayList;
+
+public interface MulticastAgent {
+   public void multicast(ArrayList<Group> destinations, Message message);
+   public void deliver();
 }
