@@ -3,19 +3,25 @@ package ch.usi.dslab.libmcad.uringpaxos;
 import java.util.ArrayList;
 
 import ch.usi.dslab.libmcad.Group;
-import ch.usi.dslab.libmcad.Message;
+import ch.usi.dslab.libmcad.MCMessage;
 import ch.usi.dslab.libmcad.MulticastAgent;
 
 public class URPMcastAgent implements MulticastAgent {
 
    @Override
-   public void multicast(ArrayList<Group> destinations, Message message) {
+   public void multicast(ArrayList<Group> destinations, MCMessage message) {
+      // TODO Auto-generated method stub
+      
+   }
+   
+   @Override
+   public void multicast(Group single_destinations, MCMessage message) {
       // TODO Auto-generated method stub
       
    }
 
    @Override
-   public void deliver() {
+   public MCMessage deliver() {
       // TODO Auto-generated method stub
       
    }
