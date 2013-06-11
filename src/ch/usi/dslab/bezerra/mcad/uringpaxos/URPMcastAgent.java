@@ -9,21 +9,21 @@ import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 public class URPMcastAgent implements MulticastAgent {
 
    @Override
-   public void multicast(ArrayList<Group> destinations, MCMessage message) {
+   public void multicast(ArrayList<Group> destinations, byte [] message) {
       // TODO Auto-generated method stub
       
    }
    
    @Override
-   public void multicast(Group single_destinations, MCMessage message) {
+   public void multicast(Group single_destinations, byte [] message) {
       // TODO Auto-generated method stub
       
    }
 
    @Override
-   public MCMessage deliver() {
+   public byte [] deliver() {
       // TODO Auto-generated method stub
-      
+      return new byte[1];
    }
    
    // to translate from Group (.id) to whatever this implementation uses to represent a group
