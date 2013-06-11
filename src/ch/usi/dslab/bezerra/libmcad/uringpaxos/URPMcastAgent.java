@@ -1,10 +1,10 @@
-package ch.usi.dslab.libmcad.uringpaxos;
+package ch.usi.dslab.bezerra.libmcad.uringpaxos;
 
 import java.util.ArrayList;
 
-import ch.usi.dslab.libmcad.Group;
-import ch.usi.dslab.libmcad.MCMessage;
-import ch.usi.dslab.libmcad.MulticastAgent;
+import ch.usi.dslab.bezerra.libmcad.Group;
+import ch.usi.dslab.bezerra.libmcad.MCMessage;
+import ch.usi.dslab.bezerra.libmcad.MulticastAgent;
 
 public class URPMcastAgent implements MulticastAgent {
 
