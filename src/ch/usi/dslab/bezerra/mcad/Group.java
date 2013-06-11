@@ -1,4 +1,4 @@
-package ch.usi.dslab.bezerra.libmcad;
+package ch.usi.dslab.bezerra.mcad;
 
 import java.util.HashMap;
 
