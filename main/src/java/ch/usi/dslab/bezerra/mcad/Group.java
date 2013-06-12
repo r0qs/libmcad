@@ -14,4 +14,8 @@ public class Group {
    public static Group getGroup(int id) {
       return groupMap.get(id);
    }
+   
+   static {
+      groupMap = new HashMap<Integer, Group>();
+   }
 }

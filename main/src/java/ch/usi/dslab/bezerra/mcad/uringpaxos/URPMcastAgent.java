@@ -3,10 +3,13 @@ package ch.usi.dslab.bezerra.mcad.uringpaxos;
 import java.util.ArrayList;
 
 import ch.usi.dslab.bezerra.mcad.Group;
-import ch.usi.dslab.bezerra.mcad.MCMessage;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 
 public class URPMcastAgent implements MulticastAgent {
+   
+   public URPMcastAgent (String configFile) {
+      loadURPAgentConfig(configFile);
+   }
 
    @Override
    public void multicast(ArrayList<Group> destinations, byte [] message) {
@@ -30,6 +33,8 @@ public class URPMcastAgent implements MulticastAgent {
    // void addMapping(Group g, whatever urp uses inside to represent a group)
    
    // set up whatever configuration this specific mcast agent needs
-   // void loadURPAgentConfig(String filename);
+   public void loadURPAgentConfig(String filename) {
+      
+   }
 
 }
