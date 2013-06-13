@@ -9,6 +9,11 @@ public class MMAGroup extends Group {
 
    public MMAGroup(int id) {
       super(id);
+      nodeList = new ArrayList<MMANode>();
+   }
+   
+   public void addNode(MMANode node) {
+      nodeList.add(node);
    }
 
 }

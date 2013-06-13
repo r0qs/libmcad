@@ -1,5 +1,6 @@
 package ch.usi.dslab.bezerra.mcad.minimal;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -7,7 +8,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
@@ -20,6 +28,7 @@ public class MinimalMcastAgent implements MulticastAgent {
    BlockingQueue<byte[]> deliveredMessages; // the node threads receive and put it here
    
    public MinimalMcastAgent (String configFile) {
+      deliveredMessages = new LinkedBlockingQueue<byte[]>();
       loadMinimalAgentConfig(configFile);
    }
    
@@ -59,11 +68,128 @@ public class MinimalMcastAgent implements MulticastAgent {
    // to translate from Group (.id) to whatever this implementation uses to represent a group
    // void addMapping(Group g, whatever urp uses inside to represent a group)
    
-   // set up whatever configuration this specific mcast agent needs
+   // set up whatever configuration this specific mcast agent needs:
+   
+   /*
+    
+   {
+     "agent_class" : "MinimalMcastAgent" ,
+     
+     "nodes" : 
+     [
+       { "node_id" : 1 ,
+         "address" : "localhost" ,
+         "port"    : 50011
+       } ,
+       { "node_id" : 2 ,
+         "address" : "localhost" ,
+         "port"    : 50002
+       }
+     ] ,
+     
+     "groups" :
+     [
+       { 
+         "group_id"    : 1 ,
+         "group_nodes" : [1]
+       } ,
+       {
+         "group_id"    : 2 ,
+         "group_nodes" : [2]
+       }
+     ] ,
+     
+     "local_node_id" : 1
+   }
+    
+    */
+   
+   
    public void loadMinimalAgentConfig(String filename) {
       try {
-         int port = 0; // get this port number from the config file
-         nodeServerSocket = new ServerSocket(port);
+         JSONParser parser = new JSONParser();
+         Object obj = parser.parse(new FileReader(filename));
+
+         JSONObject config = (JSONObject) obj;
+
+         
+         
+         // ===========================================
+         // Creating Nodes
+         
+         JSONArray nodesArray = (JSONArray) config.get("nodes");
+
+         @SuppressWarnings("unchecked")
+         // Using legacy API in the next line of code
+         Iterator<Object> it_node = nodesArray.iterator();
+
+         while (it_node.hasNext()) {
+            JSONObject node = (JSONObject) it_node.next();
+            long node_id = (Long) node.get("node_id");
+            String address = (String) node.get("address");
+            long port = (Long) node.get("port");
+            MMANode newnode = new MMANode(this, (int) node_id);
+            newnode.setAddress(address);
+            newnode.setPort((int) port);
+            
+            System.out.println("created a node: id(" + newnode.id 
+                               + "), address(" + newnode.address 
+                               + "), port(" + newnode.port + ")");
+         }
+         
+         
+         
+         // ===========================================
+         // Creating Groups
+         
+         Group.changeGroupImplementationClass(MMAGroup.class);
+         
+         JSONArray groupsArray = (JSONArray) config.get("groups");
+         
+         @SuppressWarnings("unchecked")
+         // Using legacy API in the next line of code
+         Iterator<Object> it_group = groupsArray.iterator();
+
+         while (it_group.hasNext()) {
+            JSONObject jsgroup = (JSONObject) it_group.next();
+            long group_id = (Long) jsgroup.get("group_id");
+            JSONArray groupNodesArray = (JSONArray) jsgroup.get("group_nodes");
+            
+            MMAGroup group = (MMAGroup) Group.getGroup((int) group_id);
+            
+            @SuppressWarnings("unchecked")
+            // Using legacy API in the next line of code
+            Iterator<Object> it_groupNode = groupNodesArray.iterator();
+    
+            while (it_groupNode.hasNext()) {
+               long groupNodeId = (Long) it_groupNode.next();
+               MMANode node = MMANode.getNode((int) groupNodeId);
+               group.addNode(node);
+               System.out.println("Added node " + node.id + " to group " + group.getId());
+            }
+            
+            System.out.println("Done creating group " + group.getId() + " with nodes " + group.nodeList);
+         }
+         
+         
+         
+         // ===========================================
+         // Creating LocalNode
+         
+         long localId = (Long) config.get("local_node_id");
+         this.localNodeId = (int) localId;
+         MMANode thisNode = MMANode.getNode(this.localNodeId);
+                
+         
+
+         // ===========================================
+         // Setting up input thread     
+
+         System.out.println("Setting up the local multicast" 
+               + " agent to listen on port "
+               + thisNode.getPort());
+         
+         nodeServerSocket = new ServerSocket(thisNode.getPort());
          connectionAcceptorThread = new Thread(new Runnable() {
             
             @Override
@@ -108,11 +234,17 @@ public class MinimalMcastAgent implements MulticastAgent {
             }
             
          });
+         connectionAcceptorThread.start();
+         
+         System.out.println("Done setting up the local multicast" 
+                            + " agent with a listening socket on port "
+                            + thisNode.getPort());
          
       } catch (IOException e) {
-         // TODO Auto-generated catch block
          e.printStackTrace();
-      }      
+      } catch (ParseException e) {
+         e.printStackTrace();         
+      }
    }
 
 }

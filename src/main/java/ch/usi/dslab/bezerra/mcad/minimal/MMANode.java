@@ -11,49 +11,66 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 public class MMANode implements Runnable {
+   static MinimalMcastAgent mcagent;
    static HashMap<Integer, MMANode> nodeMap;
-   MinimalMcastAgent mcagent;
-   boolean running = true;
    
-   // network & stream data structures for outgoing data
-   Socket socketToNode = null;
-   OutputStream streamToNode = null;   
-   ObjectOutputStream outToNode = null;
-   
-   // network & stream data structures for incoming data
-   Socket socketFromNode = null;
-   InputStream streamFromNode = null;
-   ObjectInputStream inFromNode = null;
-   
-   Thread receiverThread = null;
-   String address;
-   int port;
-   
-   public MMANode(MinimalMcastAgent agent) {
-      mcagent = agent;
-      receiverThread = new Thread(this);
+   static {
+      nodeMap = new HashMap<Integer, MMANode>();
    }
    
    public static MMANode getNode(int id) {
+      MMANode node = nodeMap.get(id);
+      if (node == null) {
+         node = new MMANode(null, id);
+      }
       return nodeMap.get(id);
    }
    
+   
+   
+   String address;
+
+   int id;
+   ObjectInputStream inFromNode = null;
+   ObjectOutputStream outToNode = null;
+
+   int port;
+   Thread receiverThread = null;
+   boolean running = true;
+
+
+   Socket socketFromNode = null;
+   // network & stream data structures for outgoing data
+   Socket socketToNode = null;
+
+   InputStream streamFromNode = null;
+
+   OutputStream streamToNode = null;
+
+   public MMANode(MinimalMcastAgent agent, int id) {
+      if (agent != null)
+         mcagent = agent;
+      this.id = id;
+      this.receiverThread = new Thread(this);
+      nodeMap.put(id, this);
+   }
+
    void checkConnection() {
       if (outToNode != null)
          return;
 
       try {
-         
+
          socketToNode = new Socket(this.address, this.port);
          streamToNode = socketToNode.getOutputStream();
          outToNode = new ObjectOutputStream(streamToNode);
-         
+
          ByteBuffer localnodeid_wrapper = ByteBuffer.allocate(32);
          localnodeid_wrapper.putInt(mcagent.localNodeId);
          byte[] localnodeid_rawbytes = localnodeid_wrapper.array();
-         
-         outToNode.write(localnodeid_rawbytes);
-         
+
+         outToNode.writeObject(localnodeid_rawbytes);
+
       } catch (UnknownHostException e) {
          e.printStackTrace();
       } catch (IOException e) {
@@ -61,12 +78,24 @@ public class MMANode implements Runnable {
       }
 
    }
-   
+
+   public String getAddress() {
+      return address;
+   }
+
+   public int getId() {
+      return id;
+   }
+
+   public int getPort() {
+      return port;
+   }
+
    @Override
    public void run() {
       while (running) {
          try {
-            byte[] newMessage = (byte[])inFromNode.readObject();
+            byte[] newMessage = (byte[]) inFromNode.readObject();
             mcagent.deliveredMessages.add(newMessage);
          } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -75,6 +104,17 @@ public class MMANode implements Runnable {
          }
       }
    }
-   
-   
+
+   public void setAddress(String address) {
+      this.address = address;
+   }
+
+   public void setId(int id) {
+      this.id = id;
+   }
+
+   public void setPort(int port) {
+      this.port = port;
+   }
+
 }
