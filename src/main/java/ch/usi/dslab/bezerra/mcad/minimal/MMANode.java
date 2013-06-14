@@ -1,5 +1,6 @@
 package ch.usi.dslab.bezerra.mcad.minimal;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -20,10 +21,12 @@ public class MMANode implements Runnable {
    
    public static MMANode getNode(int id) {
       MMANode node = nodeMap.get(id);
+      /*
       if (node == null) {
          node = new MMANode(null, id);
       }
-      return nodeMap.get(id);
+      */
+      return node;
    }
    
    
@@ -97,6 +100,23 @@ public class MMANode implements Runnable {
          try {
             byte[] newMessage = (byte[]) inFromNode.readObject();
             mcagent.deliveredMessages.add(newMessage);
+         } catch (EOFException closedConnectionException) {
+            // close this connection, and destroy this node (remove from the nodes map)
+            try {
+            this.socketFromNode.close();
+            this.socketToNode.close();
+            this.streamFromNode.close();
+            this.socketToNode.close();
+            this.inFromNode.close();
+            this.outToNode.close();
+            nodeMap.remove(this.id);
+            this.running = false;
+            System.out.println("Connection with node " + this.id + " closed by remote.");
+            }
+            catch (IOException e) {
+               e.printStackTrace();
+            }
+            
          } catch (ClassNotFoundException e) {
             e.printStackTrace();
          } catch (IOException e) {

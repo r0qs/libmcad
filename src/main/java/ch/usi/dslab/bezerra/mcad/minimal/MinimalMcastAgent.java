@@ -22,6 +22,7 @@ import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 
 public class MinimalMcastAgent implements MulticastAgent {
    int localNodeId;
+   boolean running = true;
    
    ServerSocket nodeServerSocket = null;
    Thread connectionAcceptorThread = null; // to accept connections from other nodes
@@ -70,7 +71,7 @@ public class MinimalMcastAgent implements MulticastAgent {
    
    // set up whatever configuration this specific mcast agent needs:
    
-   /*
+  /*
     
    {
      "agent_class" : "MinimalMcastAgent" ,
@@ -102,14 +103,31 @@ public class MinimalMcastAgent implements MulticastAgent {
      "local_node_id" : 1
    }
     
-    */
-   
-   
+   */
    public void loadMinimalAgentConfig(String filename) {
       try {
+         
+         // =====================================
+         // JSON Parser object
+         
          JSONParser parser = new JSONParser();
-         Object obj = parser.parse(new FileReader(filename));
-
+         
+         
+         
+         // =====================================
+         // Node-specific settings
+         
+         Object nodeObj = parser.parse(new FileReader(filename));
+         JSONObject nodeConfig = (JSONObject) nodeObj;         
+         long localId = (Long) nodeConfig.get("local_node_id");
+         String commonConfigFileName = (String) nodeConfig.get("common_config_file");
+         
+         
+         
+         // =====================================
+         // Common settings
+         
+         Object obj = parser.parse(new FileReader(commonConfigFileName));
          JSONObject config = (JSONObject) obj;
 
          
@@ -175,71 +193,27 @@ public class MinimalMcastAgent implements MulticastAgent {
          
          // ===========================================
          // Creating LocalNode
-         
-         long localId = (Long) config.get("local_node_id");
+        
          this.localNodeId = (int) localId;
          MMANode thisNode = MMANode.getNode(this.localNodeId);
                 
          
 
          // ===========================================
-         // Setting up input thread     
+         // Setting up the connection-listener thread     
 
          System.out.println("Setting up the local multicast" 
                + " agent to listen on port "
                + thisNode.getPort());
          
          nodeServerSocket = new ServerSocket(thisNode.getPort());
-         connectionAcceptorThread = new Thread(new Runnable() {
-            
-            @Override
-            public void run() {
-               try {
-                  Socket connectionSocket = nodeServerSocket.accept();
-                  
-                  InputStream is = connectionSocket.getInputStream();  
-                  ObjectInputStream ois = new ObjectInputStream(is);  
-                  byte[] to = (byte[])ois.readObject();
-                  ByteBuffer wrapped = ByteBuffer.wrap(to);
-                  int remoteNodeId = wrapped.getInt();
-                  
-                  if (to!=null) {
-                     System.out.println("Successfully got the byte array... or did it?");
-                     System.out.println("node_id = " + remoteNodeId + "\n");
-                  }
-                  
-                  MMANode node = MMANode.getNode(remoteNodeId);
-                  node.socketFromNode = connectionSocket;
-                  node.streamFromNode = is;
-                  node.inFromNode = ois;
-                  node.receiverThread.start();
-                                    
-                  /*
-                  BufferedReader inFromUnknownNode =
-                        new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-                  String remoteNodeIdString = inFromUnknownNode.readLine();
-                  int remoteNodeId = Integer.parseInt(remoteNodeIdString);
-                  MMANode node = MMANode.getNode(remoteNodeId);
-                  node.inFromNode = inFromUnknownNode;
-                  node.receiverThread.start();
-                  */
-                  
-                  
-               } catch (IOException e) {
-                  e.printStackTrace();
-               } catch (ClassNotFoundException e) {
-                  e.printStackTrace();
-               }
-               
-            }
-            
-         });
+         connectionAcceptorThread = new MMAConnectionAcceptorThread(this);
          connectionAcceptorThread.start();
          
-         System.out.println("Done setting up the local multicast" 
-                            + " agent with a listening socket on port "
-                            + thisNode.getPort());
-         
+         System.out.println("Done setting up the local multicast"
+               + " agent with a listening socket on port "
+               + thisNode.getPort());
+
       } catch (IOException e) {
          e.printStackTrace();
       } catch (ParseException e) {
