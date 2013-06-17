@@ -221,4 +221,15 @@ public class MinimalMcastAgent implements MulticastAgent {
       }
    }
 
+   @Override
+   public Group getLocalGroup() {
+      for (MMAGroup g : MMAGroup.groupList) {
+         for (MMANode n : g.nodeList) {
+            if (n.id == this.localNodeId)
+               return g;
+         }
+      }
+      return null;
+   }
+
 }

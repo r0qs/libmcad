@@ -37,4 +37,10 @@ public class URPMcastAgent implements MulticastAgent {
       
    }
 
+   @Override
+   public Group getLocalGroup() {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
 }
