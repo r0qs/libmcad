@@ -1,7 +1,6 @@
 package ch.usi.dslab.bezerra.mcad.minimal;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import ch.usi.dslab.bezerra.mcad.Group;
 

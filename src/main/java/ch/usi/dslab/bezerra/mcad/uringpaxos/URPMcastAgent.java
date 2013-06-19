@@ -26,7 +26,7 @@ public class URPMcastAgent implements MulticastAgent {
    @Override
    public byte [] deliver() {
       // TODO Auto-generated method stub
-      return new byte[1];
+      return null;
    }
    
    // to translate from Group (.id) to whatever this implementation uses to represent a group
