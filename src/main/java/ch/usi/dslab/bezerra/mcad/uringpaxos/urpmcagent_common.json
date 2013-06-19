@@ -1,0 +1,158 @@
+{
+  "agent_class" : "URPMcastAgent" ,
+  
+  "groups" :
+  [
+    {
+      "group_id" : 1
+    } ,
+    {
+      "group_id" : 2
+    }
+  ] ,
+  
+  "zookeeper" :
+  {
+    "location" : "localhost" ,
+    "port" : 2181
+  } ,
+  
+  
+  "rings" :
+  [
+    {
+      "ring_id" : 1 ,
+      "destination_groups" : [1]
+    } ,
+    {
+      "ring_id" : 2 ,
+      "destination_groups" : [2]
+    } ,
+    {
+      "ring_id" : 3 ,
+      "destination_groups" : [1,2]
+    }
+  ] ,
+  
+  "server_nodes" :
+  [
+    {
+      "node_id" : 1 ,
+      "node_group" : 1 ,
+      "node_rings" :
+      [
+        { "ring" : 1 , "roles" : ["learner"] } ,
+        { "ring" : 3 , "roles" : ["learner"] }
+      ]
+    } ,
+    {
+      "node_id" : 2 ,
+      "node_group" : 2 ,
+      "node_rings" :
+      [
+        { "ring" : 2 , "roles" : ["learner"] } ,
+        { "ring" : 3 , "roles" : ["learner"] }
+      ]
+    }
+  ] ,
+  
+  "helper_nodes" :
+  [
+    {
+      "node_id" : 10 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 1 , "roles" : ["proposer"] }
+      ]
+    } ,
+    {
+      "node_id" : 11 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 1 , "roles" : ["acceptor"] }
+      ]
+    } ,
+    {
+      "node_id" : 12 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 1 , "roles" : ["acceptor"] }
+      ]
+    } ,      
+    {
+      "node_id" : 13 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 1 , "roles" : ["acceptor"] }
+      ]
+    } ,
+    {
+      "node_id" : 20 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 2 , "roles" : ["proposer"] }
+      ]
+    } ,
+    {
+      "node_id" : 21 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 2 , "roles" : ["acceptor"] }
+      ]
+    } ,
+    {
+      "node_id" : 22 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 2 , "roles" : ["acceptor"] }
+      ]
+    } ,      
+    {
+      "node_id" : 23 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 2 , "roles" : ["acceptor"] }
+      ]
+    } ,
+    {
+      "node_id" : 30 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 3 , "roles" : ["proposer"] }
+      ]
+    } ,
+    {
+      "node_id" : 31 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 3 , "roles" : ["acceptor"] }
+      ]
+    } ,
+    {
+      "node_id" : 32 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 3 , "roles" : ["acceptor"] }
+      ]
+    } ,      
+    {
+      "node_id" : 33 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring" : 3 , "roles" : ["acceptor"] }
+      ]
+    }
+  ]
+}
