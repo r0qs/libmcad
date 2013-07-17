@@ -1,3 +1,7 @@
+# This script initiates the helper nodes, that is, the URingPaxos Infrastructure:
+# All rings, each with its proposer (coordinator) and its acceptors
+# (probably they should be proposers themselves too, in case the leader crashes)
+
 import os
 import sys
 import json
@@ -27,12 +31,15 @@ for node in config["helper_nodes"] :
     for ring in node["node_rings"] :
         if len(nodestring) > 0 : nodestring += ";"
         nodestring += str(ring["ring_id"]) + "," + str(node["node_id"]) + ":"
-        if "acceptor" in ring["roles"] : nodestring += "A"
-        if "proposer" in ring["roles"] : nodestring += "P"
+        if "acceptor" in ring["roles"] : nodestring += "A"        
         if "learner"  in ring["roles"] : nodestring += "L"
+        if "proposer" in ring["roles"] : nodestring += "P"
     
     node_location = node["node_location"]
-    command_string = "ssh " + node_location + " (path to URPHelperNode class) " + nodestring + " " + zookeeper_server_address
+    command_string = "ssh " + node_location + " (path to URPHelperNode class) " + zookeeper_server_address  + " " + nodestring
+    
+    if "proposer" in ring["roles"] : command_string += " " + str(ring["proposer_port"])
+    
     print(command_string)
 #     os.system(command_string)
 

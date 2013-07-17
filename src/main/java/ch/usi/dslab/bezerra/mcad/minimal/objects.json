@@ -1,0 +1,4 @@
+{"objects" : [ {"id" : 1, "value": 123, "partition": 1} ,
+               {"id" : 2, "value": -23, "partition": 2} 
+             ]
+}

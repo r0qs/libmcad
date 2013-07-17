@@ -1,0 +1,27 @@
+{
+  "agent_class" : "MinimalMcastAgent" ,
+  
+  "nodes" : 
+  [
+    { "node_id" : 1 ,
+      "address" : "localhost" ,
+      "port"    : 50011
+    } ,
+    { "node_id" : 2 ,
+      "address" : "localhost" ,
+      "port"    : 50002
+    }
+  ] ,
+  
+  "groups" :
+  [
+    { 
+      "group_id" : 1 ,
+      "group_nodes" : [1]
+    } ,
+    {
+      "group_id" : 2 ,
+      "group_nodes" : [2]
+    }
+  ]
+}

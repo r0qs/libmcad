@@ -64,7 +64,7 @@
       "node_location" : "localhost" ,
       "node_rings" :
       [
-        { "ring_id" : 1 , "roles" : ["proposer"] }
+        { "ring_id" : 1 , "roles" : ["proposer"] , "proposer_port" : 50001 }
       ]
     } ,
     {
@@ -96,7 +96,7 @@
       "node_location" : "localhost" ,
       "node_rings" :
       [
-        { "ring_id" : 2 , "roles" : ["proposer"] }
+        { "ring_id" : 2 , "roles" : ["proposer"] , "proposer_port" : 50002 }
       ]
     } ,
     {
@@ -128,7 +128,7 @@
       "node_location" : "localhost" ,
       "node_rings" :
       [
-        { "ring_id" : 3 , "roles" : ["proposer"] }
+        { "ring_id" : 3 , "roles" : ["proposer"] , "proposer_port" : 50003 }
       ]
     } ,
     {

@@ -1,0 +1,5 @@
+{
+  "agent_class" : "MinimalMcastAgent" ,
+  "local_node_id" : 1 ,
+  "common_config_file" : "/Users/eduardo/Desktop/mmcagent_common.json"
+}

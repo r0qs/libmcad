@@ -103,23 +103,21 @@ public class MMANode implements Runnable {
          } catch (EOFException closedConnectionException) {
             // close this connection, and destroy this node (remove from the nodes map)
             try {
-            this.socketFromNode.close();
-            this.socketToNode.close();
-            this.streamFromNode.close();
-            this.socketToNode.close();
-            this.inFromNode.close();
-            this.outToNode.close();
-            nodeMap.remove(this.id);
-            this.running = false;
-            System.out.println("Connection with node " + this.id + " closed by remote.");
+               this.socketFromNode.close();
+               this.socketToNode.close();
+               this.streamFromNode.close();
+               this.socketToNode.close();
+               this.inFromNode.close();
+               this.outToNode.close();
+               nodeMap.remove(this.id);
+               this.running = false;
+               System.out.println("Connection with node " + this.id + " closed by remote.");
             }
             catch (IOException e) {
                e.printStackTrace();
             }
             
-         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-         } catch (IOException e) {
+         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
          }
       }
