@@ -2,19 +2,29 @@ package ch.usi.dslab.bezerra.mcad.uringpaxos;
 
 import java.util.ArrayList;
 
-import sun.util.logging.resources.logging;
-
 public class URPRingData {
    static ArrayList<URPRingData> ringsList;
-   private int arlistpos;
-   private int groupFirst, pivotValue, groupLast;
-   private boolean multigroup;
+   int arlistpos;
+   int groupFirst, pivotValue, groupLast;
+   boolean multigroup;
+   
+   int    ringId;
+   String proposerAddress;
+   int    proposerPort;   
    
    static {
       ringsList = new ArrayList<URPRingData>();
    }
    
-   public URPRingData (int ringId, String proposerHelperAddress, int proposerHelperPort) {
+   static URPRingData getById(int id) {
+      for (URPRingData urd : ringsList)
+         if (urd.getId() == id)
+            return urd;
+      return null;
+   }
+   
+   public URPRingData (int ringId) {
+      this.ringId = ringId;
       ringsList.add(this);
       this.arlistpos = ringsList.size() - 1;
       if (arlistpos == 0) {
@@ -31,9 +41,9 @@ public class URPRingData {
             groupLast  = parent.groupLast;
          }
          
-         if (groupFirst < groupLast) {
-            System.out.println("ERROR :: groupFirst (" + groupFirst +
-                               ") < groupLast (" + groupLast + ") !!!");
+         if (groupLast < groupFirst) {
+            System.out.println("ERROR :: groupLast ("  + groupLast  + ")" +
+            		                   " < groupFirst (" + groupFirst + ") !!!");
             System.exit(-1);
          }
          
@@ -44,8 +54,24 @@ public class URPRingData {
       if (multigroup)
          pivotValue = (groupLast + groupFirst + 1) / 2;
       else
-         pivotValue = groupFirst;
-            
+         pivotValue = groupFirst;            
+   }
+   
+   public void setProposerHelper(String address, int port) {
+      proposerAddress = address;
+      proposerPort    = port;
+   }
+   
+   public int getId() {
+      return ringId;
+   }
+   
+   public String getProposerAddress() {
+      return proposerAddress;
+   }
+   
+   public int getProposerPort() {
+      return proposerPort;
    }
    
    public URPRingData left() {

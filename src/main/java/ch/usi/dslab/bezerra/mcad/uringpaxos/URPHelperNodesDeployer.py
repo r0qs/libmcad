@@ -26,7 +26,7 @@ zookeeper_server_address  = zookeeper_server_location + ":" + zookeeper_server_p
 print("[re]starting zookeeper server at " + zookeeper_server_address)
 os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " start")
 
-for node in config["helper_nodes"] :
+for node in config["ring_nodes"] :
     nodestring = ""    
     for ring in node["node_rings"] :
         if len(nodestring) > 0 : nodestring += ";"

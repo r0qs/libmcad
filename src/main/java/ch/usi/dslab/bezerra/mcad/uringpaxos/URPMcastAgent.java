@@ -19,6 +19,8 @@ import ch.usi.dslab.bezerra.mcad.minimal.MMANode;
 
 public class URPMcastAgent implements MulticastAgent {
    
+   URPGroup localGroup = null;
+   
    public URPMcastAgent (String configFile) {
       loadURPAgentConfig(configFile);
    }
@@ -67,10 +69,26 @@ public class URPMcastAgent implements MulticastAgent {
    // set up whatever configuration this specific mcast agent needs
    // *** TODO: check how gaps in the groups and rings sequence affects correctness
    // *** TODO: has to make sure that the max group is known before creating URPRings
+   @SuppressWarnings("unchecked")
+   // TODO: Using legacy API in the following method (Iterator part)
    public void loadURPAgentConfig(String filename) {
+      
+      // create all groups
+      // create all rings
+      // map rings to groups
+      // map groups to rings
+      // if mcagent is for a server (i.e., there is a local group)
+      //     create a learner in the rings associated with that group
+      //     such learner will put its messages in the delivery queue of the mcagent
+      //     (or the deliver() from the mcagent could pop from the learner and discard group info)
+      //     (or not)
+      // create a connection to every ring's proposer
+      
       
       
       try {
+         
+         
          
          // =====================================
          // JSON Parser object
@@ -80,11 +98,24 @@ public class URPMcastAgent implements MulticastAgent {
          
          
          // =====================================
-         // Node-specific settings
+         // This node's specific settings
          
-         Object nodeObj = parser.parse(new FileReader(filename));
-         JSONObject nodeConfig = (JSONObject) nodeObj;         
-         long localId = (Long) nodeConfig.get("local_node_id");
+         Object     nodeObj    = parser.parse(new FileReader(filename));
+         JSONObject nodeConfig = (JSONObject) nodeObj;
+                  
+         String       nodeType = (String) nodeConfig.get("node_type");
+         boolean      hasLocalGroup;
+         long         serverId, localGroupId; 
+         
+         if (nodeType.equals("server")) {
+            hasLocalGroup = true;
+            serverId      = (Long) nodeConfig.get("server_id");
+            localGroupId  = (Long) nodeConfig.get("server_group_id");
+         }
+         else if (nodeType.equals("client")) {
+            hasLocalGroup = false;
+         }
+         
          String commonConfigFileName = (String) nodeConfig.get("common_config_file");
          
          
@@ -94,90 +125,119 @@ public class URPMcastAgent implements MulticastAgent {
          
          Object obj = parser.parse(new FileReader(commonConfigFileName));
          JSONObject config = (JSONObject) obj;
-
-         
-         
-         // ===========================================
-         // Creating Nodes
-         
-         JSONArray nodesArray = (JSONArray) config.get("nodes");
-
-         @SuppressWarnings("unchecked")
-         // Using legacy API in the next line of code
-         Iterator<Object> it_node = nodesArray.iterator();
-
-         while (it_node.hasNext()) {
-            JSONObject node = (JSONObject) it_node.next();
-            long node_id = (Long) node.get("node_id");
-            String address = (String) node.get("address");
-            long port = (Long) node.get("port");
-            MMANode newnode = new MMANode(this, (int) node_id);
-            newnode.setAddress(address);
-            newnode.setPort((int) port);
-            
-            System.out.println("created a node: id(" + newnode.id 
-                               + "), address(" + newnode.address 
-                               + "), port(" + newnode.port + ")");
-         }
          
          
          
          // ===========================================
          // Creating Groups
          
-         Group.changeGroupImplementationClass(MMAGroup.class);
+         Group.changeGroupImplementationClass(URPGroup.class);
          
-         JSONArray groupsArray = (JSONArray) config.get("groups");
-         
-         @SuppressWarnings("unchecked")
-         // Using legacy API in the next line of code
+         JSONArray groupsArray = (JSONArray) config.get("groups");         
          Iterator<Object> it_group = groupsArray.iterator();
 
          while (it_group.hasNext()) {
             JSONObject jsgroup = (JSONObject) it_group.next();
             long group_id = (Long) jsgroup.get("group_id");
-            JSONArray groupNodesArray = (JSONArray) jsgroup.get("group_nodes");
             
-            MMAGroup group = (MMAGroup) Group.getGroup((int) group_id);
+            URPGroup group = (URPGroup) Group.getOrCreateGroup((int) group_id);
             
-            @SuppressWarnings("unchecked")
-            // Using legacy API in the next line of code
-            Iterator<Object> it_groupNode = groupNodesArray.iterator();
-    
-            while (it_groupNode.hasNext()) {
-               long groupNodeId = (Long) it_groupNode.next();
-               MMANode node = MMANode.getNode((int) groupNodeId);
-               group.addNode(node);
-               System.out.println("Added node " + node.id + " to group " + group.getId());
-            }
-            
-            System.out.println("Done creating group " + group.getId() + " with nodes " + group.nodeList);
+            System.out.println("Done creating group " + group.getId());
          }
          
          
          
          // ===========================================
-         // Creating LocalNode
-        
-         this.localNodeId = (int) localId;
-         MMANode thisNode = MMANode.getNode(this.localNodeId);
+         // Creating Ring Info
+
+         JSONArray ringsArray = (JSONArray) config.get("rings");         
+         Iterator<Object> it_ring = ringsArray.iterator();
+
+         while (it_ring.hasNext()) {
+            JSONObject jsring  = (JSONObject) it_ring.next();
+            long       ring_id = (Long) jsring.get("ring_id");
+            
+            URPRingData ringData = new URPRingData((int) ring_id);
+            
+            JSONArray destGroupsArray = (JSONArray) jsring.get("destination_groups");
+            Iterator<Object> it_destGroup = destGroupsArray.iterator();
+            
+            while (it_destGroup.hasNext()) {
+               Long destGroupId = (Long) it_destGroup.next();
+            }
+            
+            
+            
+            
+            System.out.println("Done creating ringdata for ring " + ringData.getId());
+         }
+                  
+         
+         
+         // ===========================================
+         // Checking helper nodes
+         
+         JSONArray nodesArray = (JSONArray) config.get("helper_nodes");         
+         Iterator<Object> it_node = nodesArray.iterator();
+
+         while (it_node.hasNext()) {
+            JSONObject jsnode    = (JSONObject) it_node.next();
+            
+            long      nodeId       = (Long)      jsnode.get("node_id");
+            String    nodeLocation = (String)    jsnode.get("node_location");            
+            
+            JSONArray nodeRings    = (JSONArray) jsnode.get("node_rings");            
+            Iterator<Object> it_nodeRing = nodeRings.iterator();
+            
+            while (it_nodeRing.hasNext()) {
+               JSONObject jsnodering = (JSONObject) it_nodeRing.next();
+               
+               long      ring_id   = (Long)      jsnodering.get("ring_id");
+               JSONArray nodeRoles = (JSONArray) jsnodering.get("roles");
+               
+               @SuppressWarnings("unchecked")
+               // Using legacy API in the next line of code
+               Iterator<Object> it_nodeRole = nodeRoles.iterator();
+               
+               boolean isProposer = false;
+               while (it_nodeRole.hasNext()) {
+                  String roleString = (String) it_nodeRole.next();
+                  if (roleString.equals("proposer"))
+                     isProposer = true;
+               }
+               if (isProposer) {
+                  long nodeProposerPort = (Long) jsnodering.get("proposer_port");
+                  URPRingData nodeRing  = URPRingData.getById((int) ring_id);
+                  nodeRing.setProposerHelper(nodeLocation, (int) nodeProposerPort);
+                  System.out.println("Set Ring " + nodeRing.getId() + " to proposer at "
+                                     + nodeLocation + ":" + nodeProposerPort);
+               }
+               
+            }
+         }
+         
+//         // ===========================================
+//         // Creating LocalNode
+//        
+//         this.localNodeId = (int) localId;
+//         MMANode thisNode = MMANode.getNode(this.localNodeId);
                 
          
 
-         // ===========================================
-         // Setting up the connection-listener thread     
-
-         System.out.println("Setting up the local multicast" 
-               + " agent to listen on port "
-               + thisNode.getPort());
-         
-         nodeServerSocket = new ServerSocket(thisNode.getPort());
-         connectionAcceptorThread = new MMAConnectionAcceptorThread(this);
-         connectionAcceptorThread.start();
-         
-         System.out.println("Done setting up the local multicast"
-               + " agent with a listening socket on port "
-               + thisNode.getPort());
+//         // ===========================================
+//         // Setting up the connection-listener thread     
+//
+//         System.out.println("Setting up the local multicast" 
+//               + " agent to listen on port "
+//               + thisNode.getPort());
+//         
+//         nodeServerSocket = new ServerSocket(thisNode.getPort());
+//         connectionAcceptorThread = new MMAConnectionAcceptorThread(this);
+//         connectionAcceptorThread.start();
+//         
+//         System.out.println("Done setting up the local multicast"
+//               + " agent with a listening socket on port "
+//               + thisNode.getPort());
 
       } catch (IOException e) {
          e.printStackTrace();
@@ -192,6 +252,12 @@ public class URPMcastAgent implements MulticastAgent {
    public Group getLocalGroup() {
       // TODO Auto-generated method stub
       return null;
+   }
+   
+   public void setLocalGroup(URPGroup g) {
+      this.localGroup = g;
+      ArrayList<URPRingData> correspondingRings = g.getCorrespondingRings();
+      
    }
 
 }

@@ -173,7 +173,7 @@ public class MinimalMcastAgent implements MulticastAgent {
             long group_id = (Long) jsgroup.get("group_id");
             JSONArray groupNodesArray = (JSONArray) jsgroup.get("group_nodes");
             
-            MMAGroup group = (MMAGroup) Group.getGroup((int) group_id);
+            MMAGroup group = (MMAGroup) Group.getOrCreateGroup((int) group_id);
             
             @SuppressWarnings("unchecked")
             // Using legacy API in the next line of code

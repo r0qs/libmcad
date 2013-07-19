@@ -18,21 +18,18 @@ public class Group {
    }
    
    @SuppressWarnings("unchecked")
-   public static Group getGroup(int id) {
+   public static Group getOrCreateGroup(int id) {
       Group g = groupMap.get(id);
       
       if (g == null) {
          try {            
             g = (Group) groupImplementationClass.getConstructor(Integer.TYPE).newInstance(id);
-         } catch (InstantiationException e) {
+         } catch (InstantiationException | 
+                  IllegalAccessException |
+                  NoSuchMethodException  |
+                  InvocationTargetException e) {
             e.printStackTrace();
-         } catch (IllegalAccessException e) {
-            e.printStackTrace();
-         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-         } catch (InvocationTargetException e) {
-            e.printStackTrace();
-         }
+         } 
       }
       else {
          System.out.println("Group " + id + " already exists");
