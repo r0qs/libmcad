@@ -1,7 +1,9 @@
 package ch.usi.dslab.bezerra.mcad;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 @SuppressWarnings("rawtypes")
 public class Group {
@@ -15,6 +17,19 @@ public class Group {
    
    public static void changeGroupImplementationClass(Class groupImplementation) {
       Group.groupImplementationClass = groupImplementation;
+   }
+   
+   public static ArrayList<Group> getAllGroups() {
+      ArrayList<Group> allGroups = new ArrayList<Group>();
+      
+      for (Entry<Integer, Group> entry : groupMap.entrySet())
+          allGroups.add(entry.getValue());
+      
+      return allGroups;
+   }
+   
+   public static Group getGroup(int id) {
+      return groupMap.get(id);
    }
    
    @SuppressWarnings("unchecked")
@@ -53,4 +68,5 @@ public class Group {
    public void setId(int groupId) {
       this.groupId = groupId;
    }
+   
 }

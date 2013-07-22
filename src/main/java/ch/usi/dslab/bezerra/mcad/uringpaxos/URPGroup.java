@@ -11,10 +11,6 @@ public class URPGroup extends Group {
       maxGroupId = -1;
    }
    
-   static URPRingData getMultigroupRing(ArrayList<URPGroup> dests) {
-      
-   }
-   
    ArrayList<URPRingData> associatedRings;
    
    static int getMaxGroupId() {
@@ -28,9 +24,9 @@ public class URPGroup extends Group {
       associatedRings = new ArrayList<URPRingData>();
    }
    
-   void addAssociatedRing(int ringId) {
-      URPRingData ring = URPRingData.getById(ringId);
-      associatedRings.add(ring);
+   void addAssociatedRing(URPRingData r) {
+      if (associatedRings.contains(r) == false)
+         associatedRings.add(r);
    }
    
    ArrayList<URPRingData> getCorrespondingRings() {

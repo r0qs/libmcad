@@ -2,59 +2,165 @@ package ch.usi.dslab.bezerra.mcad.uringpaxos;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.ServerSocket;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
+import org.apache.zookeeper.KeeperException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import ch.usi.da.paxos.ring.Node;
+import ch.usi.da.paxos.ring.PaxosRole;
+import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
-import ch.usi.dslab.bezerra.mcad.minimal.MMAConnectionAcceptorThread;
-import ch.usi.dslab.bezerra.mcad.minimal.MMAGroup;
-import ch.usi.dslab.bezerra.mcad.minimal.MMANode;
 
 public class URPMcastAgent implements MulticastAgent {
-   
+   Node URPaxosNode = null;
    URPGroup localGroup = null;
+   URPAgentLearner urpAgentLearner;
+   HashMap<Long, URPRingData> mappingGroupsToRings;
    
    public URPMcastAgent (String configFile) {
       loadURPAgentConfig(configFile);
    }
    
-   URPRingData mapRing(ArrayList<Group> destinations) {
-      URPRingData currentRing = URPRingData.ringsList.get(0);
-      URPRingData nextRing = null;
+   void mapGroupsToRings() {
+      mappingGroupsToRings = new HashMap<Long, URPRingData>();
       
-      while (true) {
-         boolean checked_first = false;
-         for (Group g : destinations) {
-            if (checked_first == false) {
-               nextRing = g.getId() < currentRing.pivot() ? currentRing.left() : currentRing.right();
-               if (nextRing == null) return currentRing;
-               checked_first = true;
-            }
-            else {
-               URPRingData otherNextRing = g.getId() < currentRing.pivot() ? currentRing.left() : currentRing.right();
-               if (otherNextRing != nextRing) return currentRing;
+      ArrayList<Group> groups = Group.getAllGroups();
+      
+      // sort the groups list by group_id
+      Collections.sort(groups, new Comparator<Group> () {
+         @Override
+         public int compare(Group g1, Group g2) {
+           return g2.getId() - g1.getId();
+         }
+      });
+      //=================================
+      
+      recursivelyMapAllGroupCombinations(groups, new ArrayList<Group>(), -1, false, 0);
+
+   }
+   
+   void recursivelyMapAllGroupCombinations (ArrayList<Group> all, ArrayList<Group> destsPrevious, int curId, boolean present, long hash) {
+      if (all.isEmpty()) return;
+      
+      ArrayList<Group> destinations = new ArrayList<Group>(destsPrevious);
+      
+      Group curGroup = Group.getGroup(curId);
+      
+      if (present && curGroup != null) {
+         destinations.add(curGroup);
+         hash += (long) Math.pow(2, curId);
+      }
+      
+      if (curGroup == all.get(all.size() - 1)) {
+         // if the destinations list is empty, or if some other path in the
+         // tree already let to the same combination (i.e., if there is a gap
+         // in the group id sequence), there is no point in executing this.
+         if (destinations.isEmpty() || mappingGroupsToRings.containsKey(hash)) return;
+         
+         // iterate through all rings that deliver to all those groups, leaving only those that work
+         // sort them by number of associated groups
+         // return the first one         
+         ArrayList<URPRingData> candidates = new ArrayList<URPRingData>(URPRingData.ringsList);
+         
+         // getting a valid list of candidate rings
+         next_candidate:
+         for (URPRingData r : URPRingData.ringsList){            
+            for (Group g : destinations) {
+               if (r.destinationGroups.contains(g) == false) {
+                  candidates.remove(r);
+                  continue next_candidate;
+               }
             }
          }
-         currentRing = nextRing;
+         
+         // sorting the candidate rings by number of associated groups
+         Collections.sort(candidates, new Comparator<URPRingData> () {
+            @Override
+            public int compare(URPRingData r1, URPRingData r2) {
+               return r2.destinationGroups.size() - r1.destinationGroups.size();
+            }            
+         });
+         
+         // getting the best candidate ring (i.e., that with the least number of associated groups)
+         // and indexing it for this set of destinations
+         URPRingData bestCandidateRing = candidates.get(0);
+         mappingGroupsToRings.put(hash, bestCandidateRing);         
+         
+      }
+      else {
+         // hash + 2 ^ pos
+         recursivelyMapAllGroupCombinations(all, destinations, curId + 1, true , hash);
+         // hash
+         recursivelyMapAllGroupCombinations(all, destinations, curId + 1, false, hash);
       }
    }
+   
+   long hashDestinationSet(ArrayList<Group> destinations) {
+      long hash = 0;
+      
+      for (Group g : destinations) {
+         hash += (long) Math.pow(2, g.getId());
+      }
+      
+      return hash;
+   }
+   
+   URPRingData retrieveMappedRing(ArrayList<Group> destinations) {
+      long destsHash = hashDestinationSet(destinations);
+      URPRingData mappedRing = mappingGroupsToRings.get(destsHash);
+      return mappedRing;
+   }
+   
+   URPRingData retrieveMappedRing(Group destination) {
+      long destHash = (long) Math.pow(2, destination.getId());
+      URPRingData mappedRing = mappingGroupsToRings.get(destHash);
+      return mappedRing;
+   }
+   
+   private void sendToRing(URPRingData ring, ByteBuffer message) {
+      try {
+      message.flip();      
+      while(message.hasRemaining())
+         ring.coordinatorConnection.write(message);
+      }
+      catch (IOException e) {
+         e.printStackTrace();         
+      }
+   }
+   
+   // ****************** MESSAGE FORMAT ******************
+   // | MESSAGE LENGTH (no length header) | NUMBER OF DEST GROUPS | GROUPS | PAYLOAD |
+   // |          4 bytes                  |        4 bytes        |  4*n   |   rest  |
 
    @Override
    public void multicast(ArrayList<Group> destinations, byte [] message) {
-      URPRingData destinationRing = mapRing(destinations);
+      URPRingData destinationRing = retrieveMappedRing(destinations);
+      int messageLength = 4 + 4 + 4*destinations.size() + message.length;
+      ByteBuffer extMsg = ByteBuffer.allocate(messageLength);
+      extMsg.putInt(messageLength - 4); // length doesn't include header
+      extMsg.putInt(destinations.size());
+      for (Group g : destinations)
+         extMsg.putInt(g.getId());
+      extMsg.put(message);
+      sendToRing(destinationRing, extMsg);
    }
    
    @Override
-   public void multicast(Group single_destinations, byte [] message) {
-      // TODO Auto-generated method stub
-      
+   public void multicast(Group singleDestination, byte [] message) {
+      ArrayList<Group> dests = new ArrayList<Group>();
+      dests.add(singleDestination);
+      multicast(dests, message);
    }
 
    @Override
@@ -104,13 +210,14 @@ public class URPMcastAgent implements MulticastAgent {
          JSONObject nodeConfig = (JSONObject) nodeObj;
                   
          String       nodeType = (String) nodeConfig.get("node_type");
-         boolean      hasLocalGroup;
-         long         serverId, localGroupId; 
+         boolean      hasLocalGroup = false;
+         long         localNodeId = -1;
+         long         localGroupId = -1; 
          
          if (nodeType.equals("server")) {
             hasLocalGroup = true;
-            serverId      = (Long) nodeConfig.get("server_id");
-            localGroupId  = (Long) nodeConfig.get("server_group_id");
+            localNodeId   = (Long) nodeConfig.get("localnode_id");
+            localGroupId  = (Long) nodeConfig.get("localnode_group_id");
          }
          else if (nodeType.equals("client")) {
             hasLocalGroup = false;
@@ -124,7 +231,7 @@ public class URPMcastAgent implements MulticastAgent {
          // Common settings
          
          Object obj = parser.parse(new FileReader(commonConfigFileName));
-         JSONObject config = (JSONObject) obj;
+         JSONObject commonConfig = (JSONObject) obj;
          
          
          
@@ -133,7 +240,7 @@ public class URPMcastAgent implements MulticastAgent {
          
          Group.changeGroupImplementationClass(URPGroup.class);
          
-         JSONArray groupsArray = (JSONArray) config.get("groups");         
+         JSONArray groupsArray = (JSONArray) commonConfig.get("groups");         
          Iterator<Object> it_group = groupsArray.iterator();
 
          while (it_group.hasNext()) {
@@ -150,7 +257,7 @@ public class URPMcastAgent implements MulticastAgent {
          // ===========================================
          // Creating Ring Info
 
-         JSONArray ringsArray = (JSONArray) config.get("rings");         
+         JSONArray ringsArray = (JSONArray) commonConfig.get("rings");         
          Iterator<Object> it_ring = ringsArray.iterator();
 
          while (it_ring.hasNext()) {
@@ -163,21 +270,26 @@ public class URPMcastAgent implements MulticastAgent {
             Iterator<Object> it_destGroup = destGroupsArray.iterator();
             
             while (it_destGroup.hasNext()) {
-               Long destGroupId = (Long) it_destGroup.next();
+               long destGroupId = (Long) it_destGroup.next();
+               URPGroup destGroup= (URPGroup) URPGroup.getOrCreateGroup((int) destGroupId);
+               ringData.addDestinationGroup(destGroup);
+               destGroup.addAssociatedRing(ringData);
             }
-            
-            
-            
-            
+                        
             System.out.println("Done creating ringdata for ring " + ringData.getId());
          }
+         
+         // ===========================================
+         // Mapping destination sets do rings
                   
+         mapGroupsToRings();
+                           
          
          
          // ===========================================
          // Checking helper nodes
          
-         JSONArray nodesArray = (JSONArray) config.get("helper_nodes");         
+         JSONArray nodesArray = (JSONArray) commonConfig.get("helper_nodes");         
          Iterator<Object> it_node = nodesArray.iterator();
 
          while (it_node.hasNext()) {
@@ -194,57 +306,76 @@ public class URPMcastAgent implements MulticastAgent {
                
                long      ring_id   = (Long)      jsnodering.get("ring_id");
                JSONArray nodeRoles = (JSONArray) jsnodering.get("roles");
-               
-               @SuppressWarnings("unchecked")
-               // Using legacy API in the next line of code
+
                Iterator<Object> it_nodeRole = nodeRoles.iterator();
                
-               boolean isProposer = false;
+               boolean isCoordinator = false;
                while (it_nodeRole.hasNext()) {
                   String roleString = (String) it_nodeRole.next();
                   if (roleString.equals("proposer"))
-                     isProposer = true;
+                     isCoordinator = true;
                }
-               if (isProposer) {
+               if (isCoordinator) {
                   long nodeProposerPort = (Long) jsnodering.get("proposer_port");
                   URPRingData nodeRing  = URPRingData.getById((int) ring_id);
-                  nodeRing.setProposerHelper(nodeLocation, (int) nodeProposerPort);
+                  nodeRing.setCoordinator(nodeLocation, (int) nodeProposerPort);
                   System.out.println("Set Ring " + nodeRing.getId() + " to proposer at "
                                      + nodeLocation + ":" + nodeProposerPort);
                }
                
             }
          }
+
          
-//         // ===========================================
-//         // Creating LocalNode
-//        
-//         this.localNodeId = (int) localId;
-//         MMANode thisNode = MMANode.getNode(this.localNodeId);
-                
+         
+         // ===========================================
+         // Connect to all ring coordinators
+         
+         for (URPRingData ring : URPRingData.ringsList)
+            ring.connectToCoordinator();
+         
+         
+         
+         // ===========================================
+         // Creating the learner in all relevant rings
+         
+         if (hasLocalGroup) {
+            URPGroup localGroup = (URPGroup) Group.getGroup((int)localGroupId);
+            
+            // ----------------------------------------------
+            // creating zoo_host string in the format ip:port
+            String zoo_host;
+            JSONObject zoo_data = (JSONObject) commonConfig.get("zookeeper");
+            zoo_host  = (String) zoo_data.get("location");
+            zoo_host += ":";
+            zoo_host += ((Long)  zoo_data.get("port")).toString();
+            System.out.println("Setting zoo_host as " + zoo_host);
+
+            // ----------------------------------------------
+            // creating list of ringdescriptors
+            List<RingDescription> localURPaxosRings = new ArrayList<RingDescription>();
+            for (URPRingData ringData : localGroup.associatedRings) {
+               int ringId = ringData.getId();
+               int nodeId = (int) localNodeId;
+               ArrayList<PaxosRole> pxRoleList = new ArrayList<PaxosRole>();
+               pxRoleList.add(PaxosRole.Learner);
+               localURPaxosRings.add(new RingDescription(ringId, nodeId, pxRoleList));
+            }
+            
+            // ----------------------------------------------
+            // Creating Paxos node from list of ring descriptors
+            URPaxosNode = new Node(zoo_host, localURPaxosRings);
+            URPaxosNode.start();
+            
+            // attach a learner thread to URPaxosNode to receive the messages from the rings
+            urpAgentLearner = new URPAgentLearner(this, URPaxosNode);
+         }
+         
          
 
-//         // ===========================================
-//         // Setting up the connection-listener thread     
-//
-//         System.out.println("Setting up the local multicast" 
-//               + " agent to listen on port "
-//               + thisNode.getPort());
-//         
-//         nodeServerSocket = new ServerSocket(thisNode.getPort());
-//         connectionAcceptorThread = new MMAConnectionAcceptorThread(this);
-//         connectionAcceptorThread.start();
-//         
-//         System.out.println("Done setting up the local multicast"
-//               + " agent with a listening socket on port "
-//               + thisNode.getPort());
-
-      } catch (IOException e) {
+      } catch (IOException | InterruptedException | ParseException | KeeperException e) {
          e.printStackTrace();
-      } catch (ParseException e) {
-         e.printStackTrace();         
-      }
-      
+      }      
       
    }
 

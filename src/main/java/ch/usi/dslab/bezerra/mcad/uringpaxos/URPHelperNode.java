@@ -26,7 +26,7 @@ import ch.usi.da.paxos.examples.TTYNode;
 import ch.usi.da.paxos.ring.RingDescription;
 
 public class URPHelperNode {
-
+   
    static Logger logger = Logger.getLogger(TTYNode.class);
 
    private static class HelperProposer implements Runnable {
@@ -140,11 +140,13 @@ public class URPHelperNode {
             buf.flip();
             while (hasCompleteMessage(buf)) {
                int length = buf.getInt();
-               byte[] strbytes = new byte[length];
-               buf.get(strbytes);
-               byte[] message = (byte[]) deserialize(strbytes);
-               System.out.println("Server got message with " + message.length + " bytes from " + ch);
-               helperProposer.pendingMessages.add(message);
+               byte[] rawMessage = new byte[length];
+               buf.get(rawMessage);
+               //TODO: deserializing byte[] to byte[]...
+               //byte[] message = (byte[]) deserialize(rawMessage);
+               //System.out.println("Server got message with " + message.length + " bytes from " + ch);
+               //helperProposer.pendingMessages.add(message);
+               helperProposer.pendingMessages.add(rawMessage);
             }
             buf.compact();
          } catch (IOException e) {
