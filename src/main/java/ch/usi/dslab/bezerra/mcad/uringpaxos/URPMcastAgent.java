@@ -127,16 +127,16 @@ public class URPMcastAgent implements MulticastAgent {
    }
    
    URPRingData retrieveMappedRing(Group destination) {
-      long destHash = (long) Math.pow(2, destination.getId());
+      long destHash = (long) Math.pow(2, destination.getId()); // just hashing right here
       URPRingData mappedRing = mappingGroupsToRings.get(destHash);
       return mappedRing;
    }
    
    private void sendToRing(URPRingData ring, ByteBuffer message) {
       try {
-      message.flip();      
-      while(message.hasRemaining())
-         ring.coordinatorConnection.write(message);
+         message.flip();      
+         while(message.hasRemaining())
+            ring.coordinatorConnection.write(message);
       }
       catch (IOException e) {
          e.printStackTrace();         
@@ -144,8 +144,8 @@ public class URPMcastAgent implements MulticastAgent {
    }
    
    // ****************** MESSAGE FORMAT ******************
-   // | MESSAGE LENGTH (no length header) | NUMBER OF DEST GROUPS | GROUPS | PAYLOAD |
-   // |          4 bytes                  |        4 bytes        |  4*n   |   rest  |
+   // | MESSAGE LENGTH (not counting length header) | NUMBER n OF DEST GROUPS | GROUPS | PAYLOAD |
+   // |                4 bytes                      |         4 bytes         |  4*n   |   rest  |
 
    @Override
    public void multicast(ArrayList<Group> destinations, byte [] message) {
