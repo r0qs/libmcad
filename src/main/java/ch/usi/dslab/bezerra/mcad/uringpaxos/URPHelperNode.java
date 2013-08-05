@@ -142,10 +142,6 @@ public class URPHelperNode {
                int length = buf.getInt();
                byte[] rawMessage = new byte[length];
                buf.get(rawMessage);
-               //TODO: deserializing byte[] to byte[]...
-               //byte[] message = (byte[]) deserialize(rawMessage);
-               //System.out.println("Server got message with " + message.length + " bytes from " + ch);
-               //helperProposer.pendingMessages.add(message);
                helperProposer.pendingMessages.add(rawMessage);
             }
             buf.compact();

@@ -19,7 +19,7 @@ public class URPAgentLearner implements Runnable {
    }
 
    @Override
-   public void run() {
+   public void run() {      
       if (paxos.getLearner() == null) {
          return; // not a learner
       }
@@ -30,7 +30,7 @@ public class URPAgentLearner implements Runnable {
                d.getValue().getValue();
                // TODO: check if the localgroup of the mcagent is actually
                // a true destination for this message
-            }
+            }            
          } catch (InterruptedException e) {
             logger.error(e);
             System.exit(0);

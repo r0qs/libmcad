@@ -41,23 +41,24 @@ public class URPMcastAgent implements MulticastAgent {
       Collections.sort(groups, new Comparator<Group> () {
          @Override
          public int compare(Group g1, Group g2) {
-           return g2.getId() - g1.getId();
+           return g1.getId() - g2.getId();
          }
       });
       //=================================
       
+      System.out.println("about to call recursive mapping with groups in " + groups);
       recursivelyMapAllGroupCombinations(groups, new ArrayList<Group>(), -1, false, 0);
 
    }
    
-   void recursivelyMapAllGroupCombinations (ArrayList<Group> all, ArrayList<Group> destsPrevious, int curId, boolean present, long hash) {
+   void recursivelyMapAllGroupCombinations (ArrayList<Group> all, ArrayList<Group> destsPrevious, int curId, boolean curGroupIsPresent, long hash) {
       if (all.isEmpty()) return;
       
       ArrayList<Group> destinations = new ArrayList<Group>(destsPrevious);
       
       Group curGroup = Group.getGroup(curId);
       
-      if (present && curGroup != null) {
+      if (curGroupIsPresent && curGroup != null) {
          destinations.add(curGroup);
          hash += (long) Math.pow(2, curId);
       }
@@ -88,20 +89,23 @@ public class URPMcastAgent implements MulticastAgent {
          Collections.sort(candidates, new Comparator<URPRingData> () {
             @Override
             public int compare(URPRingData r1, URPRingData r2) {
-               return r2.destinationGroups.size() - r1.destinationGroups.size();
+               return r1.destinationGroups.size() - r2.destinationGroups.size();
             }            
          });
          
          // getting the best candidate ring (i.e., that with the least number of associated groups)
          // and indexing it for this set of destinations
          URPRingData bestCandidateRing = candidates.get(0);
-         mappingGroupsToRings.put(hash, bestCandidateRing);         
+         mappingGroupsToRings.put(hash, bestCandidateRing);
+         
+         System.out.println("Added mapping of destination set " + destinations +
+               " (with hash " + hash + ") to ring " + bestCandidateRing.getId());
          
       }
       else {
-         // hash + 2 ^ pos
+         // hash became : hash + 2 ^ curId
          recursivelyMapAllGroupCombinations(all, destinations, curId + 1, true , hash);
-         // hash
+         // hash unchanged
          recursivelyMapAllGroupCombinations(all, destinations, curId + 1, false, hash);
       }
    }
@@ -145,7 +149,6 @@ public class URPMcastAgent implements MulticastAgent {
 
    @Override
    public void multicast(ArrayList<Group> destinations, byte [] message) {
-      URPRingData destinationRing = retrieveMappedRing(destinations);
       int messageLength = 4 + 4 + 4*destinations.size() + message.length;
       ByteBuffer extMsg = ByteBuffer.allocate(messageLength);
       extMsg.putInt(messageLength - 4); // length doesn't include header
@@ -153,6 +156,8 @@ public class URPMcastAgent implements MulticastAgent {
       for (Group g : destinations)
          extMsg.putInt(g.getId());
       extMsg.put(message);
+      
+      URPRingData destinationRing = retrieveMappedRing(destinations);
       sendToRing(destinationRing, extMsg);
    }
    
@@ -271,13 +276,15 @@ public class URPMcastAgent implements MulticastAgent {
             
             while (it_destGroup.hasNext()) {
                long destGroupId = (Long) it_destGroup.next();
-               URPGroup destGroup= (URPGroup) URPGroup.getOrCreateGroup((int) destGroupId);
+               URPGroup destGroup= (URPGroup) URPGroup.getGroup((int) destGroupId);
                ringData.addDestinationGroup(destGroup);
                destGroup.addAssociatedRing(ringData);
             }
                         
             System.out.println("Done creating ringdata for ring " + ringData.getId());
          }
+         
+         
          
          // ===========================================
          // Mapping destination sets do rings
@@ -287,9 +294,9 @@ public class URPMcastAgent implements MulticastAgent {
          
          
          // ===========================================
-         // Checking helper nodes
+         // Checking ring nodes
          
-         JSONArray nodesArray = (JSONArray) commonConfig.get("helper_nodes");         
+         JSONArray nodesArray = (JSONArray) commonConfig.get("ring_nodes");         
          Iterator<Object> it_node = nodesArray.iterator();
 
          while (it_node.hasNext()) {
@@ -330,7 +337,6 @@ public class URPMcastAgent implements MulticastAgent {
          
          // ===========================================
          // Connect to all ring coordinators
-         
          for (URPRingData ring : URPRingData.ringsList)
             ring.connectToCoordinator();
          
@@ -340,7 +346,7 @@ public class URPMcastAgent implements MulticastAgent {
          // Creating the learner in all relevant rings
          
          if (hasLocalGroup) {
-            URPGroup localGroup = (URPGroup) Group.getGroup((int)localGroupId);
+            URPGroup localGroup = (URPGroup) Group.getGroup((int) localGroupId);
             
             // ----------------------------------------------
             // creating zoo_host string in the format ip:port
@@ -348,7 +354,7 @@ public class URPMcastAgent implements MulticastAgent {
             JSONObject zoo_data = (JSONObject) commonConfig.get("zookeeper");
             zoo_host  = (String) zoo_data.get("location");
             zoo_host += ":";
-            zoo_host += ((Long)  zoo_data.get("port")).toString();
+            zoo_host += ((Long) zoo_data.get("port")).toString();
             System.out.println("Setting zoo_host as " + zoo_host);
 
             // ----------------------------------------------
@@ -360,6 +366,7 @@ public class URPMcastAgent implements MulticastAgent {
                ArrayList<PaxosRole> pxRoleList = new ArrayList<PaxosRole>();
                pxRoleList.add(PaxosRole.Learner);
                localURPaxosRings.add(new RingDescription(ringId, nodeId, pxRoleList));
+               System.out.println("Setting local node as learner in ring " + ringData.getId());
             }
             
             // ----------------------------------------------
@@ -367,13 +374,14 @@ public class URPMcastAgent implements MulticastAgent {
             URPaxosNode = new Node(zoo_host, localURPaxosRings);
             URPaxosNode.start();
             
+            
             // attach a learner thread to URPaxosNode to receive the messages from the rings
             urpAgentLearner = new URPAgentLearner(this, URPaxosNode);
          }
          
          
 
-      } catch (IOException | InterruptedException | ParseException | KeeperException e) {
+      } catch (IOException | ParseException | InterruptedException | KeeperException e) {
          e.printStackTrace();
       }      
       
