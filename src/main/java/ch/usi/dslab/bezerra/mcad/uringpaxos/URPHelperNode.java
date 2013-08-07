@@ -2,32 +2,31 @@ package ch.usi.dslab.bezerra.mcad.uringpaxos;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.log4j.Logger;
+import org.apache.zookeeper.KeeperException;
 
 import ch.usi.da.paxos.api.PaxosNode;
-import ch.usi.da.paxos.examples.TTYNode;
+import ch.usi.da.paxos.examples.Util;
+import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
 
 public class URPHelperNode {
    
-   static Logger logger = Logger.getLogger(TTYNode.class);
+   static Logger logger = Logger.getLogger(URPHelperNode.class);
 
    private static class HelperProposer implements Runnable {
       boolean running = true;
@@ -189,10 +188,35 @@ public class URPHelperNode {
 
    public static void main (String args[]) {
       String zoo_host = args[0];
-      String node_str = args[1];      
-      int proposer_port;
-      if (args.length > 2)
-         proposer_port = Integer.parseInt(args[2]);
+      String urpx_str = args[1];
+      boolean isProposer = urpx_str.contains("P");
+      
+      List<RingDescription> ringdesc = Util.parseRingsArgument(urpx_str);
+      
+      final Node ringNode = new Node(zoo_host, ringdesc);
+      
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+         @Override
+         public void run() {
+            try {
+               ringNode.stop();
+            } catch (InterruptedException e) {
+            }
+         }
+      });
+      
+      try {
+         ringNode.start();
+      } catch (IOException | KeeperException | InterruptedException e) {
+         e.printStackTrace();
+         System.exit(1);
+      }
+      
+      if (isProposer) {
+         System.out.println("arguments: " + args[0] + " " + args[1] + " " + args[2]);
+         int proposer_port = Integer.parseInt(args[2]);
+         HelperProposer hp = new HelperProposer(ringNode, proposer_port);
+      }
       
    }
 }

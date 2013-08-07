@@ -359,6 +359,7 @@ public class URPMcastAgent implements MulticastAgent {
 
             // ----------------------------------------------
             // creating list of ringdescriptors
+            // (just for this learner (server); other ring nodes also have to parse their urp string)
             List<RingDescription> localURPaxosRings = new ArrayList<RingDescription>();
             for (URPRingData ringData : localGroup.associatedRings) {
                int ringId = ringData.getId();

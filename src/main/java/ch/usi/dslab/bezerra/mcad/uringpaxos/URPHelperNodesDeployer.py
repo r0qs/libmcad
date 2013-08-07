@@ -36,12 +36,24 @@ for node in config["ring_nodes"] :
         if "proposer" in ring["roles"] : nodestring += "P"
     
     node_location = node["node_location"]
-    command_string = "ssh " + node_location + " (path to URPHelperNode class) " + zookeeper_server_address  + " " + nodestring
+    class_path = "-cp $CLASSPATH"
+    class_path += ":$HOME/libmcad/bin/"
+    #class_path += ":$HOME/software/java_libs/log4j-1.2.15.jar"
+    #class_path += ":$HOME/software/java_libs/zookeeper-3.3.1.jar"
+    class_path += ":$HOME/software/java_libs/*"
+    class_path += ":$HOME/repositories/academic/leandro_urp/target/build/Paxos-trunk/lib/*"
+    node_path = "ch.usi.dslab.bezerra.mcad.uringpaxos.URPHelperNode"
+    
+    java_string = "java " + class_path + " " + node_path
+    command_string = "xterm -geometry 120x20+0+0 -e ssh " + node_location + " " + java_string + " " + zookeeper_server_address  + " " + nodestring
     
     if "proposer" in ring["roles"] : command_string += " " + str(ring["proposer_port"])
     
-    print(command_string)
-#     os.system(command_string)
+    command_string += " &"
+    
+    
+    print("=== EXECUTING: " + command_string)
+    os.system(command_string)
 
 
 
