@@ -3,6 +3,7 @@ package ch.usi.dslab.bezerra.mcad.uringpaxos;
 import org.apache.log4j.Logger;
 
 import ch.usi.da.paxos.api.PaxosNode;
+import ch.usi.da.paxos.message.Value;
 import ch.usi.da.paxos.storage.Decision;
 
 public class URPAgentLearner implements Runnable {
@@ -25,11 +26,12 @@ public class URPAgentLearner implements Runnable {
       }
       while (true) {
          try {
-            Decision d = paxos.getLearner().getDecisions().take();
-            if (!d.isSkip()) {
-               d.getValue().getValue();
-               // TODO: check if the localgroup of the mcagent is actually
-               // a true destination for this message
+//            Decision d = paxos.getLearner().getDecisions().take();
+            Value v = paxos.getLearner().getDecisions().take().getValue();
+            if (!v.isSkip()) {
+               byte[] msg = v.getValue();
+               if (mcAgent.checkMessageDestinations(msg))
+                  mcAgent.deliveryQueue.add(msg);
             }            
          } catch (InterruptedException e) {
             logger.error(e);

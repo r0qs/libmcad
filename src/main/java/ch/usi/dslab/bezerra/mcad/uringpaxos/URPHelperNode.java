@@ -194,19 +194,17 @@ public class URPHelperNode {
       List<RingDescription> ringdesc = Util.parseRingsArgument(urpx_str);
       
       final Node ringNode = new Node(zoo_host, ringdesc);
-      
-      Runtime.getRuntime().addShutdownHook(new Thread() {
-         @Override
-         public void run() {
-            try {
-               ringNode.stop();
-            } catch (InterruptedException e) {
-            }
-         }
-      });
-      
       try {
          ringNode.start();
+         Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+               try {
+                  ringNode.stop();
+               } catch (InterruptedException e) {
+               }
+            }
+         });
       } catch (IOException | KeeperException | InterruptedException e) {
          e.printStackTrace();
          System.exit(1);

@@ -9,6 +9,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.zookeeper.KeeperException;
 import org.json.simple.JSONArray;
@@ -16,8 +18,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import ch.usi.da.paxos.api.PaxosRole;
 import ch.usi.da.paxos.ring.Node;
-import ch.usi.da.paxos.ring.PaxosRole;
 import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
@@ -27,8 +29,10 @@ public class URPMcastAgent implements MulticastAgent {
    URPGroup localGroup = null;
    URPAgentLearner urpAgentLearner;
    HashMap<Long, URPRingData> mappingGroupsToRings;
+   BlockingQueue<byte[]> deliveryQueue;
    
    public URPMcastAgent (String configFile) {
+      deliveryQueue = new LinkedBlockingQueue<byte[]>();
       loadURPAgentConfig(configFile);
    }
    
@@ -112,12 +116,20 @@ public class URPMcastAgent implements MulticastAgent {
    
    long hashDestinationSet(ArrayList<Group> destinations) {
       long hash = 0;
-      
       for (Group g : destinations) {
          hash += (long) Math.pow(2, g.getId());
       }
-      
       return hash;
+   }
+   
+   boolean checkMessageDestinations(byte[] msg) {
+      ByteBuffer mb = ByteBuffer.wrap(msg);
+      int ndests = mb.getInt();
+      for (int i = 0 ; i < ndests && mb.hasRemaining() ; i++)
+         if (mb.getInt() == this.localGroup.getId())
+            return true;
+      
+      return false;
    }
    
    URPRingData retrieveMappedRing(ArrayList<Group> destinations) {
@@ -134,7 +146,7 @@ public class URPMcastAgent implements MulticastAgent {
    
    private void sendToRing(URPRingData ring, ByteBuffer message) {
       try {
-         message.flip();      
+         message.flip();
          while(message.hasRemaining())
             ring.coordinatorConnection.write(message);
       }
@@ -170,8 +182,14 @@ public class URPMcastAgent implements MulticastAgent {
 
    @Override
    public byte [] deliver() {
-      // TODO Auto-generated method stub
-      return null;
+      byte[] msg = null; 
+      try {
+         msg = deliveryQueue.take();
+      }
+      catch (InterruptedException e) {
+         e.printStackTrace();
+      }
+      return msg;
    }
    
    // to translate from Group (.id) to whatever this implementation uses to represent a group
@@ -214,18 +232,13 @@ public class URPMcastAgent implements MulticastAgent {
          Object     nodeObj    = parser.parse(new FileReader(filename));
          JSONObject nodeConfig = (JSONObject) nodeObj;
                   
-         String       nodeType = (String) nodeConfig.get("node_type");
-         boolean      hasLocalGroup = false;
-         long         localNodeId = -1;
-         long         localGroupId = -1; 
+         boolean hasLocalGroup = (Boolean) nodeConfig.get("localnode_in_group");
+         long      localNodeId = -1;
+         long     localGroupId = -1; 
          
-         if (nodeType.equals("server")) {
-            hasLocalGroup = true;
+         if (hasLocalGroup) {            
             localNodeId   = (Long) nodeConfig.get("localnode_id");
             localGroupId  = (Long) nodeConfig.get("localnode_group_id");
-         }
-         else if (nodeType.equals("client")) {
-            hasLocalGroup = false;
          }
          
          String commonConfigFileName = (String) nodeConfig.get("common_config_file");
@@ -359,7 +372,7 @@ public class URPMcastAgent implements MulticastAgent {
 
             // ----------------------------------------------
             // creating list of ringdescriptors
-            // (just for this learner (server); other ring nodes also have to parse their urp string)
+            // (just for this learner; other ring nodes also have to parse their urp string)
             List<RingDescription> localURPaxosRings = new ArrayList<RingDescription>();
             for (URPRingData ringData : localGroup.associatedRings) {
                int ringId = ringData.getId();
@@ -372,9 +385,17 @@ public class URPMcastAgent implements MulticastAgent {
             
             // ----------------------------------------------
             // Creating Paxos node from list of ring descriptors
-            URPaxosNode = new Node(zoo_host, localURPaxosRings);
+            URPaxosNode = new Node(zoo_host, localURPaxosRings);            
             URPaxosNode.start();
-            
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+               @Override
+               public void run() {
+                  try {
+                     URPaxosNode.stop();
+                  } catch (InterruptedException e) {
+                  }
+               }
+            });
             
             // attach a learner thread to URPaxosNode to receive the messages from the rings
             urpAgentLearner = new URPAgentLearner(this, URPaxosNode);
@@ -384,6 +405,7 @@ public class URPMcastAgent implements MulticastAgent {
 
       } catch (IOException | ParseException | InterruptedException | KeeperException e) {
          e.printStackTrace();
+         System.exit(1);
       }      
       
    }
