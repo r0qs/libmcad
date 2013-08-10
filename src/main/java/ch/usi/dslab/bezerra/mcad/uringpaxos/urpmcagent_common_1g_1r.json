@@ -1,0 +1,54 @@
+{
+  "agent_class" : "URPMcastAgent" ,
+  
+  "groups" :
+  [
+    {
+      "group_id" : 1
+    }
+  ] ,
+  
+  "zookeeper" :
+  {
+    "location" : "localhost" ,
+    "port" : 2181,
+    "path" : "$HOME/zoo/bin/zkServer.sh"
+  } ,
+  
+  
+  "rings" :
+  [
+    {
+      "ring_id" : 1 ,
+      "destination_groups" : [1]
+    }
+  ] ,
+  
+  "ring_nodes" :
+  [
+    {
+      "node_id" : 11 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring_id" : 1 , "roles" : ["acceptor", "proposer"], "proposer_port" : 50001 }
+      ]
+    } ,
+    {
+      "node_id" : 12 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring_id" : 1 , "roles" : ["acceptor"] }
+      ]
+    } ,      
+    {
+      "node_id" : 13 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring_id" : 1 , "roles" : ["acceptor"] }
+      ]
+    }
+  ]
+}
