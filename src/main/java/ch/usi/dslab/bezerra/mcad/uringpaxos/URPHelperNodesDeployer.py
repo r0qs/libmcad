@@ -6,6 +6,7 @@ import os
 import sys
 import json
 from pprint import pprint
+from time import sleep
 
 system_config_file = sys.argv[1]
 
@@ -38,10 +39,8 @@ for node in config["ring_nodes"] :
     node_location = node["node_location"]
     class_path = "-cp $CLASSPATH"
     class_path += ":$HOME/libmcad/bin/"
-    #class_path += ":$HOME/software/java_libs/log4j-1.2.15.jar"
-    #class_path += ":$HOME/software/java_libs/zookeeper-3.3.1.jar"
     class_path += ":$HOME/software/java_libs/*"
-    class_path += ":$HOME/repositories/academic/leandro_urp/target/build/Paxos-trunk/lib/*"
+    class_path += ":$HOME/uringpaxos/target/build/Paxos-trunk/lib/*"
     node_path = "ch.usi.dslab.bezerra.mcad.uringpaxos.URPHelperNode"
     
     java_string = "java " + class_path + " " + node_path
@@ -54,6 +53,9 @@ for node in config["ring_nodes"] :
     
     print("=== EXECUTING: " + command_string)
     os.system(command_string)
+    
+    #os.system("sleep 1")
+    sleep(0.2)
 
 
 

@@ -18,7 +18,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import ch.usi.da.paxos.api.PaxosRole;
+//import ch.usi.da.paxos.api.PaxosRole;
+import ch.usi.da.paxos.ring.PaxosRole;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.mcad.Group;
@@ -123,11 +124,16 @@ public class URPMcastAgent implements MulticastAgent {
    }
    
    boolean checkMessageDestinations(byte[] msg) {
+      System.out.println("URPMCAgent: received msg (+ destlist) length: " + msg.length);
       ByteBuffer mb = ByteBuffer.wrap(msg);
       int ndests = mb.getInt();
-      for (int i = 0 ; i < ndests && mb.hasRemaining() ; i++)
-         if (mb.getInt() == this.localGroup.getId())
+      System.out.println("# of Destinations: " + ndests);
+      for (int i = 0 ; i < ndests && mb.hasRemaining() ; i++) {
+         int dest = mb.getInt();
+         System.out.println("   destination: group " + dest);
+         if (dest == this.localGroup.getId())
             return true;
+      }
       
       return false;
    }
@@ -168,6 +174,8 @@ public class URPMcastAgent implements MulticastAgent {
       for (Group g : destinations)
          extMsg.putInt(g.getId());
       extMsg.put(message);
+      
+      System.out.println("URPMCAgent: sending msg (+ destlist) length: " + (messageLength - 4));
       
       URPRingData destinationRing = retrieveMappedRing(destinations);
       sendToRing(destinationRing, extMsg);
@@ -360,6 +368,7 @@ public class URPMcastAgent implements MulticastAgent {
          
          if (hasLocalGroup) {
             URPGroup localGroup = (URPGroup) Group.getGroup((int) localGroupId);
+            setLocalGroup(localGroup);
             
             // ----------------------------------------------
             // creating zoo_host string in the format ip:port

@@ -43,6 +43,10 @@ public class URPHelperNode {
          helperProposerThread = new Thread(this);
          helperProposerThread.start();
       }
+      
+      public void stop() {
+         running = false;
+      }
 
       @Override
       public void run() {
@@ -50,11 +54,17 @@ public class URPHelperNode {
             while (running) {
                byte[] proposal = pendingMessages.take();
                
+               System.out.println("URPHelperProposer: proposing msg (+ destlist) length: " + proposal.length);
+               
+               String msg = new String(proposal, 8, proposal.length - 8);
+               System.out.println("  |---> proposed message: " + msg);
+               
                // The following 3 lines propose the _proposal_ in all rings this
                // node is a proposer in. However, the urpmcadaptor has a single,
                // different HelperProposer (coordinator) for each ring.
-               for (RingDescription ring : paxos.getRings()) {
-                     paxos.getProposer(ring.getRingID()).propose(proposal);
+               for (RingDescription ring : paxos.getRings()) {                    
+                  paxos.getProposer(ring.getRingID()).propose(proposal);
+                  System.out.println("Proposed \"" + msg + "\" on ring " + ring.getRingID());
                }
                
             }
@@ -185,6 +195,28 @@ public class URPHelperNode {
    
    
    
+   private static class HookedObjectsContainer {
+      Node           node;
+      HelperProposer helperProposer;
+      
+      void stopAllHanged() {
+         try {
+            if (helperProposer != null) {
+               System.out.println("Stopping the HelperProposer");
+               helperProposer.stop();
+            }
+            if (node != null) {
+               System.out.println("Stopping the Node");
+               node.stop();
+            }
+         } catch (InterruptedException e) {
+            e.printStackTrace();
+         }
+      }
+   }
+   
+   
+   
 
    public static void main (String args[]) {
       String zoo_host = args[0];
@@ -194,14 +226,30 @@ public class URPHelperNode {
       List<RingDescription> ringdesc = Util.parseRingsArgument(urpx_str);
       
       final Node ringNode = new Node(zoo_host, ringdesc);
+      HelperProposer hp = null;
       try {
          ringNode.start();
+         
+         Util.printRings(ringdesc);
+         
+         if (isProposer) {
+            System.out.println("arguments: " + args[0] + " " + args[1] + " " + args[2]);
+            int proposer_port = Integer.parseInt(args[2]);
+            hp = new HelperProposer(ringNode, proposer_port);
+         }
+         
+         final HookedObjectsContainer hanger = new HookedObjectsContainer();
+         hanger.node = ringNode;
+         hanger.helperProposer = hp;
+         
          Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
+               hanger.stopAllHanged();
                try {
                   ringNode.stop();
                } catch (InterruptedException e) {
+                  e.printStackTrace();
                }
             }
          });
@@ -210,11 +258,7 @@ public class URPHelperNode {
          System.exit(1);
       }
       
-      if (isProposer) {
-         System.out.println("arguments: " + args[0] + " " + args[1] + " " + args[2]);
-         int proposer_port = Integer.parseInt(args[2]);
-         HelperProposer hp = new HelperProposer(ringNode, proposer_port);
-      }
+      
       
    }
 }
