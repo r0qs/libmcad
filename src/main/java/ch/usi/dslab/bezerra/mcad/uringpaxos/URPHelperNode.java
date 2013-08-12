@@ -116,10 +116,11 @@ public class URPHelperNode {
             while (i.hasNext()) {
                SelectionKey key = i.next();
                i.remove();
+               if (!key.isValid())
+                  continue;
                
                // handle new connection
-               if (key.isAcceptable()) {
-               
+               if (key.isAcceptable()) {               
                   SocketChannel mcaster_node = listener.accept();
                   mcaster_node.configureBlocking(false);
                   mcaster_node.socket().setTcpNoDelay(true);
@@ -145,7 +146,14 @@ public class URPHelperNode {
          try {
             SocketChannel ch = (SocketChannel) key.channel();
             ByteBuffer buf = bufferMap.get(ch);
-            ch.read(buf);
+            int readBytes = ch.read(buf);
+       
+            if (readBytes == -1) {
+               bufferMap.remove(ch);
+               ch.close();
+               return;
+            }
+            
             buf.flip();
             while (hasCompleteMessage(buf)) {
                int length = buf.getInt();

@@ -41,8 +41,8 @@ public class URPAgentLearner implements Runnable {
 //            if (!v.isSkip()) {
             if (!d.isSkip()) {
 //               byte[] msg = v.getValue();
-               valuelogger.info("Learner === New valid decision taken!");
-               logger.info     (      "   |> Learned: " + d.getValue() );
+//               valuelogger.info("Learner === New valid decision taken!");
+//               logger.info     (      "   |> Learned: " + d.getValue() );
                byte[] msg = d.getValue().getValue();
                if (mcAgent.checkMessageDestinations(msg))
                   mcAgent.deliveryQueue.add(msg);

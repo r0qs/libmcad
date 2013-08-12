@@ -124,13 +124,13 @@ public class URPMcastAgent implements MulticastAgent {
    }
    
    boolean checkMessageDestinations(byte[] msg) {
-      System.out.println("URPMCAgent: received msg (+ destlist) length: " + msg.length);
+//      System.out.println("URPMCAgent: received msg (+ destlist) length: " + msg.length);
       ByteBuffer mb = ByteBuffer.wrap(msg);
       int ndests = mb.getInt();
-      System.out.println("# of Destinations: " + ndests);
+//      System.out.println("# of Destinations: " + ndests);
       for (int i = 0 ; i < ndests && mb.hasRemaining() ; i++) {
          int dest = mb.getInt();
-         System.out.println("   destination: group " + dest);
+//         System.out.println("   destination: group " + dest);
          if (dest == this.localGroup.getId())
             return true;
       }
@@ -175,7 +175,7 @@ public class URPMcastAgent implements MulticastAgent {
          extMsg.putInt(g.getId());
       extMsg.put(message);
       
-      System.out.println("URPMCAgent: sending msg (+ destlist) length: " + (messageLength - 4));
+//      System.out.println("URPMCAgent: sending msg (+ destlist) length: " + (messageLength - 4));
       
       URPRingData destinationRing = retrieveMappedRing(destinations);
       sendToRing(destinationRing, extMsg);
@@ -421,8 +421,7 @@ public class URPMcastAgent implements MulticastAgent {
 
    @Override
    public Group getLocalGroup() {
-      // TODO Auto-generated method stub
-      return null;
+      return this.localGroup;
    }
    
    public void setLocalGroup(URPGroup g) {
