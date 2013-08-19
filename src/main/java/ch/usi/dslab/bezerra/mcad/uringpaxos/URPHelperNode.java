@@ -238,7 +238,7 @@ public class URPHelperNode {
       try {
          ringNode.start();
          
-         Util.printRings(ringdesc);
+//         Util.printRings(ringdesc);
          
          if (isProposer) {
             System.out.println("arguments: " + args[0] + " " + args[1] + " " + args[2]);
