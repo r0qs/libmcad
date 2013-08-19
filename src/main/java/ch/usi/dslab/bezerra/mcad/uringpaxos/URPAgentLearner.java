@@ -34,20 +34,13 @@ public class URPAgentLearner implements Runnable {
       }
       while (true) {
          try {
-//            valuelogger.info("Learner === Waiting for next decision");
-//            Decision d = paxos.getLearner().getDecisions().take();            
-            Value v = paxos.getLearner().getDecisions().take().getValue();
-            
+            Value v = paxos.getLearner().getDecisions().take().getValue();            
             if (!v.isSkip()) {
-//            if (!d.isSkip()) {
                byte[] msg = v.getValue();
-//               valuelogger.info("Learner === New valid decision taken!");
-//               logger.info     (      "   |> Learned: " + d.getValue() );
-//               byte[] msg = d.getValue().getValue();
                mcAgent.checkMessageAndEnqueue(msg);
-//                  mcAgent.deliveryQueue.add(msg);
             }            
-         } catch (InterruptedException e) {
+         }
+         catch (InterruptedException e) {
             logger.error(e);
             System.exit(0);
          }
