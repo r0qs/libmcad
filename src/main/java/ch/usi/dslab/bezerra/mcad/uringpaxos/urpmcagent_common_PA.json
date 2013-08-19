@@ -1,6 +1,7 @@
 {
   "agent_class" : "URPMcastAgent" ,
   
+  
   "groups" :
   [
     {
@@ -8,11 +9,9 @@
     } ,
     {
       "group_id" : 2
-    } ,
-    {
-      "group_id" : 3
     }
   ] ,
+  
   
   "zookeeper" :
   {
@@ -34,9 +33,10 @@
     } ,
     {
       "ring_id" : 3 ,
-      "destination_groups" : [1,2,3]
+      "destination_groups" : [1,2]
     }
   ] ,
+  
   
   "ring_nodes" :
   [

@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -18,8 +19,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-//import ch.usi.da.paxos.api.PaxosRole;
-import ch.usi.da.paxos.ring.PaxosRole;
+import ch.usi.da.paxos.api.PaxosRole;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.mcad.Group;
@@ -123,19 +123,22 @@ public class URPMcastAgent implements MulticastAgent {
       return hash;
    }
    
-   boolean checkMessageDestinations(byte[] msg) {
-//      System.out.println("URPMCAgent: received msg (+ destlist) length: " + msg.length);
+   boolean checkMessageAndEnqueue(byte[] msg) {
+      boolean localNodeIsDestination = false;
       ByteBuffer mb = ByteBuffer.wrap(msg);
       int ndests = mb.getInt();
-//      System.out.println("# of Destinations: " + ndests);
       for (int i = 0 ; i < ndests && mb.hasRemaining() ; i++) {
          int dest = mb.getInt();
-//         System.out.println("   destination: group " + dest);
          if (dest == this.localGroup.getId())
-            return true;
+            localNodeIsDestination = true;
       }
       
-      return false;
+      if (localNodeIsDestination) {
+         byte[] strippedMsg = Arrays.copyOfRange(msg, 4 + ndests * 4, msg.length);
+         deliveryQueue.add(strippedMsg);
+      }
+      
+      return localNodeIsDestination;
    }
    
    URPRingData retrieveMappedRing(ArrayList<Group> destinations) {
@@ -169,13 +172,11 @@ public class URPMcastAgent implements MulticastAgent {
    public void multicast(ArrayList<Group> destinations, byte [] message) {
       int messageLength = 4 + 4 + 4*destinations.size() + message.length;
       ByteBuffer extMsg = ByteBuffer.allocate(messageLength);
-      extMsg.putInt(messageLength - 4); // length doesn't include header
+      extMsg.putInt(messageLength - 4); // length in first header doesn't include that header's length
       extMsg.putInt(destinations.size());
       for (Group g : destinations)
          extMsg.putInt(g.getId());
       extMsg.put(message);
-      
-//      System.out.println("URPMCAgent: sending msg (+ destlist) length: " + (messageLength - 4));
       
       URPRingData destinationRing = retrieveMappedRing(destinations);
       sendToRing(destinationRing, extMsg);
