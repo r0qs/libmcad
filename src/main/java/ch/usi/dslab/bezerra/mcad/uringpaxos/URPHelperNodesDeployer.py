@@ -37,13 +37,16 @@ for node in config["ring_nodes"] :
         if "proposer" in ring["roles"] : nodestring += "P"
     
     node_location = node["node_location"]
-    class_path = "-cp $CLASSPATH"
-    class_path += ":$HOME/libmcad/bin/"
-    class_path += ":$HOME/software/java_libs/*"
-    class_path += ":$HOME/uringpaxos/target/build/Paxos-trunk/lib/*"
-    node_path = "ch.usi.dslab.bezerra.mcad.uringpaxos.URPHelperNode"
+    library_path = "-Djava.library.path=$HOME/uringpaxos/target/build/Paxos-trunk/lib"
     
-    java_string = "java " + class_path + " " + node_path
+    class_path   = "-cp $CLASSPATH"
+    class_path  += ":$HOME/libmcad/bin/"
+    class_path  += ":$HOME/software/java_libs/*"
+    class_path  += ":$HOME/uringpaxos/target/build/Paxos-trunk/lib/*"
+    
+    node_path    = "ch.usi.dslab.bezerra.mcad.uringpaxos.URPHelperNode"
+    
+    java_string  = "java " + library_path + " " + class_path + " " + node_path
     command_string = "xterm -geometry 120x20+0+0 -e ssh " + node_location + " " + java_string + " " + zookeeper_server_address  + " " + nodestring
     
     if "proposer" in ring["roles"] : command_string += " " + str(ring["proposer_port"])
@@ -55,7 +58,7 @@ for node in config["ring_nodes"] :
     os.system(command_string)
     
     #os.system("sleep 1")
-    sleep(0.2)
+    sleep(0.5)
 
 
 
