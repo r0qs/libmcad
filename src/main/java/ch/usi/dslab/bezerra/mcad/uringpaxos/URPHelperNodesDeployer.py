@@ -58,7 +58,7 @@ for node in config["ring_nodes"] :
     os.system(command_string)
     
     #os.system("sleep 1")
-    sleep(0.5)
+    #sleep(0.2)
 
 
 
