@@ -13,11 +13,19 @@ public class Message {
    ArrayList<Object> contents;
 
    int next = 0;
-
+   
    public Message(Object... objs) {
       contents = new ArrayList<Object>(objs.length);
-      for (Object o : objs)
-         contents.add(o);
+      addItems(objs);
+   }
+   
+   public void addItems(Object... objs) {
+      for (Object o : objs) {
+         if (o instanceof Object[])
+            addItems((Object[]) o);
+         else
+            contents.add(o);
+      }
    }
    
    public boolean hasNext() {
