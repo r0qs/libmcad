@@ -19,6 +19,10 @@ public class Message {
       for (Object o : objs)
          contents.add(o);
    }
+   
+   public boolean hasNext() {
+      return next < contents.size();
+   }
 
    public Object getNext() {
       return get(next++);
