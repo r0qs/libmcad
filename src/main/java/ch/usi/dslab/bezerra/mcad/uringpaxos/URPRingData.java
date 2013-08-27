@@ -5,8 +5,11 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
 public class URPRingData {
    static ArrayList<URPRingData> ringsList;
+   private final static Logger log = Logger.getLogger(URPRingData.class);
    
    ArrayList<URPGroup> destinationGroups;
    
@@ -43,7 +46,8 @@ public class URPRingData {
          coordinatorConnection = SocketChannel.open();
          coordinatorConnection.connect(new InetSocketAddress(coordinatorAddress, coordinatorPort));
       } catch (IOException e) {
-         e.printStackTrace();
+         log.fatal(" !!! Couldn't connect to ring " + this.ringId);
+         System.exit(1);
       }
       
    }
