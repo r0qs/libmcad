@@ -45,6 +45,7 @@ for node in config["ring_nodes"] :
     
     class_path   = "-cp $CLASSPATH"
     class_path  += ":$HOME/libmcad/bin/"
+    class_path  += ":$HOME/libmcad/jars/*"
     class_path  += ":$HOME/software/java_libs/*"
     class_path  += ":$HOME/uringpaxos/target/build/Paxos-trunk/lib/*"
     
