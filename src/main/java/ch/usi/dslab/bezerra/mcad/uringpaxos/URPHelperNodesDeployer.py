@@ -9,6 +9,9 @@ from pprint import pprint
 from time import sleep
 
 system_config_file = sys.argv[1]
+xterm = False
+if sys.argv[2] == "x" :
+    xterm = True
 
 print("Deploying system helper nodes described in " + system_config_file)
 
@@ -47,7 +50,12 @@ for node in config["ring_nodes"] :
     node_path    = "ch.usi.dslab.bezerra.mcad.uringpaxos.URPHelperNode"
     
     java_string  = "java " + library_path + " " + class_path + " " + node_path
-    command_string = "xterm -geometry 120x20+0+0 -e ssh " + node_location + " " + java_string + " " + zookeeper_server_address  + " " + nodestring
+    
+    command_string = ""
+    if (xterm == True) :
+        command_string = "xterm -geometry 120x20+0+0 -e "
+        
+    command_string += "ssh " + node_location + " " + java_string + " " + zookeeper_server_address  + " " + nodestring
     
     if "proposer" in ring["roles"] : command_string += " " + str(ring["proposer_port"])
     

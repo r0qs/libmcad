@@ -7,9 +7,12 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Message {
+public class Message implements Serializable {
+   private static final long serialVersionUID = 4104839889665917909L;
+
    ArrayList<Object> contents;
 
    int next = 0;
