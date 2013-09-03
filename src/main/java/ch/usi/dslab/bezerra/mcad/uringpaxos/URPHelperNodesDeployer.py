@@ -10,8 +10,9 @@ from time import sleep
 
 system_config_file = sys.argv[1]
 xterm = False
-if sys.argv[2] == "x" :
-    xterm = True
+if len(sys.argv) > 2 :
+    if sys.argv[2] == "x" :
+        xterm = True
 
 print("Deploying system helper nodes described in " + system_config_file)
 
