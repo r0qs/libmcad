@@ -1,6 +1,9 @@
 # This script initiates the helper nodes, that is, the URingPaxos Infrastructure:
 # All rings, each with its proposer (coordinator) and its acceptors
 # (probably they should be proposers themselves too, in case the leader crashes)
+#
+# This script already cleans up the zookeeper persistent/ephemeral nodes
+# and the acceptors' log from BDB
 
 import os
 import sys
@@ -27,11 +30,21 @@ zookeeper_server_location = config["zookeeper"]["location"]
 zookeeper_server_port = str(config["zookeeper"]["port"])
 zookeeper_path = config["zookeeper"]["path"]
 zookeeper_server_address  = zookeeper_server_location + ":" + zookeeper_server_port
+zookeeper_client_path = os.path.dirname(zookeeper_path) + "/zkCli.sh"
 
+# kill the ring(s) (non-learner nodes)
+for node in config["ring_nodes"] :
+    node_location = node["node_location"]
+    os.system("ssh " + node_location + " \"killall -9 java ; rm -rf /tmp/ringpaxos-db\"")
+
+# URPMCad uses a single zookeeper server, for rendezvous purposes only
+# start 
 print("[re]starting zookeeper server at " + zookeeper_server_address)
 os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " start")
+os.system("ssh " + zookeeper_server_location + " " + zookeeper_client_path + " rmr /ringpaxos")
 
 for node in config["ring_nodes"] :
+    sleep(1)
     nodestring = ""    
     for ring in node["node_rings"] :
         if len(nodestring) > 0 : nodestring += ";"
@@ -45,7 +58,7 @@ for node in config["ring_nodes"] :
     
     class_path   = "-cp $CLASSPATH"
     class_path  += ":$HOME/libmcad/bin/"
-    class_path  += ":$HOME/libmcad/jars/*"
+#   class_path  += ":$HOME/libmcad/jars/*"
     class_path  += ":$HOME/software/java_libs/*"
     class_path  += ":$HOME/uringpaxos/target/build/Paxos-trunk/lib/*"
     
@@ -65,6 +78,7 @@ for node in config["ring_nodes"] :
     
     
     print("=== EXECUTING: " + command_string)
+    # delete the acceptor's disk backup    
     os.system(command_string)
     
     #os.system("sleep 1")
