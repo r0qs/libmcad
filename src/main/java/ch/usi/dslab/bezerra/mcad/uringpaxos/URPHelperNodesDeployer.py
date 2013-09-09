@@ -54,18 +54,24 @@ for node in config["ring_nodes"] :
         if "proposer" in ring["roles"] : nodestring += "P"
     
     node_location = node["node_location"]
-    library_path = "-Djava.library.path=$HOME/uringpaxos/target/build/Paxos-trunk/lib"
+    #library_path = "-Djava.library.path=$HOME/uringpaxos/target/build/Paxos-trunk/lib"
     
     class_path   = "-cp $CLASSPATH"
-    class_path  += ":$HOME/libmcad/bin/"
-#   class_path  += ":$HOME/libmcad/jars/*"
+    # new claspath
+    class_path  += ":$HOME/libmcad/target/libmcad-1.jar"    
     class_path  += ":$HOME/software/java_libs/*"
+    class_path  += ":$HOME/uringpaxos/target/paxos-trunk.jar"
     class_path  += ":$HOME/uringpaxos/target/build/Paxos-trunk/lib/*"
+    # old classpath
+    #class_path  += ":$HOME/libmcad/bin/"
+    #class_path  += ":$HOME/software/java_libs/*"
+    #class_path  += ":$HOME/uringpaxos/target/build/Paxos-trunk/lib/*"
     
     node_path    = "ch.usi.dslab.bezerra.mcad.uringpaxos.URPHelperNode"
     
-    java_string  = "java " + library_path + " " + class_path + " " + node_path
-    
+    #java_string  = "java " + library_path + " " + class_path + " " + node_path
+    java_string  = "java " + class_path + " " + node_path
+        
     command_string = ""
     if (xterm == True) :
         command_string = "xterm -geometry 120x20+0+0 -e "
