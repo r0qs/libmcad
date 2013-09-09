@@ -38,7 +38,7 @@ for node in config["ring_nodes"] :
     os.system("ssh " + node_location + " \"killall -9 java ; rm -rf /tmp/ringpaxos-db\"")
 
 # URPMCad uses a single zookeeper server, for rendezvous purposes only
-# start 
+# start zkserver standalone for urpaxos
 print("[re]starting zookeeper server at " + zookeeper_server_address)
 os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " start")
 os.system("ssh " + zookeeper_server_location + " " + zookeeper_client_path + " rmr /ringpaxos")
