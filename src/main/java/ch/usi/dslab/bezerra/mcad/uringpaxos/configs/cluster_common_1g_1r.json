@@ -10,7 +10,7 @@
   
   "zookeeper" :
   {
-    "location" : "node64" ,
+    "location" : "node68" ,
     "port" : 2181,
     "path" : "$HOME/zoo/bin/zkServer.sh"
   } ,
@@ -28,7 +28,7 @@
   [
     {
       "node_id" : 11 ,
-      "node_location" : "node62" ,
+      "node_location" : "node69" ,
       "node_rings" :
       [
         { "ring_id" : 1 , "roles" : ["acceptor", "proposer"], "proposer_port" : 50001 }
@@ -36,7 +36,7 @@
     } ,
     {
       "node_id" : 12 ,
-      "node_location" : "node63" ,
+      "node_location" : "node70" ,
       "node_rings" :
       [
         { "ring_id" : 1 , "roles" : ["acceptor"] }
@@ -44,7 +44,7 @@
     } ,      
     {
       "node_id" : 13 ,
-      "node_location" : "node64" ,
+      "node_location" : "node71" ,
       "node_rings" :
       [
         { "ring_id" : 1 , "roles" : ["acceptor"] }
