@@ -1,0 +1,7 @@
+{
+  "agent_class"        : "URPMcastAgent" ,
+  "localnode_in_group" : true ,
+  "localnode_id"       : 1 ,
+  "localnode_group_id" : 1 ,
+  "common_config_file" : "/home/bezerrac/libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/uringpaxos/configs/cluster_common_1g_1r.json"
+}
