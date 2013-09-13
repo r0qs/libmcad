@@ -56,17 +56,17 @@ public class URPHelperNode {
                byte[] proposal = pendingMessages.poll(250, TimeUnit.MILLISECONDS);
                if (proposal == null) continue;
 
-               System.out.println("URPHelperProposer: proposing msg (+ destlist) length: " + proposal.length);
+//               System.out.println("URPHelperProposer: proposing msg (+ destlist) length: " + proposal.length);
 
-               String msg = new String(proposal, 8, proposal.length - 8);
-               System.out.println("  |---> proposed message: " + msg);
+//               String msg = new String(proposal, 8, proposal.length - 8);
+//               System.out.println("  |---> proposed message: " + msg);
 
                // The following 3 lines propose the _proposal_ in all rings this
                // node is a proposer in. However, the urpmcadaptor has a single,
                // different HelperProposer (coordinator) for each ring.
                for (RingDescription ring : paxos.getRings()) {                    
                   paxos.getProposer(ring.getRingID()).propose(proposal);
-                  System.out.println("Proposed \"" + msg + "\" on ring " + ring.getRingID());
+//                  System.out.println("Proposed \"" + msg + "\" on ring " + ring.getRingID());
                }
 
             }
