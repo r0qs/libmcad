@@ -29,7 +29,7 @@ public class MulticastAgentFactory {
     */
    public static MulticastAgent createMulticastAgent(String configFile) {
       try {
-         log.setLevel(Level.INFO);
+         log.setLevel(Level.OFF);
          
          log.info("Parsing the mcagent config file");
          
