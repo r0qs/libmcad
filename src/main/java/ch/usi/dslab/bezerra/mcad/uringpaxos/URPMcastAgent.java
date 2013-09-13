@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.apache.zookeeper.KeeperException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -26,6 +28,7 @@ import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 
 public class URPMcastAgent implements MulticastAgent {
+   public static final Logger log = Logger.getLogger(URPMcastAgent.class);
    Node URPaxosNode = null;
    URPGroup localGroup = null;
    URPAgentLearner urpAgentLearner;
@@ -33,6 +36,7 @@ public class URPMcastAgent implements MulticastAgent {
    BlockingQueue<byte[]> deliveryQueue;
    
    public URPMcastAgent (String configFile) {
+      log.setLevel(Level.OFF);
       deliveryQueue = new LinkedBlockingQueue<byte[]>();
       loadURPAgentConfig(configFile);
    }
@@ -51,7 +55,7 @@ public class URPMcastAgent implements MulticastAgent {
       });
       //=================================
       
-      System.out.println("about to call recursive mapping with groups in " + groups);
+      log.info("about to call recursive mapping with groups in " + groups);
       recursivelyMapAllGroupCombinations(groups, new ArrayList<Group>(), -1, false, 0);
 
    }
@@ -103,7 +107,7 @@ public class URPMcastAgent implements MulticastAgent {
          URPRingData bestCandidateRing = candidates.get(0);
          mappingGroupsToRings.put(hash, bestCandidateRing);
          
-         System.out.println("Added mapping of destination set " + destinations +
+         log.info("Added mapping of destination set " + destinations +
                " (with hash " + hash + ") to ring " + bestCandidateRing.getId());
          
       }
@@ -276,7 +280,7 @@ public class URPMcastAgent implements MulticastAgent {
             
             URPGroup group = (URPGroup) Group.getOrCreateGroup((int) group_id);
             
-            System.out.println("Done creating group " + group.getId());
+            log.info("Done creating group " + group.getId());
          }
          
          
@@ -303,7 +307,7 @@ public class URPMcastAgent implements MulticastAgent {
                destGroup.addAssociatedRing(ringData);
             }
                         
-            System.out.println("Done creating ringdata for ring " + ringData.getId());
+            log.info("Done creating ringdata for ring " + ringData.getId());
          }
          
          
@@ -348,7 +352,7 @@ public class URPMcastAgent implements MulticastAgent {
                   long nodeProposerPort = (Long) jsnodering.get("proposer_port");
                   URPRingData nodeRing  = URPRingData.getById((int) ring_id);
                   nodeRing.setCoordinator(nodeLocation, (int) nodeProposerPort);
-                  System.out.println("Set Ring " + nodeRing.getId() + " to proposer at "
+                  log.info("Set Ring " + nodeRing.getId() + " to proposer at "
                                      + nodeLocation + ":" + nodeProposerPort);
                }
                
@@ -378,7 +382,7 @@ public class URPMcastAgent implements MulticastAgent {
             zoo_host  = (String) zoo_data.get("location");
             zoo_host += ":";
             zoo_host += ((Long) zoo_data.get("port")).toString();
-            System.out.println("Setting zoo_host as " + zoo_host);
+            log.info("Setting zoo_host as " + zoo_host);
 
             // ----------------------------------------------
             // creating list of ringdescriptors
@@ -390,7 +394,7 @@ public class URPMcastAgent implements MulticastAgent {
                ArrayList<PaxosRole> pxRoleList = new ArrayList<PaxosRole>();
                pxRoleList.add(PaxosRole.Learner);
                localURPaxosRings.add(new RingDescription(ringId, nodeId, pxRoleList));
-               System.out.println("Setting local node as learner in ring " + ringData.getId());
+               log.info("Setting local node as learner in ring " + ringData.getId());
             }
             
             // ----------------------------------------------

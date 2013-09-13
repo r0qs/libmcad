@@ -17,6 +17,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.KeeperException;
 
@@ -27,7 +28,7 @@ import ch.usi.da.paxos.ring.RingDescription;
 
 public class URPHelperNode {
    
-   static Logger logger = Logger.getLogger(URPHelperNode.class);
+   public static final Logger log = Logger.getLogger(URPHelperNode.class);
 
    private static class HelperProposer implements Runnable {
       boolean running = true;
@@ -37,6 +38,8 @@ public class URPHelperNode {
       Thread helperProposerThread = null;
 
       public HelperProposer(PaxosNode paxos, int port) {
+         log.setLevel(Level.OFF);
+         
          this.paxos = paxos;
          pendingMessages = new LinkedBlockingQueue<byte[]>();
          selectorListener = new SelectorListener(this, port);
@@ -56,23 +59,22 @@ public class URPHelperNode {
                byte[] proposal = pendingMessages.poll(250, TimeUnit.MILLISECONDS);
                if (proposal == null) continue;
 
-//               System.out.println("URPHelperProposer: proposing msg (+ destlist) length: " + proposal.length);
+               log.info("URPHelperProposer: proposing msg (+ destlist) length: " + proposal.length);
 
 //               String msg = new String(proposal, 8, proposal.length - 8);
-//               System.out.println("  |---> proposed message: " + msg);
+//               lSystem.out.println("  |---> proposed message: " + msg);
 
                // The following 3 lines propose the _proposal_ in all rings this
                // node is a proposer in. However, the urpmcadaptor has a single,
                // different HelperProposer (coordinator) for each ring.
                for (RingDescription ring : paxos.getRings()) {                    
                   paxos.getProposer(ring.getRingID()).propose(proposal);
-//                  System.out.println("Proposed \"" + msg + "\" on ring " + ring.getRingID());
                }
 
             }
             selectorListener.running = false;
          } catch (InterruptedException e) {
-            logger.error(e);
+            log.error(e);
          }
       }
    }
@@ -131,7 +133,7 @@ public class URPHelperNode {
                   mcaster_node.register(selector, SelectionKey.OP_READ);
                   ByteBuffer nodeBuffer = ByteBuffer.allocate(1048576);
                   bufferMap.put(mcaster_node, nodeBuffer);
-                  System.out.println("new mcaster " + mcaster_node);
+                  log.info("new mcaster " + mcaster_node);
                }
 
                // handle new message
@@ -214,11 +216,11 @@ public class URPHelperNode {
       void stopAllHanged() {
          try {
             if (helperProposer != null) {
-               System.out.println("Stopping the HelperProposer");
+               log.info("Stopping the HelperProposer");
                helperProposer.stop();
             }
             if (node != null) {
-               System.out.println("Stopping the Node");
+               log.info("Stopping the Node");
                node.stop();
             }
          } catch (InterruptedException e) {
@@ -243,7 +245,7 @@ public class URPHelperNode {
          ringNode.start();
          
          if (isProposer) {
-            System.out.println("arguments: " + args[0] + " " + args[1] + " " + args[2]);
+            log.info("arguments: " + args[0] + " " + args[1] + " " + args[2]);
             int proposer_port = Integer.parseInt(args[2]);
             hp = new HelperProposer(ringNode, proposer_port);
          }

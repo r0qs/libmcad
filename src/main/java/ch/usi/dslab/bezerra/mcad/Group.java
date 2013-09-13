@@ -5,8 +5,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 @SuppressWarnings("rawtypes")
 public class Group {
+   public static Logger log = Logger.getLogger(Group.class);
+   
    static Class groupImplementationClass = Group.class;
    
    static HashMap<Integer, Group> groupMap;
@@ -47,7 +52,7 @@ public class Group {
          } 
       }
       else {
-         System.out.println("Group " + id + " already exists");
+         log.info("Group " + id + " already exists");
       }
             
       return g;
@@ -56,9 +61,10 @@ public class Group {
    int groupId;
    
    public Group(int id) {
+      log.setLevel(Level.OFF);
       groupId = id;
       if (groupMap.get(id) == null)
-         groupMap.put(id, this);
+         groupMap.put(id, this);      
    }
    
    public int getId() {
