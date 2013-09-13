@@ -1,12 +1,15 @@
 package ch.usi.dslab.bezerra.mcad.uringpaxos;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ch.usi.da.paxos.api.PaxosNode;
 import ch.usi.da.paxos.message.Value;
 import ch.usi.da.paxos.storage.Decision;
+import ch.usi.dslab.bezerra.mcad.MulticastAgentFactory;
 
 public class URPAgentLearner implements Runnable {
+   public static final Logger log = Logger.getLogger(URPAgentLearner.class);
    PaxosNode paxos;
    URPMcastAgent mcAgent;
    Thread urpAgentLearnerThread;
@@ -16,7 +19,7 @@ public class URPAgentLearner implements Runnable {
    static {
       logger      = Logger.getLogger(URPMcastAgent.class);
       valuelogger = Logger.getLogger(Value.class);
-      //logger.setLevel((Level) Level.OFF);
+      log.setLevel(Level.OFF);
    }
 
    public URPAgentLearner(URPMcastAgent mcAgent, PaxosNode paxos) {
@@ -29,7 +32,7 @@ public class URPAgentLearner implements Runnable {
    @Override
    public void run() {      
       if (paxos.getLearner() == null) {
-         System.out.println("EEE === Not a learner");
+         log.error("EEE === Not a learner");
          return; // not a learner
       }
       while (true) {
