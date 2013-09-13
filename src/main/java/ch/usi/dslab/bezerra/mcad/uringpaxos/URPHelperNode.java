@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.KeeperException;
@@ -52,13 +53,14 @@ public class URPHelperNode {
       public void run() {
          try {
             while (running) {
-               byte[] proposal = pendingMessages.take();
-               
+               byte[] proposal = pendingMessages.poll(250, TimeUnit.MILLISECONDS);
+               if (proposal == null) continue;
+
                System.out.println("URPHelperProposer: proposing msg (+ destlist) length: " + proposal.length);
-               
+
                String msg = new String(proposal, 8, proposal.length - 8);
                System.out.println("  |---> proposed message: " + msg);
-               
+
                // The following 3 lines propose the _proposal_ in all rings this
                // node is a proposer in. However, the urpmcadaptor has a single,
                // different HelperProposer (coordinator) for each ring.
@@ -66,7 +68,7 @@ public class URPHelperNode {
                   paxos.getProposer(ring.getRingID()).propose(proposal);
                   System.out.println("Proposed \"" + msg + "\" on ring " + ring.getRingID());
                }
-               
+
             }
             selectorListener.running = false;
          } catch (InterruptedException e) {
@@ -74,7 +76,7 @@ public class URPHelperNode {
          }
       }
    }
-   
+
    private static class SelectorListener implements Runnable {
       boolean running = true;
       Thread selectorListenerThread = null;
@@ -110,7 +112,9 @@ public class URPHelperNode {
       public void run() {
          try {
          while (running) {
-            selector.select();
+            int readyKeys = selector.select(250);
+            if (readyKeys == 0) continue;
+
             Iterator<SelectionKey> i = selector.selectedKeys().iterator();
 
             while (i.hasNext()) {
@@ -238,8 +242,6 @@ public class URPHelperNode {
       try {
          ringNode.start();
          
-//         Util.printRings(ringdesc);
-         
          if (isProposer) {
             System.out.println("arguments: " + args[0] + " " + args[1] + " " + args[2]);
             int proposer_port = Integer.parseInt(args[2]);
@@ -265,8 +267,6 @@ public class URPHelperNode {
          e.printStackTrace();
          System.exit(1);
       }
-      
-      
       
    }
 }
