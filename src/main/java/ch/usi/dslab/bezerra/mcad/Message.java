@@ -12,10 +12,11 @@ import java.util.ArrayList;
 
 public class Message implements Serializable {
    private static final long serialVersionUID = 4104839889665917909L;
-
+   
    ArrayList<Object> contents;
-
    int next = 0;
+   
+   int byteArraysAggregatedLength = 0;
    
    public Message(Object... objs) {
       contents = new ArrayList<Object>(objs.length);
@@ -28,6 +29,12 @@ public class Message implements Serializable {
             addItems((Object[]) o);
          else
             contents.add(o);
+         
+         // counting the total size of added arrays
+         if (o instanceof byte[]) {
+            byteArraysAggregatedLength += ((byte[]) o).length;
+            
+         }
       }
    }
    
@@ -43,6 +50,14 @@ public class Message implements Serializable {
       if (index >= contents.size())
          return null;
       return contents.get(index);
+   }
+   
+   public int count() {
+      return contents.size();
+   }
+   
+   public int getByteArraysAggregatedLength() {
+      return byteArraysAggregatedLength;
    }
 
    public byte[] getBytes() {

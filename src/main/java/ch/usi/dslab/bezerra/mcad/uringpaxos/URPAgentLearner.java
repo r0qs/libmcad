@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import ch.usi.da.paxos.api.PaxosNode;
 import ch.usi.da.paxos.message.Value;
 import ch.usi.da.paxos.storage.Decision;
+import ch.usi.dslab.bezerra.mcad.Message;
 import ch.usi.dslab.bezerra.mcad.MulticastAgentFactory;
 
 public class URPAgentLearner implements Runnable {
@@ -39,8 +40,13 @@ public class URPAgentLearner implements Runnable {
          try {
             Value v = paxos.getLearner().getDecisions().take().getValue();            
             if (!v.isSkip()) {
-               byte[] msg = v.getValue();
-               mcAgent.checkMessageAndEnqueue(msg);
+               byte[] rawBatch = v.getValue();
+               Message batch = Message.createFromBytes(rawBatch);
+               
+               while (batch.hasNext()) {
+                  byte[] msg = (byte []) batch.getNext();
+                  mcAgent.checkMessageAndEnqueue(msg);
+               }               
             }            
          }
          catch (InterruptedException e) {
