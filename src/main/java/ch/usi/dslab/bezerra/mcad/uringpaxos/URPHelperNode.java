@@ -25,6 +25,7 @@ import ch.usi.da.paxos.api.PaxosNode;
 import ch.usi.da.paxos.examples.Util;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
+import ch.usi.dslab.bezerra.mcad.Message;
 
 public class URPHelperNode {
    
@@ -54,21 +55,34 @@ public class URPHelperNode {
 
       @Override
       public void run() {
+         int sizeBatchThreshold = 32000; // 32k, discounting overheads (so it's not 32768)
+         int timeBatchThreshold  = 10;   // 10 milliseconds
+         long lastBatchTime = System.currentTimeMillis();
+         Message batch = new Message();
          try {
             while (running) {
-               byte[] proposal = pendingMessages.poll(250, TimeUnit.MILLISECONDS);
-               if (proposal == null) continue;
+               byte[] proposal = pendingMessages.poll(timeBatchThreshold, TimeUnit.MILLISECONDS);               
+               
+               if (proposal != null)
+                  batch.addItems(proposal);
+               
+               if (batch.count() == 0)
+                  continue;
+               
+               long now = System.currentTimeMillis();
+               long elapsed = now - lastBatchTime;
+               
+               if (elapsed > timeBatchThreshold || batch.getByteArraysAggregatedLength() > sizeBatchThreshold) {
+                  log.info("URPHelperProposer: proposing msg (+ destlist) length: " + batch.getByteArraysAggregatedLength());                  
 
-               log.info("URPHelperProposer: proposing msg (+ destlist) length: " + proposal.length);
-
-//               String msg = new String(proposal, 8, proposal.length - 8);
-//               lSystem.out.println("  |---> proposed message: " + msg);
-
-               // The following 3 lines propose the _proposal_ in all rings this
-               // node is a proposer in. However, the urpmcadaptor has a single,
-               // different HelperProposer (coordinator) for each ring.
-               for (RingDescription ring : paxos.getRings()) {                    
-                  paxos.getProposer(ring.getRingID()).propose(proposal);
+                  // The following 3 lines propose the _proposal_ in all rings this
+                  // node is a proposer in. However, the urpmcadaptor has a single,
+                  // different HelperProposer (coordinator) for each ring.
+                  for (RingDescription ring : paxos.getRings()) {                    
+                     paxos.getProposer(ring.getRingID()).propose(batch.getBytes());
+                  }
+                  batch = new Message();
+                  lastBatchTime = now;
                }
 
             }
