@@ -145,8 +145,8 @@ public class URPHelperNode {
                   mcaster_node.configureBlocking(false);
                   mcaster_node.socket().setTcpNoDelay(true);
                   mcaster_node.register(selector, SelectionKey.OP_READ);
-                  ByteBuffer nodeBuffer = ByteBuffer.allocate(1048576);
-                  bufferMap.put(mcaster_node, nodeBuffer);
+                  ByteBuffer nodeLenBuffer = ByteBuffer.allocate(4);
+                  bufferMap.put(mcaster_node, nodeLenBuffer);
                   log.info("new mcaster " + mcaster_node);
                }
 
@@ -175,7 +175,7 @@ public class URPHelperNode {
             }
             
             buf.flip();
-            while (hasCompleteMessage(buf)) {
+            while (hasCompleteMessage(buf, ch)) {
                int length = buf.getInt();
                byte[] rawMessage = new byte[length];
                buf.get(rawMessage);
@@ -187,7 +187,7 @@ public class URPHelperNode {
          }
       }
       
-      boolean hasCompleteMessage(ByteBuffer buf) {
+      boolean hasCompleteMessage(ByteBuffer buf, SocketChannel ch) {         
          int bytes = buf.limit() - buf.position();
 
          if (bytes < 4)
@@ -195,9 +195,20 @@ public class URPHelperNode {
 
          int length = buf.getInt();
          buf.position(buf.position() - 4);
+         
+         // i'm at the beginning of the buffer
+         if (buf.capacity() < length + 4)
 
-         if (bytes < 4 + length)
+         if (bytes < 4 + length) {
+            if (buf.capacity() < 4 + length) {
+               ByteBuffer longerBuffer = ByteBuffer.allocate(4 + length);
+               longerBuffer.put(buf);
+               longerBuffer.flip();
+               bufferMap.put(ch, longerBuffer);               
+            }
             return false;
+         }
+            
 
          return true;
       }
