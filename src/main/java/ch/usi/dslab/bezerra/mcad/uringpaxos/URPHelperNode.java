@@ -182,34 +182,58 @@ public class URPHelperNode {
                buf.get(rawMessage);
                helperProposer.pendingMessages.add(rawMessage);
             }
+            // absolutely necessary!
             buf.compact();
          } catch (IOException e) {
             e.printStackTrace();
          }
       }
       
+      // pre-condition: position points to the beginning of a message ; limit points to end of read data
+      // pos-condition: the same
       boolean hasCompleteMessage(ByteBuffer buf, SocketChannel ch) {         
-         int bytes = buf.limit() - buf.position();
+         int readBytes = buf.limit() - buf.position();
 
-         if (bytes < 4)
+         if (readBytes < 4) {
+            // message not completely received
+            // maybe buffer is not long enough
+            buf = checkBufferCapacity(ch, buf, 4);
             return false;
+         }
 
          int length = buf.getInt();
          buf.position(buf.position() - 4);
          
          // i'm at the beginning of the buffer
-         if (bytes < 4 + length) {
-            if (buf.capacity() < 4 + length) {
-               ByteBuffer longerBuffer = ByteBuffer.allocate(4 + length);
-               longerBuffer.put(buf);
-               longerBuffer.flip();
-               bufferMap.put(ch, longerBuffer);               
-            }
+         if (readBytes < 4 + length) {
+            buf = checkBufferCapacity(ch, buf, 4);
             return false;
          }
             
 
          return true;
+      }
+      
+      // PRE CONDITION: buf.position() points to the beginning of the message; limit points to end of read data
+      // POSTCONDITION: the same
+      //
+      // needed capacity: the size of the whole message (possibly partially read already)
+      ByteBuffer checkBufferCapacity(SocketChannel ch, ByteBuffer buf, int neededCapacity) {
+         if (buf.capacity() - buf.position() >= neededCapacity)
+            // if buffer has enough space to fit the whole message
+            return buf;         
+         else if (buf.capacity() >= neededCapacity) {
+            buf.compact();
+            buf.flip();
+            return buf;
+         } else {   
+            ByteBuffer longerBuffer = ByteBuffer.allocate(neededCapacity);
+            longerBuffer.put(buf);
+            longerBuffer.flip();
+            bufferMap.put(ch, longerBuffer);
+            
+            return longerBuffer;
+         }
       }
       
       static Object deserialize(byte[] buf) {
