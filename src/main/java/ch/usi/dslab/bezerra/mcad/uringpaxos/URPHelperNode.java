@@ -131,11 +131,11 @@ public class URPHelperNode {
             int readyKeys = selector.select(250);
             if (readyKeys == 0) continue;
 
-            Iterator<SelectionKey> i = selector.selectedKeys().iterator();
+            Iterator<SelectionKey> itKey = selector.selectedKeys().iterator();
 
-            while (i.hasNext()) {
-               SelectionKey key = i.next();
-               i.remove();
+            while (itKey.hasNext()) {
+               SelectionKey key = itKey.next();
+//               i.remove();
                if (!key.isValid())
                   continue;
                
@@ -148,11 +148,14 @@ public class URPHelperNode {
                   ByteBuffer nodeLenBuffer = ByteBuffer.allocate(4);
                   bufferMap.put(mcaster_node, nodeLenBuffer);
                   log.info("new mcaster " + mcaster_node);
+                  itKey.remove();
                }
 
                // handle new message
                if (key.isReadable()) {
-                  processMessage(key);
+                  boolean hadBytes = processMessage(key);
+                  if (!hadBytes)
+                     itKey.remove();
                }
             }
 
@@ -162,16 +165,19 @@ public class URPHelperNode {
          }
       }
       
-      void processMessage(SelectionKey key) {
+      boolean processMessage(SelectionKey key) {
          try {
             SocketChannel ch = (SocketChannel) key.channel();
             ByteBuffer buf = bufferMap.get(ch);
             int readBytes = ch.read(buf);
+            
+            if (readBytes == 0)
+               return false;
        
             if (readBytes == -1) {
                bufferMap.remove(ch);
                ch.close();
-               return;
+               return false;
             }
             
             buf.flip();
@@ -187,6 +193,8 @@ public class URPHelperNode {
          } catch (IOException e) {
             e.printStackTrace();
          }
+         
+         return true;
       }
       
       // pre-condition: position points to the beginning of a message ; limit points to end of read data
@@ -221,12 +229,13 @@ public class URPHelperNode {
       ByteBuffer checkBufferCapacity(SocketChannel ch, ByteBuffer buf, int neededCapacity) {
          if (buf.capacity() - buf.position() >= neededCapacity)
             // if buffer has enough space to fit the whole message
-            return buf;         
+            return buf;
          else if (buf.capacity() >= neededCapacity) {
             buf.compact();
             buf.flip();
             return buf;
-         } else {   
+         }
+         else {   
             ByteBuffer longerBuffer = ByteBuffer.allocate(neededCapacity);
             longerBuffer.put(buf);
             longerBuffer.flip();
