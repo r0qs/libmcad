@@ -176,13 +176,13 @@ public class URPHelperNode {
             
             buf.flip();
             while (hasCompleteMessage(buf, ch)) {
-               buf = bufferMap.get(ch);
                int length = buf.getInt();
                byte[] rawMessage = new byte[length];
                buf.get(rawMessage);
                helperProposer.pendingMessages.add(rawMessage);
             }
             // absolutely necessary!
+            buf = bufferMap.get(ch);
             buf.compact();
          } catch (IOException e) {
             e.printStackTrace();
