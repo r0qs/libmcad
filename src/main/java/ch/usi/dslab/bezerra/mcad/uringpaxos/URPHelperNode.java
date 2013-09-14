@@ -145,7 +145,7 @@ public class URPHelperNode {
                   mcaster_node.configureBlocking(false);
                   mcaster_node.socket().setTcpNoDelay(true);
                   mcaster_node.register(selector, SelectionKey.OP_READ);
-                  ByteBuffer nodeBuffer = ByteBuffer.allocate(1048576);
+                  ByteBuffer nodeBuffer = ByteBuffer.allocate(65536);
                   bufferMap.put(mcaster_node, nodeBuffer);
                   log.info("new mcaster " + mcaster_node);
                }
