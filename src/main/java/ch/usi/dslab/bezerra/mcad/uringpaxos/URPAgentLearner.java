@@ -40,6 +40,7 @@ public class URPAgentLearner implements Runnable {
          try {
             Value v = paxos.getLearner().getDecisions().take().getValue();            
             if (!v.isSkip()) {
+               log.info("urpagentlearner: New multicast messge received");
                byte[] rawBatch = v.getValue();
                Message batch = Message.createFromBytes(rawBatch);
                
