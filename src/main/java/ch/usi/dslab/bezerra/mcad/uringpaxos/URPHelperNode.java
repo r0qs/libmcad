@@ -176,6 +176,7 @@ public class URPHelperNode {
             
             buf.flip();
             while (hasCompleteMessage(buf, ch)) {
+               buf = bufferMap.get(ch);
                int length = buf.getInt();
                byte[] rawMessage = new byte[length];
                buf.get(rawMessage);
