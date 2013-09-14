@@ -20,7 +20,7 @@ public class URPAgentLearner implements Runnable {
    static {
       logger      = Logger.getLogger(URPMcastAgent.class);
       valuelogger = Logger.getLogger(Value.class);
-      log.setLevel(Level.OFF);
+      log.setLevel(Level.INFO);
    }
 
    public URPAgentLearner(URPMcastAgent mcAgent, PaxosNode paxos) {
