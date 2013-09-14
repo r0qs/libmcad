@@ -197,8 +197,6 @@ public class URPHelperNode {
          buf.position(buf.position() - 4);
          
          // i'm at the beginning of the buffer
-         if (buf.capacity() < length + 4)
-
          if (bytes < 4 + length) {
             if (buf.capacity() < 4 + length) {
                ByteBuffer longerBuffer = ByteBuffer.allocate(4 + length);
