@@ -47,6 +47,7 @@ public class URPRingData {
          coordinatorConnection.connect(new InetSocketAddress(coordinatorAddress, coordinatorPort));
       } catch (IOException e) {
          log.fatal(" !!! Couldn't connect to ring " + this.ringId);
+         e.printStackTrace();
          System.exit(1);
       }
       
