@@ -31,13 +31,19 @@
 			<artifactId>json-simple</artifactId>
 			<version>1.1</version>
 		</dependency>
-		
+
 		<dependency>
-      <groupId>ch.usi.da</groupId>
-      <artifactId>paxos</artifactId>
-      <version>trunk</version>
+			<groupId>ch.usi.da</groupId>
+			<artifactId>paxos</artifactId>
+			<version>trunk</version>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>de.ruedigermoeller</groupId>
+			<artifactId>libFST</artifactId>
+			<version>1.22</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>zookeeper</artifactId>
