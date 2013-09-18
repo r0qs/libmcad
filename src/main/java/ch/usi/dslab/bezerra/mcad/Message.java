@@ -10,8 +10,13 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import de.ruedigermoeller.serialization.FSTConfiguration;
+import de.ruedigermoeller.serialization.FSTObjectInput;
+import de.ruedigermoeller.serialization.FSTObjectOutput;
+
 public class Message implements Serializable {
    private static final long serialVersionUID = 4104839889665917909L;
+   static FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
    
    ArrayList<Object> contents;
    int next = 0;
@@ -63,16 +68,17 @@ public class Message implements Serializable {
    public byte[] getBytes() {
       byte[] bytes = null;
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      ObjectOutput out = null;
+      FSTObjectOutput out = null;
       try {
-         out = new ObjectOutputStream(bos);
-         out.writeObject(this);
+         out = conf.getObjectOutput(bos);
+         out.writeObject(this, Message.class);
+         out.flush();
          bytes = bos.toByteArray();
+         bos.close();
       } catch (IOException e) {
          e.printStackTrace();
       } finally {
          try {
-            out.close();
             bos.close();
          } catch (IOException e) {
             e.printStackTrace();
@@ -84,16 +90,16 @@ public class Message implements Serializable {
    public static Message createFromBytes(byte[] bytes) {
       Message msg = null;
       ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-      ObjectInput in = null;
+      FSTObjectInput in = null;
       try {
-         in = new ObjectInputStream(bis);
-         msg = (Message) in.readObject();
-      } catch (IOException | ClassNotFoundException e) {
+         in = conf.getObjectInput(bis);
+         msg = (Message) in.readObject(Message.class);
+         bis.close();
+      } catch (Exception e) {
          e.printStackTrace();
       } finally {
          try {
             bis.close();
-            in.close();
          } catch (IOException e) {
             e.printStackTrace();
          }
