@@ -8,5 +8,7 @@ public interface MulticastAgent {
    public byte [] deliver();
    public Message deliverMessage();
    
+   public boolean isDeserializingToMessage();
+   
    public Group getLocalGroup();
 }
