@@ -25,6 +25,7 @@ import ch.usi.da.paxos.api.PaxosRole;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.mcad.Group;
+import ch.usi.dslab.bezerra.mcad.Message;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 
 public class URPMcastAgent implements MulticastAgent {
@@ -33,11 +34,14 @@ public class URPMcastAgent implements MulticastAgent {
    URPGroup localGroup = null;
    URPAgentLearner urpAgentLearner;
    HashMap<Long, URPRingData> mappingGroupsToRings;
-   BlockingQueue<byte[]> deliveryQueue;
+   BlockingQueue<byte[]> byteArrayDeliveryQueue;
+   BlockingQueue<Message> messageDeliveryQueue;
+   boolean deserializeToMessage = false;
    
    public URPMcastAgent (String configFile) {
       log.setLevel(Level.OFF);
-      deliveryQueue = new LinkedBlockingQueue<byte[]>();
+      byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]> ();
+      messageDeliveryQueue   = new LinkedBlockingQueue<Message>();
       loadURPAgentConfig(configFile);
    }
    
@@ -139,7 +143,13 @@ public class URPMcastAgent implements MulticastAgent {
       
       if (localNodeIsDestination) {
          byte[] strippedMsg = Arrays.copyOfRange(msg, 4 + ndests * 4, msg.length);
-         deliveryQueue.add(strippedMsg);
+         if (deserializeToMessage) {
+            Message deserializedMsg = Message.createFromBytes(strippedMsg);
+            messageDeliveryQueue.add(deserializedMsg);
+         }
+         else {
+            byteArrayDeliveryQueue.add(strippedMsg);
+         }
       }
       
       return localNodeIsDestination;
@@ -195,13 +205,35 @@ public class URPMcastAgent implements MulticastAgent {
 
    @Override
    public byte [] deliver() {
+      if (deserializeToMessage) {
+         log.error("!!! - tried to deliver byte[] when Multicast Agent is configured to deliver Message.");
+         return null;
+      }
+         
       byte[] msg = null; 
       try {
-         msg = deliveryQueue.take();
+         msg = byteArrayDeliveryQueue.take();
       }
       catch (InterruptedException e) {
          e.printStackTrace();
       }
+      return msg;
+   }
+   
+   @Override
+   public Message deliverMessage() {
+      if (!deserializeToMessage) {
+         log.error("!!! - tried to deliver Message when Multicast Agent is configured to deliver byte[].");
+         return null;
+      }
+      
+      Message msg = null;      
+      try {
+         msg = messageDeliveryQueue.take();
+      }
+      catch (InterruptedException e) {
+         e.printStackTrace();
+      }      
       return msg;
    }
    
@@ -270,6 +302,10 @@ public class URPMcastAgent implements MulticastAgent {
          // Creating Groups
          
          Group.changeGroupImplementationClass(URPGroup.class);
+         
+         Boolean deserializeToMessageField = (Boolean) commonConfig.get("deserialize_to_Message");
+         if (deserializeToMessageField != null)
+            deserializeToMessage = deserializeToMessageField;
          
          JSONArray groupsArray = (JSONArray) commonConfig.get("groups");         
          Iterator<Object> it_group = groupsArray.iterator();
