@@ -24,6 +24,10 @@ public class Message implements Serializable {
    
    int byteArraysAggregatedLength = 0;
    
+   public Message() {
+      contents = new ArrayList<Object>();
+   }
+   
    public Message(Object... objs) {
       contents = new ArrayList<Object>(objs.length);
       addItems(objs);
