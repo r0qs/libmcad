@@ -10,13 +10,18 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import de.ruedigermoeller.serialization.FSTConfiguration;
-import de.ruedigermoeller.serialization.FSTObjectInput;
-import de.ruedigermoeller.serialization.FSTObjectOutput;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 public class Message implements Serializable {
    private static final long serialVersionUID = 4104839889665917909L;
-   static FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
+   static Kryo kryo;
+   
+   static {
+      kryo = new Kryo();
+      kryo.register(Message.class);
+   }
    
    ArrayList<Object> contents;
    int next = 0;
@@ -68,10 +73,9 @@ public class Message implements Serializable {
    public byte[] getBytes() {
       byte[] bytes = null;
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      FSTObjectOutput out = null;
+      Output out = new Output(bos);
       try {
-         out = conf.getObjectOutput(bos);
-         out.writeObject(this, Message.class);
+         kryo.writeObject(out, this);
          out.flush();
          bytes = bos.toByteArray();
          bos.close();
@@ -90,15 +94,15 @@ public class Message implements Serializable {
    public static Message createFromBytes(byte[] bytes) {
       Message msg = null;
       ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-      FSTObjectInput in = null;
-      try {
-         in = conf.getObjectInput(bis);
-         msg = (Message) in.readObject(Message.class);
-         bis.close();
+      Input in = new Input(bis);      
+      try {         
+         msg = kryo.readObject(in, Message.class);
+         in.close();
       } catch (Exception e) {
          e.printStackTrace();
       } finally {
          try {
+            in.close();
             bis.close();
          } catch (IOException e) {
             e.printStackTrace();

@@ -39,9 +39,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.ruedigermoeller</groupId>
-			<artifactId>libFST</artifactId>
-			<version>1.22</version>
+			<groupId>com.esotericsoftware.kryo</groupId>
+			<artifactId>kryo</artifactId>
+			<version>2.16</version>
 		</dependency>
 
 		<dependency>
