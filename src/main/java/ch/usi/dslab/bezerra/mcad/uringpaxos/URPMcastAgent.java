@@ -237,6 +237,11 @@ public class URPMcastAgent implements MulticastAgent {
       return msg;
    }
    
+   @Override
+   public boolean isDeserializingToMessage() {
+      return deserializeToMessage;
+   }
+   
    // to translate from Group (.id) to whatever this implementation uses to represent a group
    // void addMapping(Group g, whatever urp uses inside to represent a group)
    

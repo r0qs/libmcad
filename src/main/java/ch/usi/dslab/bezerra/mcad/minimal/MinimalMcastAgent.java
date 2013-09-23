@@ -72,6 +72,11 @@ public class MinimalMcastAgent implements MulticastAgent {
       return null;
    }
    
+   @Override
+   public boolean isDeserializingToMessage() {
+      return false;
+   }
+   
    // to translate from Group (.id) to whatever this implementation uses to represent a group
    // void addMapping(Group g, whatever urp uses inside to represent a group)
    
