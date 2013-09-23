@@ -3,10 +3,6 @@ package ch.usi.dslab.bezerra.mcad;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -93,21 +89,9 @@ public class Message implements Serializable {
 
    public static Message createFromBytes(byte[] bytes) {
       Message msg = null;
-      ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-      Input in = new Input(bis);      
-      try {         
-         msg = kryo.readObject(in, Message.class);
-         in.close();
-      } catch (Exception e) {
-         e.printStackTrace();
-      } finally {
-         try {
-            in.close();
-            bis.close();
-         } catch (IOException e) {
-            e.printStackTrace();
-         }
-      }
+      Input in = new Input(bytes);
+      msg = kryo.readObject(in, Message.class);
+      in.close();
       return msg;
    }
 }
