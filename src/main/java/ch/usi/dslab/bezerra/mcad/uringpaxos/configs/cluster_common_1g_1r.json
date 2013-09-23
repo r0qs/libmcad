@@ -1,6 +1,8 @@
 {
   "agent_class" : "URPMcastAgent" ,
   
+  "deserialize_to_Message" : true,
+    
   "groups" :
   [
     {

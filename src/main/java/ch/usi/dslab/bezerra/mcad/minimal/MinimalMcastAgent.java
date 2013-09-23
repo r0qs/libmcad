@@ -18,6 +18,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import ch.usi.dslab.bezerra.mcad.Group;
+import ch.usi.dslab.bezerra.mcad.Message;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 
 public class MinimalMcastAgent implements MulticastAgent {
@@ -63,6 +64,11 @@ public class MinimalMcastAgent implements MulticastAgent {
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
+      return null;
+   }
+   
+   @Override
+   public Message deliverMessage() {
       return null;
    }
    
