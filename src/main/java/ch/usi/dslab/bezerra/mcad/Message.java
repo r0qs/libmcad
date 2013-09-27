@@ -69,6 +69,10 @@ public class Message implements Serializable {
    public int getByteArraysAggregatedLength() {
       return byteArraysAggregatedLength;
    }
+   
+   public int getSerializedLength() {
+      return getBytes().length;
+   }
 
    public byte[] getBytes() {
       byte[] bytes = null;
