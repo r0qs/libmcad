@@ -74,8 +74,8 @@ public class URPHelperNode {
                long now = System.currentTimeMillis();
                long elapsed = now - lastBatchTime;
                
-//               if (elapsed > timeBatchThreshold || batch.getByteArraysAggregatedLength() > sizeBatchThreshold) {
-               if (elapsed > timeBatchThreshold || batch.getSerializedLength() > sizeBatchThreshold) {
+               if (elapsed > timeBatchThreshold || batch.getByteArraysAggregatedLength() > sizeBatchThreshold) {
+//               if (elapsed > timeBatchThreshold || batch.getSerializedLength() > sizeBatchThreshold) {
 //                  log.info("URPHelperProposer: proposing msg (+ destlist) length: " + batch.getSerializedLength());                  
 
                   // The following 3 lines propose the _proposal_ in all rings this
