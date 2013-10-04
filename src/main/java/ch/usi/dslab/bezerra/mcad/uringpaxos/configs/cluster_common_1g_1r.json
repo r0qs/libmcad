@@ -12,7 +12,7 @@
   
   "zookeeper" :
   {
-    "location" : "node4" ,
+    "location" : "node5" ,
     "port" : 2181,
     "path" : "$HOME/zoo/bin/zkServer.sh"
   } ,
