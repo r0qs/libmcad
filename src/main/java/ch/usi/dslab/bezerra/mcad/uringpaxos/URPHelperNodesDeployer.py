@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 # This script initiates the helper nodes, that is, the URingPaxos Infrastructure:
 # All rings, each with its proposer (coordinator) and its acceptors
 # (probably they should be proposers themselves too, in case the leader crashes)
