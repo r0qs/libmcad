@@ -71,6 +71,8 @@ public class URPHelperNode {
                if (batch.count() == 0)
                   continue;
                
+//               System.out.println("HelperProposer received a proposal of " + proposal.length + " bytes.");
+               
                long now = System.currentTimeMillis();
                long elapsed = now - lastBatchTime;
                

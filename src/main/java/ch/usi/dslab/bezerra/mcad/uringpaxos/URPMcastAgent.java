@@ -123,7 +123,7 @@ public class URPMcastAgent implements MulticastAgent {
       }
    }
    
-   long hashDestinationSet(ArrayList<Group> destinations) {
+   long hashDestinationSet(List<Group> destinations) {
       long hash = 0;
       for (Group g : destinations) {
          hash += (long) Math.pow(2, g.getId());
@@ -155,7 +155,7 @@ public class URPMcastAgent implements MulticastAgent {
       return localNodeIsDestination;
    }
    
-   URPRingData retrieveMappedRing(ArrayList<Group> destinations) {
+   URPRingData retrieveMappedRing(List<Group> destinations) {
       long destsHash = hashDestinationSet(destinations);
       URPRingData mappedRing = mappingGroupsToRings.get(destsHash);
       return mappedRing;
@@ -183,7 +183,7 @@ public class URPMcastAgent implements MulticastAgent {
    // |                4 bytes                      |         4 bytes         |  4*n   |   rest  |
 
    @Override
-   public void multicast(ArrayList<Group> destinations, byte [] message) {
+   public void multicast(List<Group> destinations, byte [] message) {
       int messageLength = 4 + 4 + 4*destinations.size() + message.length;
       ByteBuffer extMsg = ByteBuffer.allocate(messageLength);
       extMsg.putInt(messageLength - 4); // length in first header doesn't include that header's length

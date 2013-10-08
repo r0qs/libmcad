@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -51,7 +52,7 @@ public class MinimalMcastAgent implements MulticastAgent {
    }
 
    @Override
-   public void multicast(ArrayList<Group> destinations, byte[] message) {
+   public void multicast(List<Group> destinations, byte[] message) {
       for (Group g : destinations)
          multicast(g, message);
    }

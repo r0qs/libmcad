@@ -98,6 +98,7 @@ public class Message implements Serializable {
    public static Message createFromBytes(byte[] bytes) {
       Message msg = null;
       Input in = new Input(bytes);
+//      System.out.println("Creating message from a " + bytes.length + " bytes long array.");
       msg = kryo.readObject(in, Message.class);
       in.close();
       return msg;
