@@ -45,8 +45,13 @@ print("[re]starting zookeeper server at " + zookeeper_server_address)
 os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " start")
 os.system("ssh " + zookeeper_server_location + " " + zookeeper_client_path + " rmr /ringpaxos")
 
+slept = False
+
 for node in config["ring_nodes"] :
-    sleep(1)
+    sleep(0.2)
+#    if not slept :
+#        sleep(1)
+#        slept = True
     nodestring = ""    
     for ring in node["node_rings"] :
         if len(nodestring) > 0 : nodestring += ";"
@@ -91,6 +96,10 @@ for node in config["ring_nodes"] :
     
     #os.system("sleep 1")
     #sleep(0.2)
+
+#    if not slept :
+#        sleep(1)
+#        slept = True
 
 
 

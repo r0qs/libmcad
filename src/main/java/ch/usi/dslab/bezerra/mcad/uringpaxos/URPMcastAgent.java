@@ -8,7 +8,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -123,8 +125,12 @@ public class URPMcastAgent implements MulticastAgent {
       }
    }
    
-   long hashDestinationSet(List<Group> destinations) {
+   long hashDestinationSet(List<Group> givenDestinations) {
       long hash = 0;
+      
+      // removing possible duplicates in the the destinations list:
+      List<Group> destinations = new ArrayList<Group>(new HashSet<Group>(givenDestinations));
+      
       for (Group g : destinations) {
          hash += (long) Math.pow(2, g.getId());
       }
