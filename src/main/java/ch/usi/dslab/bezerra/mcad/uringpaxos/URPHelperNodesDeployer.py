@@ -10,8 +10,25 @@
 import os
 import sys
 import json
+import threading
 from pprint import pprint
 from time import sleep
+
+#====================================
+#====================================
+
+class launcherThread (threading.Thread):
+    def __init__(self, clist):
+        threading.Thread.__init__(self)
+        self.cmdList = clist
+    def run(self):
+        for cmd in self.cmdList :
+            print "xXx Executing " + cmd
+            os.system(cmd);
+            sleep(1)
+
+#====================================
+#====================================
 
 system_config_file = sys.argv[1]
 xterm = False
@@ -45,15 +62,20 @@ print("[re]starting zookeeper server at " + zookeeper_server_address)
 os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " start")
 os.system("ssh " + zookeeper_server_location + " " + zookeeper_client_path + " rmr /ringpaxos")
 
-slept = False
+# MUST ASSUME THAT EACH HELPERNODE IS IN A SINGLE RING
+# AND THAT ALL NODES OF THE SAME RING ARE TOGETHER IN THE CONFIG FILE
+# AND THAT NO RING HAS ID -1
+ringCmdLists = []
+lastRing = -1
+cmdList = []
 
 for node in config["ring_nodes"] :
-    sleep(0.2)
-#    if not slept :
-#        sleep(1)
-#        slept = True
-    nodestring = ""    
+    nodestring = ""
     for ring in node["node_rings"] :
+        if lastRing != ring["ring_id"] :
+            cmdList = []
+            ringCmdLists.append(cmdList)
+            lastRing = ring["ring_id"]
         if len(nodestring) > 0 : nodestring += ";"
         nodestring += str(ring["ring_id"]) + "," + str(node["node_id"]) + ":"
         if "acceptor" in ring["roles"] : nodestring += "A"        
@@ -61,47 +83,36 @@ for node in config["ring_nodes"] :
         if "proposer" in ring["roles"] : nodestring += "P"
     
     node_location = node["node_location"]
-    #library_path = "-Djava.library.path=$HOME/uringpaxos/target/build/Paxos-trunk/lib"
-    
-    class_path   = "-cp $CLASSPATH"
-    # new claspath
-    class_path  += ":$HOME/libmcad/target/libmcad-1.jar"    
-    class_path  += ":$HOME/software/java_libs/*"
-    class_path  += ":$HOME/uringpaxos/target/paxos-trunk.jar"
-    class_path  += ":$HOME/uringpaxos/target/build/Paxos-trunk/lib/*"
-    # old classpath
-    #class_path  += ":$HOME/libmcad/bin/"
-    #class_path  += ":$HOME/software/java_libs/*"
-    #class_path  += ":$HOME/uringpaxos/target/build/Paxos-trunk/lib/*"
+
+    class_path    = "-cp $HOME/libmcad/target/libmcad-1.jar"    
     
     node_path    = "ch.usi.dslab.bezerra.mcad.uringpaxos.URPHelperNode"
     
-    #java_string  = "java " + library_path + " " + class_path + " " + node_path
     java_string  = "java " + class_path + " " + node_path
         
     command_string = ""
     if (xterm == True) :
         command_string = "xterm -geometry 120x20+0+0 -e "
         
-    command_string += "ssh " + node_location + " " + java_string + " " + zookeeper_server_address  + " " + nodestring
-    
-    if "proposer" in ring["roles"] : command_string += " " + str(ring["proposer_port"])
-    
+    command_string += "ssh " + node_location + " " + java_string + " " + zookeeper_server_address  + " " + nodestring    
+    if "proposer" in ring["roles"] :
+        command_string += " " + str(ring["proposer_port"])
     command_string += " &"
     
+    cmdList.append(command_string);
     
-    print("=== EXECUTING: " + command_string)
+    #print("=== EXECUTING: " + command_string)
     # delete the acceptor's disk backup    
-    os.system(command_string)
-    
-    #os.system("sleep 1")
-    #sleep(0.2)
-
-#    if not slept :
-#        sleep(1)
-#        slept = True
-
-
-
+    #os.system(command_string)
 
 config_json.close()
+
+launcherThreads = []
+
+for clist in ringCmdLists :
+    thread = launcherThread(clist)
+    thread.start()
+    launcherThreads.append(thread);
+
+for t in launcherThreads :
+    t.join()
