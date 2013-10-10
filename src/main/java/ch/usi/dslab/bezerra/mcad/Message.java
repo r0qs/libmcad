@@ -1,6 +1,5 @@
 package ch.usi.dslab.bezerra.mcad;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -46,6 +45,10 @@ public class Message implements Serializable {
             
          }
       }
+   }
+   
+   public void rewind() {
+      next = 0;
    }
    
    public boolean hasNext() {
@@ -101,6 +104,7 @@ public class Message implements Serializable {
 //      System.out.println("Creating message from a " + bytes.length + " bytes long array.");
       msg = kryo.readObject(in, Message.class);
       in.close();
+      msg.rewind();
       return msg;
    }
 }
