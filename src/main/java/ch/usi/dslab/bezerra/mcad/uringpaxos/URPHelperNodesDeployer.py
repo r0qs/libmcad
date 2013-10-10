@@ -22,10 +22,11 @@ class launcherThread (threading.Thread):
         threading.Thread.__init__(self)
         self.cmdList = clist
     def run(self):
+        sleep(1)
         for cmd in self.cmdList :
-            print "xXx Executing " + cmd
+            print "xXx executing: " + cmd
             os.system(cmd);
-            sleep(1)
+            sleep(0.5)
 
 #====================================
 #====================================
