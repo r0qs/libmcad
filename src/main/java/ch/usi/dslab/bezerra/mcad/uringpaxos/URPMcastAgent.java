@@ -40,11 +40,11 @@ public class URPMcastAgent implements MulticastAgent {
    BlockingQueue<Message> messageDeliveryQueue;
    boolean deserializeToMessage = false;
    
-   public URPMcastAgent (String configFile) {
+   public URPMcastAgent (String configFile, boolean isInGroup, int... ids) {
       log.setLevel(Level.OFF);
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]> ();
       messageDeliveryQueue   = new LinkedBlockingQueue<Message>();
-      loadURPAgentConfig(configFile);
+      loadURPAgentConfig(configFile, isInGroup, ids);
    }
    
    void mapGroupsToRings() {
@@ -256,7 +256,7 @@ public class URPMcastAgent implements MulticastAgent {
    // *** TODO: has to make sure that the max group is known before creating URPRings
    @SuppressWarnings("unchecked")
    // TODO: Using legacy API in the following method (Iterator part)
-   public void loadURPAgentConfig(String filename) {
+   public void loadURPAgentConfig(String filename, boolean hasLocalGroup, int... ids) {
       
       // create all groups
       // create all rings
@@ -273,52 +273,24 @@ public class URPMcastAgent implements MulticastAgent {
       
       try {
          
-         
-         
-         // =====================================
-         // JSON Parser object
-         
-         JSONParser parser = new JSONParser();
-         
-         
-         
-         // =====================================
-         // This node's specific settings
-         
-         Object     nodeObj    = parser.parse(new FileReader(filename));
-         JSONObject nodeConfig = (JSONObject) nodeObj;
-                  
-         boolean hasLocalGroup = (Boolean) nodeConfig.get("localnode_in_group");
-         long      localNodeId = -1;
-         long     localGroupId = -1; 
-         
-         if (hasLocalGroup) {            
-            localNodeId   = (Long) nodeConfig.get("localnode_id");
-            localGroupId  = (Long) nodeConfig.get("localnode_group_id");
-         }
-         
-         String commonConfigFileName = (String) nodeConfig.get("common_config_file");
-         
-         
-         
          // =====================================
          // Common settings
-         
-         Object obj = parser.parse(new FileReader(commonConfigFileName));
-         JSONObject commonConfig = (JSONObject) obj;
-         
-         
-         
+                  
          // ===========================================
          // Creating Groups
+
+         JSONParser parser = new JSONParser();
+         
+         Object     nodeObj = parser.parse(new FileReader(filename));
+         JSONObject config  = (JSONObject) nodeObj;
          
          Group.changeGroupImplementationClass(URPGroup.class);
          
-         Boolean deserializeToMessageField = (Boolean) commonConfig.get("deserialize_to_Message");
+         Boolean deserializeToMessageField = (Boolean) config.get("deserialize_to_Message");
          if (deserializeToMessageField != null)
             deserializeToMessage = deserializeToMessageField;
          
-         JSONArray groupsArray = (JSONArray) commonConfig.get("groups");         
+         JSONArray groupsArray = (JSONArray) config.get("groups");         
          Iterator<Object> it_group = groupsArray.iterator();
 
          while (it_group.hasNext()) {
@@ -335,7 +307,7 @@ public class URPMcastAgent implements MulticastAgent {
          // ===========================================
          // Creating Ring Info
 
-         JSONArray ringsArray = (JSONArray) commonConfig.get("rings");         
+         JSONArray ringsArray = (JSONArray) config.get("rings");         
          Iterator<Object> it_ring = ringsArray.iterator();
 
          while (it_ring.hasNext()) {
@@ -369,7 +341,7 @@ public class URPMcastAgent implements MulticastAgent {
          // ===========================================
          // Checking ring nodes
          
-         JSONArray nodesArray = (JSONArray) commonConfig.get("ring_nodes");         
+         JSONArray nodesArray = (JSONArray) config.get("ring_nodes");         
          Iterator<Object> it_node = nodesArray.iterator();
 
          while (it_node.hasNext()) {
@@ -419,13 +391,16 @@ public class URPMcastAgent implements MulticastAgent {
          // Creating the learner in all relevant rings
          
          if (hasLocalGroup) {
-            URPGroup localGroup = (URPGroup) Group.getGroup((int) localGroupId);
+            int localGroupId = ids[0];
+            int localNodeId  = ids[1];
+            
+            URPGroup localGroup = (URPGroup) Group.getGroup(localGroupId);
             setLocalGroup(localGroup);
             
             // ----------------------------------------------
             // creating zoo_host string in the format ip:port
             String zoo_host;
-            JSONObject zoo_data = (JSONObject) commonConfig.get("zookeeper");
+            JSONObject zoo_data = (JSONObject) config.get("zookeeper");
             zoo_host  = (String) zoo_data.get("location");
             zoo_host += ":";
             zoo_host += ((Long) zoo_data.get("port")).toString();
