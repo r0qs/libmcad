@@ -27,7 +27,7 @@ public class MulticastAgentFactory {
       }
 
     */
-   public static MulticastAgent createMulticastAgent(String configFile) {
+   public static MulticastAgent createMulticastAgent(String configFile, boolean isInGroup, int... ids) {
       try {
          log.setLevel(Level.OFF);
          
@@ -47,7 +47,7 @@ public class MulticastAgentFactory {
          }
          else if (agent_type.equals("URPMcastAgent")) {
             log.info("Creating URPMcastAgent");
-            return new URPMcastAgent(configFile);
+            return new URPMcastAgent(configFile, isInGroup, ids);
          }
          else {
             log.error("agent_type field in " + configFile + " didn't match any known MulticastAgent type");
