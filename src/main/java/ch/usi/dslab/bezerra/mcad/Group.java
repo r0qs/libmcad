@@ -59,7 +59,7 @@ public class Group {
    }
 
    int groupId;
-   
+
    public Group(int id) {
       log.setLevel(Level.OFF);
       groupId = id;

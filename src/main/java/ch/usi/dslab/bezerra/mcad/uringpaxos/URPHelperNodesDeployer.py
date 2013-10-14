@@ -26,7 +26,7 @@ class launcherThread (threading.Thread):
         for cmd in self.cmdList :
             print "xXx executing: " + cmd
             os.system(cmd);
-            sleep(0.5)
+            sleep(1)
 
 #====================================
 #====================================
