@@ -63,7 +63,7 @@ print("[re]starting zookeeper server at " + zookeeper_server_address)
 os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " stop")
 os.system("ssh " + zookeeper_server_location + " rm -rf /tmp/zookeeper")
 os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " start")
-#os.system("ssh " + zookeeper_server_location + " " + zookeeper_client_path + " rmr /ringpaxos")
+os.system("ssh " + zookeeper_server_location + " " + zookeeper_client_path + " rmr /ringpaxos")
 
 # MUST ASSUME THAT EACH HELPERNODE IS IN A SINGLE RING
 # AND THAT ALL NODES OF THE SAME RING ARE TOGETHER IN THE CONFIG FILE
