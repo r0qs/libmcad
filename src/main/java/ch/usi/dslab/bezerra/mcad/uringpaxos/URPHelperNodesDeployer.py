@@ -26,7 +26,7 @@ class launcherThread (threading.Thread):
         for cmd in self.cmdList :
             print "xXx executing: " + cmd
             os.system(cmd);
-            sleep(0.2)
+            sleep(0.5)
 
 #====================================
 #====================================
@@ -60,8 +60,10 @@ for node in config["ring_nodes"] :
 # URPMCad uses a single zookeeper server, for rendezvous purposes only
 # start zkserver standalone for urpaxos
 print("[re]starting zookeeper server at " + zookeeper_server_address)
+os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " stop")
+os.system("ssh " + zookeeper_server_location + " rm -rf /tmp/zookeeper")
 os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " start")
-os.system("ssh " + zookeeper_server_location + " " + zookeeper_client_path + " rmr /ringpaxos")
+#os.system("ssh " + zookeeper_server_location + " " + zookeeper_client_path + " rmr /ringpaxos")
 
 # MUST ASSUME THAT EACH HELPERNODE IS IN A SINGLE RING
 # AND THAT ALL NODES OF THE SAME RING ARE TOGETHER IN THE CONFIG FILE
