@@ -110,11 +110,12 @@ public class URPMcastAgent implements MulticastAgent {
          
          // getting the best candidate ring (i.e., that with the least number of associated groups)
          // and indexing it for this set of destinations
-         URPRingData bestCandidateRing = candidates.get(0);
+         URPRingData bestCandidateRing = candidates.isEmpty() ? null : candidates.get(0);
          mappingGroupsToRings.put(hash, bestCandidateRing);
          
          log.info("Added mapping of destination set " + destinations +
-               " (with hash " + hash + ") to ring " + bestCandidateRing.getId());
+               " (with hash " + hash + ") to ring "
+               + (bestCandidateRing == null ? "null" : bestCandidateRing.getId()));
          
       }
       else {
@@ -180,7 +181,7 @@ public class URPMcastAgent implements MulticastAgent {
             ring.coordinatorConnection.write(message);
       }
       catch (IOException e) {
-         e.printStackTrace();         
+         e.printStackTrace();
       }
    }
    
@@ -204,7 +205,7 @@ public class URPMcastAgent implements MulticastAgent {
    
    @Override
    public void multicast(Group singleDestination, byte [] message) {
-      ArrayList<Group> dests = new ArrayList<Group>();
+      ArrayList<Group> dests = new ArrayList<Group>(1);
       dests.add(singleDestination);
       multicast(dests, message);
    }
