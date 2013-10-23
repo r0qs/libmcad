@@ -7,3 +7,4 @@ target/
 .settings
 
 zookeeper.out
+dependency-reduced-pom.xml
