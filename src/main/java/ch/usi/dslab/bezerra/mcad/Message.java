@@ -47,6 +47,18 @@ public class Message implements Serializable {
       }
    }
    
+   public void pushFront(Object... objs) {
+      int pos = 0;
+      for (Object o : objs) {
+            contents.add(pos++, o);
+
+         // counting the total size of added arrays
+         if (o instanceof byte[]) {
+            byteArraysAggregatedLength += ((byte[]) o).length;
+         }
+      }
+   }
+   
    public void rewind() {
       next = 0;
    }
@@ -57,6 +69,10 @@ public class Message implements Serializable {
 
    public Object getNext() {
       return get(next++);
+   }
+   
+   public Object peekNext() {
+      return get(next);
    }
 
    public Object get(int index) {
