@@ -4,6 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -11,12 +15,7 @@ import com.esotericsoftware.kryo.io.Output;
 
 public class Message implements Serializable {
    private static final long serialVersionUID = 4104839889665917909L;
-   static Kryo kryo;
-   
-   static {
-      kryo = new Kryo();
-      kryo.register(Message.class);
-   }
+   static Map<Long,Kryo> threadKryos = new ConcurrentHashMap<Long,Kryo>();
    
    ArrayList<Object> contents;
    int next = 0;
@@ -94,8 +93,21 @@ public class Message implements Serializable {
    public int getSerializedLength() {
       return getBytes().length;
    }
+   
+   static Kryo getCurrentThreadKryo() {
+      long tid = Thread.currentThread().getId();
+      Kryo kryo = threadKryos.get(tid);
+      if (kryo == null) {
+         kryo = new Kryo();
+         kryo.register(Message.class);
+         threadKryos.put(tid, kryo);
+      }
+      return kryo;
+   }
 
-   synchronized public byte[] getBytes() {
+   public byte[] getBytes() {
+      Kryo kryo = getCurrentThreadKryo();      
+      
       byte[] bytes = null;
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       Output out = new Output(bos);
@@ -116,7 +128,9 @@ public class Message implements Serializable {
       return bytes;
    }
 
-   synchronized public static Message createFromBytes(byte[] bytes) {
+   public static Message createFromBytes(byte[] bytes) {
+      Kryo kryo = getCurrentThreadKryo();
+      
       Message msg = null;
       Input in = new Input(bytes);
 //      System.out.println("Creating message from a " + bytes.length + " bytes long array.");
