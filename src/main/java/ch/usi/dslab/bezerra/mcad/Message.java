@@ -33,6 +33,7 @@ public class Message implements Serializable {
    }
    
    public void addItems(Object... objs) {
+      contents.ensureCapacity(contents.size() + objs.length);
       for (Object o : objs) {
          if (o instanceof Object[])
             addItems((Object[]) o);
@@ -48,6 +49,7 @@ public class Message implements Serializable {
    }
    
    public void pushFront(Object... objs) {
+      contents.ensureCapacity(contents.size() + objs.length);
       int pos = 0;
       for (Object o : objs) {
             contents.add(pos++, o);
