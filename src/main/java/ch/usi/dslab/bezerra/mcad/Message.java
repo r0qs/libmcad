@@ -95,7 +95,7 @@ public class Message implements Serializable {
       return getBytes().length;
    }
 
-   public byte[] getBytes() {
+   synchronized public byte[] getBytes() {
       byte[] bytes = null;
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       Output out = new Output(bos);
@@ -116,7 +116,7 @@ public class Message implements Serializable {
       return bytes;
    }
 
-   public static Message createFromBytes(byte[] bytes) {
+   synchronized public static Message createFromBytes(byte[] bytes) {
       Message msg = null;
       Input in = new Input(bytes);
 //      System.out.println("Creating message from a " + bytes.length + " bytes long array.");
