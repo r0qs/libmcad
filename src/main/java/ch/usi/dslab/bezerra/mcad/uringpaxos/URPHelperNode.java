@@ -61,16 +61,16 @@ public class URPHelperNode {
          int originalLength = original.length;
          LZ4Factory factory = LZ4Factory.fastestInstance();
          LZ4Compressor compressor = factory.fastCompressor();
-         int compressedArrayLength = compressor.maxCompressedLength(originalLength) + 4;
-         byte[] compressed = new byte[compressedArrayLength];
-         int compressedLength = compressor.compress(original, 0, originalLength, compressed, 4, compressedArrayLength);
-         compressed[0] = (byte)(originalLength >>> 24);
-         compressed[1] = (byte)(originalLength >>> 16);
-         compressed[2] = (byte)(originalLength >>> 8);
-         compressed[3] = (byte)(originalLength);
+         int maxCompressedLength = compressor.maxCompressedLength(originalLength);
+         byte[] sizePlusCompressed = new byte[4 + maxCompressedLength];
+         int compressedLength = compressor.compress(original, 0, originalLength, sizePlusCompressed, 4, maxCompressedLength);
+         sizePlusCompressed[0] = (byte)(originalLength >>> 24);
+         sizePlusCompressed[1] = (byte)(originalLength >>> 16);
+         sizePlusCompressed[2] = (byte)(originalLength >>> 8);
+         sizePlusCompressed[3] = (byte)(originalLength);
          float rate = (float) compressedLength / (float) originalLength;
          System.out.println(String.format("Compressed %d bytes into %d bytes; rate = %f", originalLength, compressedLength, rate));
-         return compressed;
+         return sizePlusCompressed;
       }
 
       @Override
