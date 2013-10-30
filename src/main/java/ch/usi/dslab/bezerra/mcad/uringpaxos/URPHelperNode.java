@@ -17,6 +17,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import net.jpountz.lz4.LZ4Compressor;
+import net.jpountz.lz4.LZ4Factory;
+import net.jpountz.lz4.LZ4FastDecompressor;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.KeeperException;
@@ -53,6 +57,22 @@ public class URPHelperNode {
          running = false;
       }
 
+      byte[] compress(byte[] original) {
+         int originalLength = original.length;
+         LZ4Factory factory = LZ4Factory.fastestInstance();
+         LZ4Compressor compressor = factory.fastCompressor();
+         int compressedArrayLength = compressor.maxCompressedLength(originalLength) + 4;
+         byte[] compressed = new byte[compressedArrayLength];
+         int compressedLength = compressor.compress(original, 0, originalLength, compressed, 4, compressedArrayLength);
+         compressed[0] = (byte)(originalLength >>> 24);
+         compressed[1] = (byte)(originalLength >>> 16);
+         compressed[2] = (byte)(originalLength >>> 8);
+         compressed[3] = (byte)(originalLength);
+         float rate = (float) compressedLength / (float) originalLength;
+         System.out.println(String.format("Compressed %d bytes into %d bytes; rate = %f", originalLength, compressedLength, rate));
+         return compressed;
+      }
+
       @Override
       public void run() {
 //         int sizeBatchThreshold = 32000; // 32k, discounting overheads (so it's not 32768)
@@ -80,11 +100,15 @@ public class URPHelperNode {
 //               if (elapsed > timeBatchThreshold || batch.getSerializedLength() > sizeBatchThreshold) {
 //                  log.info("URPHelperProposer: proposing msg (+ destlist) length: " + batch.getSerializedLength());                  
 
+                  byte[] batchBytes = batch.getBytes();
+                  byte[] compressedBatch = compress(batchBytes);
+
                   // The following 3 lines propose the _proposal_ in all rings this
                   // node is a proposer in. However, the urpmcadaptor has a single,
                   // different HelperProposer (coordinator) for each ring.
-                  for (RingDescription ring : paxos.getRings()) {                    
-                     paxos.getProposer(ring.getRingID()).propose(batch.getBytes());
+
+                  for (RingDescription ring : paxos.getRings()) {
+                     paxos.getProposer(ring.getRingID()).propose(compressedBatch);
                   }
                   batch = new Message();
                   lastBatchTime = now;

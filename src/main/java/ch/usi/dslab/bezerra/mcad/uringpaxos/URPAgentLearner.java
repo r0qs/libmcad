@@ -1,5 +1,8 @@
 package ch.usi.dslab.bezerra.mcad.uringpaxos;
 
+import net.jpountz.lz4.LZ4Factory;
+import net.jpountz.lz4.LZ4FastDecompressor;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -30,6 +33,18 @@ public class URPAgentLearner implements Runnable {
       urpAgentLearnerThread.start();
    }
 
+   byte[] decompress(byte[] compressed) {
+      LZ4Factory factory = LZ4Factory.fastestInstance();
+      LZ4FastDecompressor decompressor = factory.fastDecompressor();
+      int originalLength =  compressed[0] << 24
+                             | (compressed[1] & 0xFF) << 16
+                             | (compressed[2] & 0xFF) << 8
+                             | (compressed[3] & 0xFF);
+      byte[] original = new byte[originalLength];
+      decompressor.decompress(compressed, 4, original, 0, originalLength);
+      return original;
+   }
+
    @Override
    public void run() {      
       if (paxos.getLearner() == null) {
@@ -40,7 +55,8 @@ public class URPAgentLearner implements Runnable {
          try {
             Value v = paxos.getLearner().getDecisions().take().getValue();            
             if (!v.isSkip()) {
-               byte[] rawBatch = v.getValue();
+               byte[] compressedBatch = v.getValue();
+               byte[] rawBatch        = decompress(compressedBatch);
                Message batch = Message.createFromBytes(rawBatch);
                
                while (batch.hasNext()) {
