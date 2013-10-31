@@ -7,12 +7,17 @@
 	<name>Library for Multicast Adaptor</name>
 	<packaging>jar</packaging>
 
+
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+
+
 	<build>
 		<plugins>
+		
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -26,6 +31,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -35,9 +41,14 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
+			
 		</plugins>
 	</build>
+	
+	
+	
 	<dependencies>
+	
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
@@ -77,5 +88,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		
 	</dependencies>
+	
 </project>
