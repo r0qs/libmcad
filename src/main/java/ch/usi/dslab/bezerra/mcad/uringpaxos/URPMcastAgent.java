@@ -174,7 +174,7 @@ public class URPMcastAgent implements MulticastAgent {
       return mappedRing;
    }
    
-   private void sendToRing(URPRingData ring, ByteBuffer message) {
+   synchronized private void sendToRing(URPRingData ring, ByteBuffer message) {
       try {
          message.flip();
          while(message.hasRemaining())
