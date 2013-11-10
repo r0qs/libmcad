@@ -134,6 +134,7 @@ public class URPMcastAgent implements MulticastAgent {
       
       for (Group g : destinations) {
          hash += (long) Math.pow(2, g.getId());
+         System.out.println("hashing group " + g.getId());
       }
       return hash;
    }
