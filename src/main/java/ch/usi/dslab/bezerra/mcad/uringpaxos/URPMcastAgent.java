@@ -9,9 +9,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -35,7 +37,7 @@ public class URPMcastAgent implements MulticastAgent {
    Node URPaxosNode = null;
    URPGroup localGroup = null;
    URPAgentLearner urpAgentLearner;
-   HashMap<Long, URPRingData> mappingGroupsToRings;
+   Map<Long, URPRingData> mappingGroupsToRings;
    BlockingQueue<byte[]> byteArrayDeliveryQueue;
    BlockingQueue<Message> messageDeliveryQueue;
    boolean deserializeToMessage = false;
@@ -48,7 +50,7 @@ public class URPMcastAgent implements MulticastAgent {
    }
    
    void mapGroupsToRings() {
-      mappingGroupsToRings = new HashMap<Long, URPRingData>();
+      mappingGroupsToRings = new Hashtable<Long, URPRingData>();
       
       ArrayList<Group> groups = Group.getAllGroups();
       
@@ -134,7 +136,6 @@ public class URPMcastAgent implements MulticastAgent {
       
       for (Group g : destinations) {
          hash += (long) Math.pow(2, g.getId());
-         System.out.println("hashing group " + g.getId());
       }
       return hash;
    }
