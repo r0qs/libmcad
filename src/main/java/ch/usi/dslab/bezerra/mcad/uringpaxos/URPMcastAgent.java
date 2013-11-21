@@ -140,7 +140,7 @@ public class URPMcastAgent implements MulticastAgent {
       return hash;
    }
    
-   boolean checkMessageAndEnqueue(byte[] msg) {
+   boolean checkMessageAndEnqueue(byte[] msg, long t_batch_ready) {
       boolean localNodeIsDestination = false;
       ByteBuffer mb = ByteBuffer.wrap(msg);
       int ndests = mb.getInt();
@@ -153,7 +153,9 @@ public class URPMcastAgent implements MulticastAgent {
       if (localNodeIsDestination) {
          byte[] strippedMsg = Arrays.copyOfRange(msg, 4 + ndests * 4, msg.length);
          if (deserializeToMessage) {
-            Message deserializedMsg = Message.createFromBytes(strippedMsg);
+            Message deserializedMsg = Message.createFromBytes(strippedMsg); // cmdContainer
+            deserializedMsg.t_batch_ready = t_batch_ready;
+            deserializedMsg.t_learner_deliver = System.currentTimeMillis();
             messageDeliveryQueue.add(deserializedMsg);
          }
          else {

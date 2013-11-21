@@ -16,7 +16,23 @@ import com.esotericsoftware.kryo.io.Output;
 public class Message implements Serializable {
    private static final long serialVersionUID = 4104839889665917909L;
    static Map<Long,Kryo> threadKryos = new ConcurrentHashMap<Long,Kryo>();
-   
+
+   // *******************************************
+   // LATENCY TIMELINE
+   // *******************************************
+
+   public long t_client_send;
+   public long t_batch_ready;
+   public long t_learner_deliver;
+   public long t_command_enqueued;
+   public long t_ssmr_dequeue;
+   public long t_execution_start;
+   public long t_server_send;
+   public long t_client_receive;
+
+   // *******************************************
+   // *******************************************
+
    ArrayList<Object> contents;
    int next = 0;
    
