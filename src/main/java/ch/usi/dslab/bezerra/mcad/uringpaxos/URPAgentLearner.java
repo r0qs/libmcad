@@ -44,8 +44,8 @@ public class URPAgentLearner implements Runnable {
                Message batch = Message.createFromBytes(rawBatch);
                
                while (batch.hasNext()) {
-                  byte[] msg = (byte []) batch.getNext();
-                  mcAgent.checkMessageAndEnqueue(msg);
+                  byte[] msg = (byte []) batch.getNext(); // cmdContainer
+                  mcAgent.checkMessageAndEnqueue(msg, batch.t_batch_ready);
                }               
             }            
          }

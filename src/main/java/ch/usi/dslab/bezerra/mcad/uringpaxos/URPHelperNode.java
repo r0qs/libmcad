@@ -83,6 +83,7 @@ public class URPHelperNode {
                   // The following 3 lines propose the _proposal_ in all rings this
                   // node is a proposer in. However, the urpmcadaptor has a single,
                   // different HelperProposer (coordinator) for each ring.
+                  batch.t_batch_ready = now;
                   for (RingDescription ring : paxos.getRings()) {                    
                      paxos.getProposer(ring.getRingID()).propose(batch.getBytes());
                   }
