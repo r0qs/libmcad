@@ -41,11 +41,14 @@ public class URPAgentLearner implements Runnable {
             Value v = paxos.getLearner().getDecisions().take().getValue();            
             if (!v.isSkip()) {
                byte[] rawBatch = v.getValue();
+               long t_learner_delivered = System.currentTimeMillis();
                Message batch = Message.createFromBytes(rawBatch);
-               
+                              
                while (batch.hasNext()) {
                   byte[] msg = (byte []) batch.getNext(); // cmdContainer
-                  mcAgent.checkMessageAndEnqueue(msg, batch.t_batch_ready);
+                  mcAgent.checkMessageAndEnqueue(msg, batch.t_batch_ready,
+                        batch.piggyback_proposer_serialstart, batch.piggyback_proposer_serialend,
+                        t_learner_delivered);
                }               
             }            
          }

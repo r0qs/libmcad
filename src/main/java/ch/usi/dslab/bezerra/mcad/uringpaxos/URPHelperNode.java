@@ -60,6 +60,13 @@ public class URPHelperNode {
          int sizeBatchThreshold = 250000; // 250k, because thea actual buffer is 262144 bytes
          int timeBatchThreshold  = 50;   // 50 milliseconds
          long lastBatchTime = System.currentTimeMillis();
+         
+         // ==============
+         // TIMELINE STUFF
+         long last_serialStart = 0;
+         long last_serialEnd = 0;
+         // ==============         
+
          Message batch = new Message();
          try {
             while (running) {
@@ -84,8 +91,17 @@ public class URPHelperNode {
                   // node is a proposer in. However, the urpmcadaptor has a single,
                   // different HelperProposer (coordinator) for each ring.
                   batch.t_batch_ready = now;
-                  for (RingDescription ring : paxos.getRings()) {                    
-                     paxos.getProposer(ring.getRingID()).propose(batch.getBytes());
+                  for (RingDescription ring : paxos.getRings()) {
+                     if (last_serialStart != 0) {
+                        batch.piggyback_proposer_serialstart = last_serialStart;
+                        batch.piggyback_proposer_serialend   = last_serialEnd;
+                     }
+                     
+                     last_serialStart = System.currentTimeMillis();
+                     byte[] serialBatch = batch.getBytes();
+                     last_serialEnd   = System.currentTimeMillis();
+                     
+                     paxos.getProposer(ring.getRingID()).propose(serialBatch);
                   }
                   batch = new Message();
                   lastBatchTime = now;

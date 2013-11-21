@@ -23,12 +23,16 @@ public class Message implements Serializable {
 
    public long t_client_send;
    public long t_batch_ready;
-   public long t_learner_deliver;
+   public long t_learner_delivered;
+   public long t_learner_deserialized;
    public long t_command_enqueued;
-   public long t_ssmr_dequeue;
+   public long t_ssmr_dequeued;
    public long t_execution_start;
    public long t_server_send;
    public long t_client_receive;
+   
+   public long piggyback_proposer_serialstart;
+   public long piggyback_proposer_serialend;
 
    // *******************************************
    // *******************************************
@@ -45,6 +49,10 @@ public class Message implements Serializable {
    public Message(Object... objs) {
       contents = new ArrayList<Object>(objs.length);
       addItems(objs);
+   }
+   
+   public int getItemCont() {
+      return contents.size();
    }
    
    public void addItems(Object... objs) {
