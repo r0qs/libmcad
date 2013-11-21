@@ -51,10 +51,6 @@ public class Message implements Serializable {
       addItems(objs);
    }
    
-   public int getItemCont() {
-      return contents.size();
-   }
-   
    public void addItems(Object... objs) {
       contents.ensureCapacity(contents.size() + objs.length);
       for (Object o : objs) {
