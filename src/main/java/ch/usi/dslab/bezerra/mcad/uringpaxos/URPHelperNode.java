@@ -279,7 +279,6 @@ public class URPHelperNode {
       final Node ringNode = new Node(zoo_host, ringdesc);
       HelperProposer hp = null;
       try {
-         ringNode.start();
          
          if (isProposer) {
             log.info("arguments: " + args[0] + " " + args[1] + " " + args[2]);
@@ -302,6 +301,9 @@ public class URPHelperNode {
                }
             }
          });
+         
+         ringNode.start();
+         
       } catch (IOException | KeeperException | InterruptedException e) {
          e.printStackTrace();
          System.exit(1);
