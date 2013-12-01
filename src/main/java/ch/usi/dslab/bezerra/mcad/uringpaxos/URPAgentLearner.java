@@ -41,6 +41,13 @@ public class URPAgentLearner implements Runnable {
             Value v = paxos.getLearner().getDecisions().take().getValue();            
             if (!v.isSkip()) {
                byte[] rawBatch = v.getValue();
+
+               if (rawBatch.length == 0 ) {
+                  // System.err.println("0 bytes decision!");
+                  // System.exit(1);
+                  continue;
+               }
+
                long t_learner_delivered = System.currentTimeMillis();
                Message batch = Message.createFromBytes(rawBatch);
                               
