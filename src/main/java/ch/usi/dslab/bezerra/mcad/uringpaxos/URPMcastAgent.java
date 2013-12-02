@@ -14,8 +14,10 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -40,13 +42,54 @@ public class URPMcastAgent implements MulticastAgent {
    Map<Long, URPRingData> mappingGroupsToRings;
    BlockingQueue<byte[]> byteArrayDeliveryQueue;
    BlockingQueue<Message> messageDeliveryQueue;
+   
    boolean deserializeToMessage = false;
+   
+   Multicaster multicaster;
+   
+   public class Multicaster implements Runnable {
+      BlockingQueue<byte[]>      messagesToMulticast  = new LinkedBlockingQueue<byte[]>();
+      BlockingQueue<List<Group>> messagesDestinations = new LinkedBlockingQueue<List<Group>>();
+      
+      Thread multicasterThread;
+      
+      boolean running = true;
+      
+      URPMcastAgent mcagent;
+      
+      public Multicaster(URPMcastAgent mcagent) {
+         this.mcagent = mcagent;
+         multicasterThread = new Thread(this);
+         multicasterThread.start();
+      }
+      
+      public void enqueueForMulticasting(List<Group> destinations, byte[] message) {
+         messagesToMulticast.add(message);
+         messagesDestinations.add(destinations);
+      }
+      
+      @Override
+      public void run() {
+         try {
+            while (running) {
+               byte[] message = messagesToMulticast.poll(1, TimeUnit.SECONDS);
+               if (message == null) continue;
+               List<Group> dests = messagesDestinations.take();               
+               mcagent.actuallyMulticast(dests, message);
+            }
+         }
+         catch(InterruptedException e) {
+            
+         }
+      }
+   }
    
    public URPMcastAgent (String configFile, boolean isInGroup, int... ids) {
       log.setLevel(Level.OFF);
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]> ();
       messageDeliveryQueue   = new LinkedBlockingQueue<Message>();
       loadURPAgentConfig(configFile, isInGroup, ids);
+      multicaster = new Multicaster(this);
    }
    
    void mapGroupsToRings() {
@@ -198,8 +241,20 @@ public class URPMcastAgent implements MulticastAgent {
    // | MESSAGE LENGTH (not counting length header) | NUMBER n OF DEST GROUPS | GROUPS | PAYLOAD |
    // |                4 bytes                      |         4 bytes         |  4*n   |   rest  |
 
+   
+   @Override
+   public void multicast(Group singleDestination, byte [] message) {
+      ArrayList<Group> dests = new ArrayList<Group>(1);
+      dests.add(singleDestination);
+      multicast(dests, message);
+   }
+   
    @Override
    public void multicast(List<Group> destinations, byte [] message) {
+      multicaster.enqueueForMulticasting(destinations, message);
+   }
+   
+   public void actuallyMulticast(List<Group> destinations, byte [] message) {
       int messageLength = 4 + 4 + 4*destinations.size() + message.length;
       ByteBuffer extMsg = ByteBuffer.allocate(messageLength);
       extMsg.putInt(messageLength - 4); // length in first header doesn't include that header's length
@@ -210,13 +265,6 @@ public class URPMcastAgent implements MulticastAgent {
       
       URPRingData destinationRing = retrieveMappedRing(destinations);
       sendToRing(destinationRing, extMsg);
-   }
-   
-   @Override
-   public void multicast(Group singleDestination, byte [] message) {
-      ArrayList<Group> dests = new ArrayList<Group>(1);
-      dests.add(singleDestination);
-      multicast(dests, message);
    }
 
    @Override
