@@ -37,6 +37,8 @@ public class Message implements Serializable {
    // *******************************************
    // *******************************************
 
+   boolean atomic;
+   
    ArrayList<Object> contents;
    int next = 0;
    

@@ -33,9 +33,12 @@ class launcherThread (threading.Thread):
 
 system_config_file = sys.argv[1]
 xterm = False
+groupMembersListString = None
 if len(sys.argv) > 2 :
-    if sys.argv[2] == "x" :
+    if sys.argv[len(sys.argv) -1] == "x" :
         xterm = True
+    if sys.argv[2] != "x" :
+        groupMembersListString = sys.argv[2]
 
 print("Deploying system helper nodes described in " + system_config_file)
 

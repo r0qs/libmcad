@@ -244,4 +244,16 @@ public class MinimalMcastAgent implements MulticastAgent {
       return null;
    }
 
+   @Override
+   public void rmcast(List<Group> destinations, byte[] message) {
+      // TODO Auto-generated method stub
+      
+   }
+
+   @Override
+   public void rmcast(Group destination, byte[] message) {
+      // TODO Auto-generated method stub
+      
+   }
+
 }

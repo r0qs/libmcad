@@ -195,14 +195,15 @@ public class URPMcastAgent implements MulticastAgent {
    }
    
    // ****************** MESSAGE FORMAT ******************
-   // | MESSAGE LENGTH (not counting length header) | NUMBER n OF DEST GROUPS | GROUPS | PAYLOAD |
-   // |                4 bytes                      |         4 bytes         |  4*n   |   rest  |
+   // | MESSAGE LENGTH (not counting length header) | AMCAST FLAG  | NUMBER n OF DEST GROUPS | GROUPS | PAYLOAD |
+   // |                4 bytes                      |       1      |         4 bytes         |  4*n   |   rest  |
 
    @Override
    public void multicast(List<Group> destinations, byte [] message) {
-      int messageLength = 4 + 4 + 4*destinations.size() + message.length;
+      int messageLength = 4 + 1 + 4 + 4*destinations.size() + message.length;
       ByteBuffer extMsg = ByteBuffer.allocate(messageLength);
       extMsg.putInt(messageLength - 4); // length in first header doesn't include that header's length
+      extMsg.put((byte) 1); // 1 = atomic; 0 = non-atomic (reliable only)
       extMsg.putInt(destinations.size());
       for (Group g : destinations)
          extMsg.putInt(g.getId());
@@ -211,7 +212,25 @@ public class URPMcastAgent implements MulticastAgent {
       URPRingData destinationRing = retrieveMappedRing(destinations);
       sendToRing(destinationRing, extMsg);
    }
-   
+
+   public void rmcast(List<Group> destinations, byte [] message) {
+      for (Group g : destinations)
+         rmcast(g, message);
+   }
+
+   public void rmcast(Group destination, byte [] message) {
+      int messageLength = 4 + 1 + 4 + 4 + message.length;
+      ByteBuffer extMsg = ByteBuffer.allocate(messageLength);
+      extMsg.putInt(messageLength - 4); // length in first header doesn't include that header's length
+      extMsg.put((byte) 0); // 1 = atomic; 0 = non-atomic (reliable only)
+      extMsg.putInt(1);
+      extMsg.putInt(destination.getId());
+      extMsg.put(message);
+
+      URPRingData destinationRing = retrieveMappedRing(destination);
+      sendToRing(destinationRing, extMsg);
+   }
+
    @Override
    public void multicast(Group singleDestination, byte [] message) {
       ArrayList<Group> dests = new ArrayList<Group>(1);

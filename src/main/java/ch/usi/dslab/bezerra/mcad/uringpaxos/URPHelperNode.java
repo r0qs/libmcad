@@ -4,18 +4,27 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.Destroyable;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -25,25 +34,154 @@ import ch.usi.da.paxos.api.PaxosNode;
 import ch.usi.da.paxos.examples.Util;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
+import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.Message;
 
 public class URPHelperNode {
    
    public static final Logger log = Logger.getLogger(URPHelperNode.class);
+   
+   
+   
+   private static class GroupMember {
+      String address;
+      int    port;
+      int    groupId;
+      boolean connected;
+      SocketChannel channel;
+      
+      public GroupMember(String addr, int port) {
+         this.address = addr;
+         this.port    = port;
+      }
+      
+      public void connect() {
+         try {
+            channel = SocketChannel.open();
+            channel.connect(new InetSocketAddress(address, port));
+            
+            ObjectOutput serverObjectOutStream = new ObjectOutputStream(Channels.newOutputStream(channel));
+            ObjectInput  serverObjectInStream  = new ObjectInputStream (Channels.newInputStream (channel));
+            
+            Message credentials = new Message(-1);
+            serverObjectOutStream.writeObject(credentials);
+            Message response = (Message) serverObjectInStream.readObject();
+         } catch (IOException | ClassNotFoundException e) {
+            log.fatal(" !!! Couldn't connect to member of group " + this.groupId);
+            e.printStackTrace();
+            System.exit(1);
+         }
+         
+         connected = true;
+      }
+      
+      public void send(byte[] msg) {
+         if (!connected) connect();
+         ByteBuffer extended  = ByteBuffer.allocate(4 + msg.length);
+         extended.putInt(msg.length);
+         extended.put(msg);
+         extended.flip();
+         try {
+            while(extended.hasRemaining())
+               channel.write(extended);
+         }
+         catch (IOException e) {
+            e.printStackTrace();
+         }
+         
+      }
+   }
+   
+   
+   
+   private static class ReliableMulticaster implements Runnable {
+      // map of groups and corresponding members
+      Map<Integer, List<GroupMember>> groupMembers = null;
+      
+      BlockingQueue<byte[]> pendingMessages;
+      Thread multicasterThread;
+      
+      boolean running = true;
+      
+      public ReliableMulticaster(String groupsMembersString) {
+         groupMembers = parseMembersList(groupsMembersString);
+         
+         pendingMessages = new LinkedBlockingQueue<byte[]>();
+         multicasterThread = new Thread(this);
+         multicasterThread.start();
+      }
+      
+      void stop () {
+         running = false;
+      }
+      
+      public Map<Integer, List<GroupMember>> parseMembersList(String membersList) {
+         String[] members = membersList.split(",");
+         Map<Integer, List<GroupMember>> groups = new Hashtable<Integer, List<GroupMember>>();
+         for (String member : members) {
+            String addr     = member.split(":")[0];
+            String portStr  = member.split(":")[1];
+            String groupStr = member.split(":")[2];
+            int    port     = Integer.parseInt(portStr);
+            int    groupId  = Integer.parseInt(groupStr);
+            
+            List<GroupMember> group = groups.get(groupId);
+            if (group == null) {
+               group = new ArrayList<GroupMember>();
+               groups.put(groupId, group);
+            }
+            
+            group.add(new GroupMember(addr, port));
+         }
+         return groups;
+      }
+      
+      void sendToGroup(int groupId, byte [] rmcastmsg) {
+         List<GroupMember> group = groupMembers.get(groupId);
+         for (GroupMember gm : group)
+            gm.send(rmcastmsg);
+      }
+      
+      @Override
+      public void run() {
+         try {
+            while (running) {
+               byte[] rmcastmsg = pendingMessages.poll(1000, TimeUnit.MILLISECONDS);
+               if (rmcastmsg == null)
+                  continue;
 
+               ByteBuffer mb = ByteBuffer.wrap(rmcastmsg);
+               int numDestGroups = mb.getInt();
+               for (int i = 0 ; i < numDestGroups ; i ++) {
+                  int groupId = mb.getInt();
+                  sendToGroup(groupId, rmcastmsg);
+               }
+               
+            }
+         } catch (InterruptedException e) {
+            log.error(e);
+         }
+         
+      }
+   }
+
+   
+   
    private static class HelperProposer implements Runnable {
       boolean running = true;
       PaxosNode paxos;
-      BlockingQueue<byte[]> pendingMessages;      
+      BlockingQueue<byte[]> pendingMessages;
       SelectorListener selectorListener;
+      ReliableMulticaster reliableMulticaster;
       Thread helperProposerThread = null;
 
-      public HelperProposer(PaxosNode paxos, int port) {
+      public HelperProposer(PaxosNode paxos, int port, String groupsMembersList) {
          log.setLevel(Level.OFF);
          
          this.paxos = paxos;
          pendingMessages = new LinkedBlockingQueue<byte[]>();
-         selectorListener = new SelectorListener(this, port);
+         reliableMulticaster = new ReliableMulticaster(groupsMembersList);
+         selectorListener = new SelectorListener(this, reliableMulticaster, port);
          
          helperProposerThread = new Thread(this);
          helperProposerThread.start();
@@ -117,19 +255,23 @@ public class URPHelperNode {
       }
    }
 
+   
+   
    private static class SelectorListener implements Runnable {
       boolean running = true;
       Thread selectorListenerThread = null;
       
       HelperProposer helperProposer;
+      ReliableMulticaster reliableMulticaster;
       
       ServerSocketChannel listener;
       Selector selector;
       HashMap<SocketChannel, ByteBuffer> bufferMap;
       
-      public SelectorListener(HelperProposer hp, int port) {
+      public SelectorListener(HelperProposer hp, ReliableMulticaster rm, int port) {
          try {
             this.helperProposer = hp;
+            this.reliableMulticaster = rm;
             
             this.selector = Selector.open();
             
@@ -201,9 +343,13 @@ public class URPHelperNode {
             buf.flip();
             while (hasCompleteMessage(buf)) {
                int length = buf.getInt();
-               byte[] rawMessage = new byte[length];
+               int atomic = (int) buf.get();
+               byte[] rawMessage = new byte[length - 1]; //removing the byte
                buf.get(rawMessage);
-               helperProposer.pendingMessages.add(rawMessage);
+               if (atomic == 1)
+                  helperProposer.pendingMessages.add(rawMessage);
+               else
+                  reliableMulticaster.pendingMessages.add(rawMessage);
             }
             buf.compact();
          } catch (IOException e) {
@@ -279,12 +425,18 @@ public class URPHelperNode {
       
       final Node ringNode = new Node(zoo_host, ringdesc);
       HelperProposer hp = null;
+      ReliableMulticaster rm = null;
       try {
          
          if (isProposer) {
             log.info("arguments: " + args[0] + " " + args[1] + " " + args[2]);
             int proposer_port = Integer.parseInt(args[2]);
-            hp = new HelperProposer(ringNode, proposer_port);
+            String groupsMembersList = null;
+            if (args.length == 4) {
+               // has a list of group members
+               groupsMembersList = args[3];
+            }
+            hp = new HelperProposer(ringNode, proposer_port, groupsMembersList);
          }
          
          final HookedObjectsContainer hanger = new HookedObjectsContainer();

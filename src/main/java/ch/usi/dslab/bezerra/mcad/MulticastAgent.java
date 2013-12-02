@@ -10,5 +10,9 @@ public interface MulticastAgent {
    
    public boolean isDeserializingToMessage();
    
+   public void rmcast(List<Group> destinations, byte [] message);
+
+   public void rmcast(Group destination, byte [] message);
+   
    public Group getLocalGroup();
 }
