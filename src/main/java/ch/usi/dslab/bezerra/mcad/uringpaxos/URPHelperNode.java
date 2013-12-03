@@ -76,6 +76,7 @@ public class URPHelperNode {
       }
       
       public void send(byte[] msg) {
+         // | LENGTH (without this length header) | numGroups | g1 | ... | gn | Message (in bytes) |
          if (!connected) connect();
          ByteBuffer extended  = ByteBuffer.allocate(4 + msg.length);
          extended.putInt(msg.length);
