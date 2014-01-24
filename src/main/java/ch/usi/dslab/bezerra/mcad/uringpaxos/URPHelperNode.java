@@ -55,11 +55,12 @@ public class URPHelperNode {
 
       @Override
       public void run() {
-         int sizeBatchThreshold = 30000; // 30k, discounting overheads (so it's not 32768)
+         int sizeBatchThreshold = 0; // disable batching
 //         int sizeBatchThreshold = 16384; // 16k, to avoid "Buffer too small" of umrpaxos
+//         int sizeBatchThreshold = 30000; // 30k, discounting overheads (so it's not 32768)
 //         int sizeBatchThreshold = 250000; // 250k, because thea actual buffer is 262144 bytes
-//         int timeBatchThreshold = 50;   // 50 milliseconds
-         int timeBatchThreshold = 5;      // 5 milliseconds
+         int timeBatchThreshold = 50;   // 50 milliseconds
+//         int timeBatchThreshold = 5;      // 5 milliseconds
 //         int timeBatchThreshold  = 0;   // disable batching
          long lastBatchTime = System.currentTimeMillis();
          
