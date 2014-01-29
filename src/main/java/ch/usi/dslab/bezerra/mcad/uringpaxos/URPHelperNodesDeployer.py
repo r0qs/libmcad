@@ -91,7 +91,7 @@ for node in config["ring_nodes"] :
     
     node_path    = "ch.usi.dslab.bezerra.mcad.uringpaxos.URPHelperNode"
     
-    java_string  = "java " + class_path + " " + node_path
+    java_string  = "java -XX:+UseConcMarkSweepGC " + class_path + " " + node_path
         
     command_string = ""
     if (xterm == True) :
