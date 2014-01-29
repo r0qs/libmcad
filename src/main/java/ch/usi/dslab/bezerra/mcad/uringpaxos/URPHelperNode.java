@@ -55,9 +55,9 @@ public class URPHelperNode {
 
       @Override
       public void run() {
-         int sizeBatchThreshold = 0; // disable batching
+         boolean batchingDisabled = false;
 //         int sizeBatchThreshold = 16384; // 16k, to avoid "Buffer too small" of umrpaxos
-//         int sizeBatchThreshold = 30000; // 30k, discounting overheads (so it's not 32768)
+         int sizeBatchThreshold = 30000; // 30k, discounting overheads (so it's not 32768)
 //         int sizeBatchThreshold = 250000; // 250k, because thea actual buffer is 262144 bytes
          int timeBatchThreshold = 50;   // 50 milliseconds
 //         int timeBatchThreshold = 5;      // 5 milliseconds
@@ -86,7 +86,7 @@ public class URPHelperNode {
                long now = System.currentTimeMillis();
                long elapsed = now - lastBatchTime;
                
-               if (elapsed > timeBatchThreshold || batch.getByteArraysAggregatedLength() > sizeBatchThreshold) {
+               if (batchingDisabled || elapsed > timeBatchThreshold || batch.getByteArraysAggregatedLength() > sizeBatchThreshold) {
 //               if (elapsed > timeBatchThreshold || batch.getSerializedLength() > sizeBatchThreshold) {
 //                  log.info("URPHelperProposer: proposing msg (+ destlist) length: " + batch.getSerializedLength());                  
 
