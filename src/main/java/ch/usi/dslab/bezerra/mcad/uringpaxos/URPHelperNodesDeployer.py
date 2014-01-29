@@ -97,10 +97,20 @@ for node in config["ring_nodes"] :
     if (xterm == True) :
         command_string = "xterm -geometry 120x20+0+0 -e "
         
-    command_string += "ssh " + node_location + " " + java_string + " " + zookeeper_server_address  + " " + nodestring    
+    command_string += "ssh " + node_location + " " + java_string + " " + zookeeper_server_address  + " " + nodestring
+
     if "proposer" in ring["roles"] :
-        command_string += " " + str(ring["proposer_port"])
-    command_string += " &"
+        enable_batching="true"
+        batch_size="30000"
+        batch_time="5"
+        if ring.get("enable_batching") != None and ring["enable_batching"] == False :
+            enable_batching="false"
+        if ring.get("batch_size_bytes") :
+            batch_size = ring["batch_size_bytes"]
+        if ring.get("batch_time_ms") :
+            batch_time = ring["batch_time_ms"]
+
+        command_string += " " + str(ring["proposer_port"]) + " " + enable_batching + " " + batch_size + " " + batch_time + " &"
     
     cmdList.append(command_string);
     
