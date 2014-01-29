@@ -37,14 +37,23 @@ public class URPHelperNode {
       BlockingQueue<byte[]> pendingMessages;      
       SelectorListener selectorListener;
       Thread helperProposerThread = null;
+      boolean batchingEnabled;
+      int batchSizeThreshold;
+      int batchTimeThreshold;
 
-      public HelperProposer(PaxosNode paxos, int port) {
+      public HelperProposer(PaxosNode paxos, int port,
+            boolean batchingEnabled, int batchSizeThreshold, int batchTimeThreshold) {
+
          log.setLevel(Level.OFF);
          
          this.paxos = paxos;
          pendingMessages = new LinkedBlockingQueue<byte[]>();
-         selectorListener = new SelectorListener(this, port);
          
+         this.batchingEnabled    = batchingEnabled;
+         this.batchSizeThreshold = batchSizeThreshold;
+         this.batchTimeThreshold = batchTimeThreshold;
+
+         selectorListener = new SelectorListener(this, port);
          helperProposerThread = new Thread(this);
          helperProposerThread.start();
       }
@@ -55,13 +64,14 @@ public class URPHelperNode {
 
       @Override
       public void run() {
-         boolean batchingDisabled = false;
+/*
 //         int sizeBatchThreshold = 16384; // 16k, to avoid "Buffer too small" of umrpaxos
          int sizeBatchThreshold = 30000; // 30k, discounting overheads (so it's not 32768)
 //         int sizeBatchThreshold = 250000; // 250k, because thea actual buffer is 262144 bytes
          int timeBatchThreshold = 50;   // 50 milliseconds
 //         int timeBatchThreshold = 5;      // 5 milliseconds
 //         int timeBatchThreshold  = 0;   // disable batching
+*/
          long lastBatchTime = System.currentTimeMillis();
          
          // ==============
@@ -73,7 +83,7 @@ public class URPHelperNode {
          Message batch = new Message();
          try {
             while (running) {
-               byte[] proposal = pendingMessages.poll(timeBatchThreshold, TimeUnit.MILLISECONDS);               
+               byte[] proposal = pendingMessages.poll(batchTimeThreshold, TimeUnit.MILLISECONDS);
                
                if (proposal != null)
                   batch.addItems(proposal);
@@ -86,7 +96,9 @@ public class URPHelperNode {
                long now = System.currentTimeMillis();
                long elapsed = now - lastBatchTime;
                
-               if (batchingDisabled || elapsed > timeBatchThreshold || batch.getByteArraysAggregatedLength() > sizeBatchThreshold) {
+               if (batchingEnabled == false
+                     || elapsed > batchTimeThreshold
+                     || batch.getByteArraysAggregatedLength() > batchSizeThreshold) {
 //               if (elapsed > timeBatchThreshold || batch.getSerializedLength() > sizeBatchThreshold) {
 //                  log.info("URPHelperProposer: proposing msg (+ destlist) length: " + batch.getSerializedLength());                  
 
@@ -285,7 +297,10 @@ public class URPHelperNode {
          if (isProposer) {
             log.info("arguments: " + args[0] + " " + args[1] + " " + args[2]);
             int proposer_port = Integer.parseInt(args[2]);
-            hp = new HelperProposer(ringNode, proposer_port);
+            boolean enable_batching = Boolean.parseBoolean(args[3]);
+            int batch_size = Integer.parseInt(args[4]);
+            int batch_time = Integer.parseInt(args[5]);
+            hp = new HelperProposer(ringNode, proposer_port, enable_batching, batch_size, batch_time);
          }
          
          final HookedObjectsContainer hanger = new HookedObjectsContainer();
