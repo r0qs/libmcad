@@ -53,6 +53,8 @@ public class URPHelperNode {
          this.batchSizeThreshold = batchSizeThreshold;
          this.batchTimeThreshold = batchTimeThreshold;
 
+         System.out.println(String.format("URPHelperProposer BATCHing parameters: batchEnabled = %b, batchSize = %d, batchTime = %d", this.batchingEnabled, this.batchSizeThreshold, this.batchTimeThreshold));
+
          selectorListener = new SelectorListener(this, port);
          helperProposerThread = new Thread(this);
          helperProposerThread.start();

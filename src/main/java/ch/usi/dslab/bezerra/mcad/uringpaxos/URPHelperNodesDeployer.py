@@ -91,7 +91,7 @@ for node in config["ring_nodes"] :
     
     node_path    = "ch.usi.dslab.bezerra.mcad.uringpaxos.URPHelperNode"
     
-    java_string  = "java -XX:+UseConcMarkSweepGC " + class_path + " " + node_path
+    java_string  = "java -XX:+UseG1GC " + class_path + " " + node_path
         
     command_string = ""
     if (xterm == True) :
@@ -101,16 +101,18 @@ for node in config["ring_nodes"] :
 
     if "proposer" in ring["roles"] :
         enable_batching="true"
-        batch_size="30000"
-        batch_time="5"
+        batch_size=30000
+        batch_time=50
         if ring.get("enable_batching") != None and ring["enable_batching"] == False :
             enable_batching="false"
-        if ring.get("batch_size_bytes") :
+        if ring.get("batch_size_bytes") != None :
             batch_size = ring["batch_size_bytes"]
-        if ring.get("batch_time_ms") :
+        if ring.get("batch_time_ms") != None :
             batch_time = ring["batch_time_ms"]
 
-        command_string += " " + str(ring["proposer_port"]) + " " + enable_batching + " " + batch_size + " " + batch_time + " &"
+        command_string += " " + str(ring["proposer_port"]) + " " + enable_batching + " " + str(batch_size) + " " + str(batch_time)
+
+    command_string += " &"
     
     cmdList.append(command_string);
     
