@@ -102,7 +102,7 @@ for node in config["ring_nodes"] :
     if "proposer" in ring["roles"] :
         enable_batching="true"
         batch_size=30000
-        batch_time=50
+        batch_time=5
         if ring.get("enable_batching") != None and ring["enable_batching"] == False :
             enable_batching="false"
         if ring.get("batch_size_bytes") != None :
