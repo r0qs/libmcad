@@ -4,32 +4,32 @@ import java.util.ArrayList;
 
 import ch.usi.dslab.bezerra.mcad.Group;
 
-public class URPGroup extends Group {
+public class RidgeGroup extends Group {
    static int maxGroupId;
    
    static {
       maxGroupId = -1;
    }
    
-   ArrayList<URPRingData> associatedRings;
+   ArrayList<RidgeEnsembleData> associatedRings;
    
    static int getMaxGroupId() {
       return maxGroupId;
    }
    
-   public URPGroup(int id) {
+   public RidgeGroup(int id) {
       super(id);
       if (id > maxGroupId)
          maxGroupId = id;
-      associatedRings = new ArrayList<URPRingData>();
+      associatedRings = new ArrayList<RidgeEnsembleData>();
    }
    
-   void addAssociatedRing(URPRingData r) {
+   void addAssociatedRing(RidgeEnsembleData r) {
       if (associatedRings.contains(r) == false)
          associatedRings.add(r);
    }
    
-   ArrayList<URPRingData> getCorrespondingRings() {
+   ArrayList<RidgeEnsembleData> getCorrespondingRings() {
       return associatedRings;
    }
 }

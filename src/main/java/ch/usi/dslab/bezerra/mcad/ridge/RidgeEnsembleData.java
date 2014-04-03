@@ -7,11 +7,11 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
-public class URPRingData {
-   static ArrayList<URPRingData> ringsList;
-   private final static Logger log = Logger.getLogger(URPRingData.class);
+public class RidgeEnsembleData {
+   static ArrayList<RidgeEnsembleData> ringsList;
+   private final static Logger log = Logger.getLogger(RidgeEnsembleData.class);
    
-   ArrayList<URPGroup> destinationGroups;
+   ArrayList<RidgeGroup> destinationGroups;
    
    int    ringId;
    String coordinatorAddress;
@@ -20,20 +20,20 @@ public class URPRingData {
    SocketChannel coordinatorConnection;
    
    static {
-      ringsList = new ArrayList<URPRingData>();
+      ringsList = new ArrayList<RidgeEnsembleData>();
    }
    
-   static URPRingData getById(int id) {
-      for (URPRingData urd : ringsList)
+   static RidgeEnsembleData getById(int id) {
+      for (RidgeEnsembleData urd : ringsList)
          if (urd.getId() == id)
             return urd;
       return null;
    }
    
-   public URPRingData (int ringId) {
+   public RidgeEnsembleData (int ringId) {
       this.ringId = ringId;
       ringsList.add(this);
-      destinationGroups = new ArrayList<URPGroup>();
+      destinationGroups = new ArrayList<RidgeGroup>();
    }
    
    public void setCoordinator(String address, int port) {
@@ -65,7 +65,7 @@ public class URPRingData {
       return coordinatorPort;
    }
    
-   public void addDestinationGroup(URPGroup g) {
+   public void addDestinationGroup(RidgeGroup g) {
       if (destinationGroups.contains(g) == false)
          destinationGroups.add(g);
    }
