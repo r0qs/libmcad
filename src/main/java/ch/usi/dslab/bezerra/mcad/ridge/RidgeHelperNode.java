@@ -27,9 +27,9 @@ import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
-public class URPHelperNode {
+public class RidgeHelperNode {
    
-   public static final Logger log = Logger.getLogger(URPHelperNode.class);
+   public static final Logger log = Logger.getLogger(RidgeHelperNode.class);
 
    private static class HelperProposer implements Runnable {
       boolean running = true;

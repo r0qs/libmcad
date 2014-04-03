@@ -34,12 +34,12 @@ import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
-public class URPMcastAgent implements MulticastAgent {
-   public static final Logger log = Logger.getLogger(URPMcastAgent.class);
+public class RidgeMulticastAgent implements MulticastAgent {
+   public static final Logger log = Logger.getLogger(RidgeMulticastAgent.class);
    Node URPaxosNode = null;
-   URPGroup localGroup = null;
+   RidgeGroup localGroup = null;
    RidgeAgentLearner urpAgentLearner;
-   Map<Long, URPRingData> mappingGroupsToRings;
+   Map<Long, RidgeEnsembleData> mappingGroupsToRings;
    BlockingQueue<byte[]> byteArrayDeliveryQueue;
    BlockingQueue<Message> messageDeliveryQueue;
    
@@ -55,9 +55,9 @@ public class URPMcastAgent implements MulticastAgent {
       
       boolean running = true;
       
-      URPMcastAgent mcagent;
+      RidgeMulticastAgent mcagent;
       
-      public Multicaster(URPMcastAgent mcagent) {
+      public Multicaster(RidgeMulticastAgent mcagent) {
          this.mcagent = mcagent;
          multicasterThread = new Thread(this);
          multicasterThread.start();
@@ -84,7 +84,7 @@ public class URPMcastAgent implements MulticastAgent {
       }
    }
    
-   public URPMcastAgent (String configFile, boolean isInGroup, int... ids) {
+   public RidgeMulticastAgent (String configFile, boolean isInGroup, int... ids) {
       log.setLevel(Level.OFF);
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]> ();
       messageDeliveryQueue   = new LinkedBlockingQueue<Message>();
@@ -93,7 +93,7 @@ public class URPMcastAgent implements MulticastAgent {
    }
    
    void mapGroupsToRings() {
-      mappingGroupsToRings = new Hashtable<Long, URPRingData>();
+      mappingGroupsToRings = new Hashtable<Long, RidgeEnsembleData>();
       
       ArrayList<Group> groups = Group.getAllGroups();
       
@@ -132,11 +132,11 @@ public class URPMcastAgent implements MulticastAgent {
          // iterate through all rings that deliver to all those groups, leaving only those that work
          // sort them by number of associated groups
          // return the first one         
-         ArrayList<URPRingData> candidates = new ArrayList<URPRingData>(URPRingData.ringsList);
+         ArrayList<RidgeEnsembleData> candidates = new ArrayList<RidgeEnsembleData>(RidgeEnsembleData.ringsList);
          
          // getting a valid list of candidate rings
          next_candidate:
-         for (URPRingData r : URPRingData.ringsList){            
+         for (RidgeEnsembleData r : RidgeEnsembleData.ringsList){            
             for (Group g : destinations) {
                if (r.destinationGroups.contains(g) == false) {
                   candidates.remove(r);
@@ -146,16 +146,16 @@ public class URPMcastAgent implements MulticastAgent {
          }
          
          // sorting the candidate rings by number of associated groups
-         Collections.sort(candidates, new Comparator<URPRingData> () {
+         Collections.sort(candidates, new Comparator<RidgeEnsembleData> () {
             @Override
-            public int compare(URPRingData r1, URPRingData r2) {
+            public int compare(RidgeEnsembleData r1, RidgeEnsembleData r2) {
                return r1.destinationGroups.size() - r2.destinationGroups.size();
             }            
          });
          
          // getting the best candidate ring (i.e., that with the least number of associated groups)
          // and indexing it for this set of destinations
-         URPRingData bestCandidateRing = candidates.isEmpty() ? null : candidates.get(0);
+         RidgeEnsembleData bestCandidateRing = candidates.isEmpty() ? null : candidates.get(0);
          mappingGroupsToRings.put(hash, bestCandidateRing);
          
          log.info("Added mapping of destination set " + destinations +
@@ -214,19 +214,19 @@ public class URPMcastAgent implements MulticastAgent {
       return localNodeIsDestination;
    }
    
-   URPRingData retrieveMappedRing(List<Group> destinations) {
+   RidgeEnsembleData retrieveMappedRing(List<Group> destinations) {
       long destsHash = hashDestinationSet(destinations);
-      URPRingData mappedRing = mappingGroupsToRings.get(destsHash);
+      RidgeEnsembleData mappedRing = mappingGroupsToRings.get(destsHash);
       return mappedRing;
    }
    
-   URPRingData retrieveMappedRing(Group destination) {
+   RidgeEnsembleData retrieveMappedRing(Group destination) {
       long destHash = (long) Math.pow(2, destination.getId()); // just hashing right here
-      URPRingData mappedRing = mappingGroupsToRings.get(destHash);
+      RidgeEnsembleData mappedRing = mappingGroupsToRings.get(destHash);
       return mappedRing;
    }
    
-   synchronized private void sendToRing(URPRingData ring, ByteBuffer message) {
+   synchronized private void sendToRing(RidgeEnsembleData ring, ByteBuffer message) {
       try {
          message.flip();
          while(message.hasRemaining())
@@ -263,7 +263,7 @@ public class URPMcastAgent implements MulticastAgent {
          extMsg.putInt(g.getId());
       extMsg.put(message);
       
-      URPRingData destinationRing = retrieveMappedRing(destinations);
+      RidgeEnsembleData destinationRing = retrieveMappedRing(destinations);
       sendToRing(destinationRing, extMsg);
    }
 
@@ -342,7 +342,7 @@ public class URPMcastAgent implements MulticastAgent {
          Object     nodeObj = parser.parse(new FileReader(filename));
          JSONObject config  = (JSONObject) nodeObj;
          
-         Group.changeGroupImplementationClass(URPGroup.class);
+         Group.changeGroupImplementationClass(RidgeGroup.class);
          
          Boolean deserializeToMessageField = (Boolean) config.get("deserialize_to_Message");
          if (deserializeToMessageField != null)
@@ -355,7 +355,7 @@ public class URPMcastAgent implements MulticastAgent {
             JSONObject jsgroup = (JSONObject) it_group.next();
             long group_id = (Long) jsgroup.get("group_id");
             
-            URPGroup group = (URPGroup) Group.getOrCreateGroup((int) group_id);
+            RidgeGroup group = (RidgeGroup) Group.getOrCreateGroup((int) group_id);
             
             log.info("Done creating group " + group.getId());
          }
@@ -372,14 +372,14 @@ public class URPMcastAgent implements MulticastAgent {
             JSONObject jsring  = (JSONObject) it_ring.next();
             long       ring_id = (Long) jsring.get("ring_id");
             
-            URPRingData ringData = new URPRingData((int) ring_id);
+            RidgeEnsembleData ringData = new RidgeEnsembleData((int) ring_id);
             
             JSONArray destGroupsArray = (JSONArray) jsring.get("destination_groups");
             Iterator<Object> it_destGroup = destGroupsArray.iterator();
             
             while (it_destGroup.hasNext()) {
                long destGroupId = (Long) it_destGroup.next();
-               URPGroup destGroup= (URPGroup) URPGroup.getGroup((int) destGroupId);
+               RidgeGroup destGroup= (RidgeGroup) RidgeGroup.getGroup((int) destGroupId);
                ringData.addDestinationGroup(destGroup);
                destGroup.addAssociatedRing(ringData);
             }
@@ -427,7 +427,7 @@ public class URPMcastAgent implements MulticastAgent {
                }
                if (isCoordinator) {
                   long nodeProposerPort = (Long) jsnodering.get("proposer_port");
-                  URPRingData nodeRing  = URPRingData.getById((int) ring_id);
+                  RidgeEnsembleData nodeRing  = RidgeEnsembleData.getById((int) ring_id);
                   nodeRing.setCoordinator(nodeLocation, (int) nodeProposerPort);
                   log.info("Set Ring " + nodeRing.getId() + " to proposer at "
                                      + nodeLocation + ":" + nodeProposerPort);
@@ -440,7 +440,7 @@ public class URPMcastAgent implements MulticastAgent {
          
          // ===========================================
          // Connect to all ring coordinators
-         for (URPRingData ring : URPRingData.ringsList)
+         for (RidgeEnsembleData ring : RidgeEnsembleData.ringsList)
             ring.connectToCoordinator();
          
          
@@ -452,7 +452,7 @@ public class URPMcastAgent implements MulticastAgent {
             int localGroupId = ids[0];
             int localNodeId  = ids[1];
             
-            URPGroup localGroup = (URPGroup) Group.getGroup(localGroupId);
+            RidgeGroup localGroup = (RidgeGroup) Group.getGroup(localGroupId);
             setLocalGroup(localGroup);
             
             // ----------------------------------------------
@@ -468,7 +468,7 @@ public class URPMcastAgent implements MulticastAgent {
             // creating list of ringdescriptors
             // (just for this learner; other ring nodes also have to parse their urp string)
             List<RingDescription> localURPaxosRings = new ArrayList<RingDescription>();
-            for (URPRingData ringData : localGroup.associatedRings) {
+            for (RidgeEnsembleData ringData : localGroup.associatedRings) {
                int ringId = ringData.getId();
                int nodeId = (int) localNodeId;
                ArrayList<PaxosRole> pxRoleList = new ArrayList<PaxosRole>();
@@ -509,9 +509,9 @@ public class URPMcastAgent implements MulticastAgent {
       return this.localGroup;
    }
    
-   public void setLocalGroup(URPGroup g) {
+   public void setLocalGroup(RidgeGroup g) {
       this.localGroup = g;
-      ArrayList<URPRingData> correspondingRings = g.getCorrespondingRings();
+      ArrayList<RidgeEnsembleData> correspondingRings = g.getCorrespondingRings();
       
    }
 

@@ -12,18 +12,18 @@ import ch.usi.dslab.bezerra.netwrapper.Message;
 public class RidgeAgentLearner implements Runnable {
    public static final Logger log = Logger.getLogger(RidgeAgentLearner.class);
    PaxosNode paxos;
-   URPMcastAgent mcAgent;
+   RidgeMulticastAgent mcAgent;
    Thread urpAgentLearnerThread;
    private final static Logger logger;
    private final static Logger valuelogger;
    
    static {
-      logger      = Logger.getLogger(URPMcastAgent.class);
+      logger      = Logger.getLogger(RidgeMulticastAgent.class);
       valuelogger = Logger.getLogger(Value.class);
       log.setLevel(Level.OFF);
    }
 
-   public RidgeAgentLearner(URPMcastAgent mcAgent, PaxosNode paxos) {
+   public RidgeAgentLearner(RidgeMulticastAgent mcAgent, PaxosNode paxos) {
       this.mcAgent = mcAgent;
       this.paxos = paxos;
       urpAgentLearnerThread = new Thread(this);
