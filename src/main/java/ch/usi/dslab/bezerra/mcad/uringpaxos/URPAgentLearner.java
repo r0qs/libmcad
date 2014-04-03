@@ -6,8 +6,8 @@ import org.apache.log4j.Logger;
 import ch.usi.da.paxos.api.PaxosNode;
 import ch.usi.da.paxos.message.Value;
 import ch.usi.da.paxos.storage.Decision;
-import ch.usi.dslab.bezerra.mcad.Message;
 import ch.usi.dslab.bezerra.mcad.MulticastAgentFactory;
+import ch.usi.dslab.bezerra.netwrapper.Message;
 
 public class URPAgentLearner implements Runnable {
    public static final Logger log = Logger.getLogger(URPAgentLearner.class);

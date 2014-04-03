@@ -19,8 +19,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import ch.usi.dslab.bezerra.mcad.Group;
-import ch.usi.dslab.bezerra.mcad.Message;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
+import ch.usi.dslab.bezerra.netwrapper.Message;
 
 public class MinimalMcastAgent implements MulticastAgent {
    int localNodeId;
