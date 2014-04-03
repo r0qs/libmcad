@@ -31,8 +31,8 @@ import ch.usi.da.paxos.api.PaxosRole;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.mcad.Group;
-import ch.usi.dslab.bezerra.mcad.Message;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
+import ch.usi.dslab.bezerra.netwrapper.Message;
 
 public class URPMcastAgent implements MulticastAgent {
    public static final Logger log = Logger.getLogger(URPMcastAgent.class);

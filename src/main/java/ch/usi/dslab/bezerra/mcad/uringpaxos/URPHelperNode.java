@@ -25,7 +25,7 @@ import ch.usi.da.paxos.api.PaxosNode;
 import ch.usi.da.paxos.examples.Util;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
-import ch.usi.dslab.bezerra.mcad.Message;
+import ch.usi.dslab.bezerra.netwrapper.Message;
 
 public class URPHelperNode {
    
