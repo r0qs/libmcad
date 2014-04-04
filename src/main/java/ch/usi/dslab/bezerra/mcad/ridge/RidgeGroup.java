@@ -11,7 +11,7 @@ public class RidgeGroup extends Group {
       maxGroupId = -1;
    }
    
-   ArrayList<RidgeEnsembleData> associatedRings;
+   ArrayList<RidgeEnsembleData> associatedEnsembles;
    
    static int getMaxGroupId() {
       return maxGroupId;
@@ -21,15 +21,15 @@ public class RidgeGroup extends Group {
       super(id);
       if (id > maxGroupId)
          maxGroupId = id;
-      associatedRings = new ArrayList<RidgeEnsembleData>();
+      associatedEnsembles = new ArrayList<RidgeEnsembleData>();
    }
    
-   void addAssociatedRing(RidgeEnsembleData r) {
-      if (associatedRings.contains(r) == false)
-         associatedRings.add(r);
+   void addAssociatedEnsemble(RidgeEnsembleData e) {
+      if (associatedEnsembles.contains(e) == false)
+         associatedEnsembles.add(e);
    }
    
    ArrayList<RidgeEnsembleData> getCorrespondingRings() {
-      return associatedRings;
+      return associatedEnsembles;
    }
 }

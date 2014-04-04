@@ -13,7 +13,6 @@ public class RidgeEnsembleData {
    int ensembleId;
    ArrayList<RidgeGroup> destinationGroups;
    
-   //TODO : set this value
    Ensemble ensemble;
    
    static {
@@ -27,8 +26,9 @@ public class RidgeEnsembleData {
       return null;
    }
 
-   public RidgeEnsembleData (int ensembleId) {
+   public RidgeEnsembleData (int ensembleId, Ensemble ensemble) {
       this.ensembleId = ensembleId;
+      this.ensemble   = ensemble;
       ensemblesList.add(this);
       destinationGroups = new ArrayList<RidgeGroup>();
    }

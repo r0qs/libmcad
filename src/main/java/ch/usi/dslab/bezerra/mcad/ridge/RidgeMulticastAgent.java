@@ -35,6 +35,8 @@ import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.ridge.Ensemble;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage;
+import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
+import ch.usi.dslab.bezerra.ridge.RidgeMessage.Timestamp;
 
 public class RidgeMulticastAgent implements MulticastAgent {
    public static final Logger log = Logger.getLogger(RidgeMulticastAgent.class);
@@ -42,9 +44,9 @@ public class RidgeMulticastAgent implements MulticastAgent {
    RidgeAgentLearner ridgeAgentLearner;
    Map<Long, RidgeEnsembleData> mappingGroupsToEnsembles;
    BlockingQueue<byte[]>  byteArrayDeliveryQueue;
-   BlockingQueue<Message> messageDeliveryQueue;
-
-   boolean deserializeToMessage = false;
+   BlockingQueue<Message> conservativeDeliveryQueue;
+   BlockingQueue<Message> optimisticDeliveryQueue;
+   BlockingQueue<Message> fastDeliveryQueue;
 
    // TODO: set those things
    ch.usi.dslab.bezerra.ridge.MulticastAgent ridgeMulticastAgent;
@@ -53,11 +55,11 @@ public class RidgeMulticastAgent implements MulticastAgent {
    public RidgeMulticastAgent(String configFile, boolean isInGroup, int... ids) {
       log.setLevel(Level.OFF);
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]>();
-      messageDeliveryQueue = new LinkedBlockingQueue<Message>();
-      loadURPAgentConfig(configFile, isInGroup, ids);
+      conservativeDeliveryQueue = new LinkedBlockingQueue<Message>();
+      loadRidgeAgentConfig(configFile, isInGroup, ids);
    }
 
-   void mapGroupsToRings() {
+   void mapGroupsToEnsembles() {
       mappingGroupsToEnsembles = new Hashtable<Long, RidgeEnsembleData>();
 
       ArrayList<Group> groups = Group.getAllGroups();
@@ -97,9 +99,10 @@ public class RidgeMulticastAgent implements MulticastAgent {
             return;
 
          // iterate through all ensembles that deliver to all those groups, leaving
-         // only those that work
+         // only those that work,
+         // then
          // sort them by number of associated groups
-         // return the first one
+         // return the first one (i.e., the ensemble with the least number of associated groups)
          ArrayList<RidgeEnsembleData> candidates = new ArrayList<RidgeEnsembleData>(RidgeEnsembleData.ensemblesList);
 
          // getting a valid list of candidate ensembles
@@ -149,6 +152,7 @@ public class RidgeMulticastAgent implements MulticastAgent {
       return hash;
    }
 
+   // receive a message delivered by Ridge, check if it was addressed to this process and, if it was, enqueue the message for delivery
    boolean checkMessageAndEnqueue(byte[] msg, long t_batch_ready, long batch_serial_start, long batch_serial_end, long t_learner_delivered) {
 
       boolean localNodeIsDestination = false;
@@ -169,7 +173,7 @@ public class RidgeMulticastAgent implements MulticastAgent {
             deserializedMsg.piggyback_proposer_serialend = batch_serial_end;
             deserializedMsg.t_learner_delivered = t_learner_delivered;
             deserializedMsg.t_learner_deserialized = System.currentTimeMillis();
-            messageDeliveryQueue.add(deserializedMsg);
+            conservativeDeliveryQueue.add(deserializedMsg);
          } else {
             byteArrayDeliveryQueue.add(strippedMsg);
          }
@@ -180,14 +184,14 @@ public class RidgeMulticastAgent implements MulticastAgent {
 
    RidgeEnsembleData retrieveMappedEnsemble(List<Group> destinations) {
       long destsHash = hashDestinationSet(destinations);
-      RidgeEnsembleData mappedRing = mappingGroupsToRings.get(destsHash);
+      RidgeEnsembleData mappedRing = mappingGroupsToEnsembles.get(destsHash);
       return mappedRing;
    }
 
    RidgeEnsembleData retrieveMappedRing(Group destination) {
       long destHash = (long) Math.pow(2, destination.getId()); // just hashing
                                                                // right here
-      RidgeEnsembleData mappedRing = mappingGroupsToRings.get(destHash);
+      RidgeEnsembleData mappedRing = mappingGroupsToEnsembles.get(destHash);
       return mappedRing;
    }
 
@@ -244,7 +248,7 @@ public class RidgeMulticastAgent implements MulticastAgent {
 
       Message msg = null;
       try {
-         msg = messageDeliveryQueue.take();
+         msg = conservativeDeliveryQueue.take();
       } catch (InterruptedException e) {
          e.printStackTrace();
       }
@@ -256,6 +260,14 @@ public class RidgeMulticastAgent implements MulticastAgent {
       return deserializeToMessage;
    }
 
+   static int getJSInt(JSONObject jsobj, String fieldName) {
+      return ((Long) jsobj.get(fieldName)).intValue();
+   }
+   
+   static int getInt(Object obj) {
+      return ((Long) obj).intValue();
+   }
+   
    // to translate from Group (.id) to whatever this implementation uses to
    // represent a group
    // void addMapping(Group g, whatever urp uses inside to represent a group)
@@ -267,12 +279,12 @@ public class RidgeMulticastAgent implements MulticastAgent {
    // URPRings
    @SuppressWarnings("unchecked")
    // TODO: Using legacy API in the following method (Iterator part)
-   public void loadURPAgentConfig(String filename, boolean hasLocalGroup, int... ids) {
+   public void loadRidgeAgentConfig(String filename, boolean hasLocalGroup, int... ids) {
 
       // create all groups
-      // create all rings
-      // map rings to groups
-      // map groups to rings
+      // create all ensembles
+      // map ensembles to groups
+      // map groups to ensembles
       // if mcagent is for a server (i.e., there is a local group)
       // create a learner in the rings associated with that group
       // such learner will put its messages in the delivery queue of the mcagent
@@ -296,10 +308,6 @@ public class RidgeMulticastAgent implements MulticastAgent {
 
          Group.changeGroupImplementationClass(RidgeGroup.class);
 
-         Boolean deserializeToMessageField = (Boolean) config.get("deserialize_to_Message");
-         if (deserializeToMessageField != null)
-            deserializeToMessage = deserializeToMessageField;
-
          JSONArray groupsArray = (JSONArray) config.get("groups");
          Iterator<Object> it_group = groupsArray.iterator();
 
@@ -315,44 +323,49 @@ public class RidgeMulticastAgent implements MulticastAgent {
          // ===========================================
          // Creating Ring Info
 
-         JSONArray ringsArray = (JSONArray) config.get("rings");
-         Iterator<Object> it_ring = ringsArray.iterator();
+         JSONArray ensemblesArray = (JSONArray) config.get("ensembles");
+         Iterator<Object> it_ensemble = ensemblesArray.iterator();
 
-         while (it_ring.hasNext()) {
-            JSONObject jsring = (JSONObject) it_ring.next();
-            long ring_id = (Long) jsring.get("ring_id");
+         while (it_ensemble.hasNext()) {
+            JSONObject jsensemble = (JSONObject) it_ensemble.next();
+            int ensemble_id = getJSInt(jsensemble, "ensemble_id");
+            
+            Ensemble ensemble = Ensemble.getOrCreateEnsemble(ensemble_id);
 
-            RidgeEnsembleData ringData = new RidgeEnsembleData((int) ring_id);
+            RidgeEnsembleData ensembleData = new RidgeEnsembleData(ensemble_id, ensemble);
 
-            JSONArray destGroupsArray = (JSONArray) jsring.get("destination_groups");
+            JSONArray destGroupsArray = (JSONArray) jsensemble.get("destination_groups");
             Iterator<Object> it_destGroup = destGroupsArray.iterator();
 
             while (it_destGroup.hasNext()) {
-               long destGroupId = (Long) it_destGroup.next();
-               RidgeGroup destGroup = (RidgeGroup) RidgeGroup.getGroup((int) destGroupId);
-               ringData.addDestinationGroup(destGroup);
-               destGroup.addAssociatedRing(ringData);
+               int destGroupId = getInt(it_destGroup.next());
+               RidgeGroup destGroup = (RidgeGroup) RidgeGroup.getGroup(destGroupId);
+               ensembleData.addDestinationGroup(destGroup);
+               destGroup.addAssociatedEnsemble(ensembleData);
             }
 
-            log.info("Done creating ringdata for ring " + ringData.getId());
+            log.info("Done creating ensemble data for ensemble " + ensembleData.getId());
          }
 
          // ===========================================
          // Mapping destination sets do rings
 
-         mapGroupsToRings();
+         mapGroupsToEnsembles();
 
          // ===========================================
-         // Checking ring nodes
+         // Checking ensemble nodes
 
-         JSONArray nodesArray = (JSONArray) config.get("ring_nodes");
-         Iterator<Object> it_node = nodesArray.iterator();
+         JSONArray processesArray = (JSONArray) config.get("ensemble_processes");
+         Iterator<Object> it_process = processesArray.iterator();
 
-         while (it_node.hasNext()) {
-            JSONObject jsnode = (JSONObject) it_node.next();
+         while (it_process.hasNext()) {
+            JSONObject jsnode = (JSONObject) it_process.next();
 
-            long nodeId = (Long) jsnode.get("node_id");
-            String nodeLocation = (String) jsnode.get("node_location");
+            String role       = (String) jsnode.get("role");
+            long   pid        = (Long)   jsnode.get("pid");
+            long   ensembleId = (Long)   jsnode.get("ensemble");
+            String host       = (String) jsnode.get("host");
+            long   port       = (Long)   jsnode.get("port");
 
             JSONArray nodeRings = (JSONArray) jsnode.get("node_rings");
             Iterator<Object> it_nodeRing = nodeRings.iterator();
@@ -360,7 +373,7 @@ public class RidgeMulticastAgent implements MulticastAgent {
             while (it_nodeRing.hasNext()) {
                JSONObject jsnodering = (JSONObject) it_nodeRing.next();
 
-               long ring_id = (Long) jsnodering.get("ring_id");
+               int ring_id = getJSInt(jsnodering, "ring_id");
                JSONArray nodeRoles = (JSONArray) jsnodering.get("roles");
 
                Iterator<Object> it_nodeRole = nodeRoles.iterator();
@@ -422,7 +435,7 @@ public class RidgeMulticastAgent implements MulticastAgent {
             // ----------------------------------------------
             // Creating Paxos node from list of ring descriptors
             URPaxosNode = new Node(zoo_host, localURPaxosRings);
-            URPaxosNode.start();
+             .start();
             Runtime.getRuntime().addShutdownHook(new Thread() {
                @Override
                public void run() {
@@ -454,6 +467,30 @@ public class RidgeMulticastAgent implements MulticastAgent {
       this.localGroup = g;
       ArrayList<RidgeEnsembleData> correspondingRings = g.getCorrespondingRings();
 
+   }
+
+   @Override
+   public void multicast(Group single_destination, Message message) {
+      List<Group> dests = new ArrayList<Group>(1);
+      dests.add(single_destination);
+      multicast(dests, message);
+   }
+
+   @Override
+   public void multicast(List<Group> destinations, Message message) {
+      RidgeEnsembleData red = retrieveMappedEnsemble(destinations);
+      List<Integer> groupIds = new ArrayList<Integer>(destinations.size());
+      for (Group g : destinations)
+         groupIds.add(g.getId());
+      RidgeMessage wrapperMessage = new RidgeMessage(
+            MessageIdentifier.getNextMessageId(this.pid),
+            RidgeMessage.MESSAGE_MULTICAST,
+            red.ensembleId,
+            -1,
+            new Timestamp(System.currentTimeMillis(), this.pid),
+            groupIds,
+            message);
+      ridgeMulticastAgent.multicast(wrapperMessage, red.ensemble);
    }
 
 }

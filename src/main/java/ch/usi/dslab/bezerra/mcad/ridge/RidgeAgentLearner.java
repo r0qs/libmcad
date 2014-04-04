@@ -1,21 +1,32 @@
 package ch.usi.dslab.bezerra.mcad.ridge;
 
+import java.util.List;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ch.usi.da.paxos.api.PaxosNode;
 import ch.usi.da.paxos.message.Value;
 import ch.usi.da.paxos.storage.Decision;
+import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgentFactory;
 import ch.usi.dslab.bezerra.netwrapper.Message;
+import ch.usi.dslab.bezerra.ridge.DeliverInterface;
+import ch.usi.dslab.bezerra.ridge.Learner;
+import ch.usi.dslab.bezerra.ridge.Process;
+import ch.usi.dslab.bezerra.ridge.RidgeMessage;
 
-public class RidgeAgentLearner implements Runnable {
+public class RidgeAgentLearner implements DeliverInterface {
    public static final Logger log = Logger.getLogger(RidgeAgentLearner.class);
-   PaxosNode paxos;
+
+   Learner learner;
+   
    RidgeMulticastAgent mcAgent;
-   Thread urpAgentLearnerThread;
+   Thread ridgeAgentLearnerThread;
    private final static Logger logger;
    private final static Logger valuelogger;
+   
+   boolean running = true;
    
    static {
       logger      = Logger.getLogger(RidgeMulticastAgent.class);
@@ -23,46 +34,52 @@ public class RidgeAgentLearner implements Runnable {
       log.setLevel(Level.OFF);
    }
 
-   public RidgeAgentLearner(RidgeMulticastAgent mcAgent, PaxosNode paxos) {
+   public RidgeAgentLearner(RidgeMulticastAgent mcAgent, int pid) {
       this.mcAgent = mcAgent;
-      this.paxos = paxos;
-      urpAgentLearnerThread = new Thread(this);
-      urpAgentLearnerThread.start();
+      this.learner = (Learner) Process.getProcess(pid);
+      learner.setDeliverInterface(this);
+   }
+
+   @SuppressWarnings("unchecked")
+   boolean checkIfLocalMessage(RidgeMessage message) {
+      final int localGroupId = mcAgent.getLocalGroup().getId();
+      List<Integer> destinationGroupIds = (List<Integer>) message.getItem(0);
+      if (destinationGroupIds.contains(localGroupId))
+         return true;
+      else
+         return false;
    }
 
    @Override
-   public void run() {      
-      if (paxos.getLearner() == null) {
-         log.error("EEE === Not a learner");
-         return; // not a learner
+   public void deliverConservatively(RidgeMessage message) {
+      if (checkIfLocalMessage(message) == false) return;
+      try {
+         mcAgent.conservativeDeliveryQueue.put(message);
+      } catch (InterruptedException e) {
+         e.printStackTrace();
+         System.exit(1);
       }
-      while (true) {
-         try {
-            Value v = paxos.getLearner().getDecisions().take().getValue();            
-            if (!v.isSkip()) {
-               byte[] rawBatch = v.getValue();
+   }
 
-               if (rawBatch.length == 0 ) {
-                  // System.err.println("0 bytes decision!");
-                  // System.exit(1);
-                  continue;
-               }
+   @Override
+   public void deliverOptimistically(RidgeMessage message) {
+      if (checkIfLocalMessage(message) == false) return;
+      try {
+         mcAgent.optimisticDeliveryQueue.put(message);
+      } catch (InterruptedException e) {
+         e.printStackTrace();
+         System.exit(1);
+      }
+   }
 
-               long t_learner_delivered = System.currentTimeMillis();
-               Message batch = Message.createFromBytes(rawBatch);
-                              
-               while (batch.hasNext()) {
-                  byte[] msg = (byte []) batch.getNext(); // cmdContainer
-                  mcAgent.checkMessageAndEnqueue(msg, batch.t_batch_ready,
-                        batch.piggyback_proposer_serialstart, batch.piggyback_proposer_serialend,
-                        t_learner_delivered);
-               }               
-            }            
-         }
-         catch (InterruptedException e) {
-            logger.error(e);
-            System.exit(0);
-         }
+   @Override
+   public void deliverFast(RidgeMessage message) {
+      if (checkIfLocalMessage(message) == false) return;
+      try {
+         mcAgent.fastDeliveryQueue.put(message);
+      } catch (InterruptedException e) {
+         e.printStackTrace();
+         System.exit(1);
       }
    }
 
