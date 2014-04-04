@@ -515,4 +515,14 @@ public class URPMcastAgent implements MulticastAgent {
       
    }
 
+   @Override
+   public void multicast(Group single_destination, Message message) {
+      multicast(single_destination, message.getBytes());
+   }
+
+   @Override
+   public void multicast(List<Group> destinations, Message message) {
+      multicast(destinations, message.getBytes());
+   }
+
 }
