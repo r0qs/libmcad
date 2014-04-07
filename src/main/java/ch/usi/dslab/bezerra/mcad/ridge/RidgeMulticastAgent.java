@@ -27,13 +27,15 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import ch.usi.da.paxos.api.PaxosRole;
-import ch.usi.da.paxos.ring.Node;
-import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
+import ch.usi.dslab.bezerra.ridge.Acceptor;
+import ch.usi.dslab.bezerra.ridge.AcceptorSequence;
+import ch.usi.dslab.bezerra.ridge.Coordinator;
+import ch.usi.dslab.bezerra.ridge.Coordinator.Batcher;
 import ch.usi.dslab.bezerra.ridge.Ensemble;
+import ch.usi.dslab.bezerra.ridge.Learner;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.Timestamp;
@@ -308,6 +310,12 @@ public class RidgeMulticastAgent implements MulticastAgent {
 
          Group.changeGroupImplementationClass(RidgeGroup.class);
 
+         int batchSizeThreshold = getJSInt(config, "batch_size_threshold_bytes");
+         Batcher.setMessageSizeThreshold(batchSizeThreshold);
+         
+         int batchTimeThreshold = getJSInt(config, "batch_time_threshold_ms");
+         Batcher.setMessageSizeThreshold(batchTimeThreshold);
+         
          JSONArray groupsArray = (JSONArray) config.get("groups");
          Iterator<Object> it_group = groupsArray.iterator();
 
@@ -321,7 +329,7 @@ public class RidgeMulticastAgent implements MulticastAgent {
          }
 
          // ===========================================
-         // Creating Ring Info
+         // Creating Ensemble Info
 
          JSONArray ensemblesArray = (JSONArray) config.get("ensembles");
          Iterator<Object> it_ensemble = ensemblesArray.iterator();
@@ -334,6 +342,14 @@ public class RidgeMulticastAgent implements MulticastAgent {
 
             RidgeEnsembleData ensembleData = new RidgeEnsembleData(ensemble_id, ensemble);
 
+            String learnerBroadcastMode = (String) config.get("learner_broadcast_mode");
+            if (learnerBroadcastMode.equals("DYNAMIC"))
+               ensemble.setConfiguration(Ensemble.DYNAMIC);
+            else if (learnerBroadcastMode.equals("RING"))
+               ensemble.setConfiguration(Ensemble.RING);
+            else
+               ensemble.setConfiguration(Ensemble.RING);
+            
             JSONArray destGroupsArray = (JSONArray) jsensemble.get("destination_groups");
             Iterator<Object> it_destGroup = destGroupsArray.iterator();
 
@@ -348,12 +364,12 @@ public class RidgeMulticastAgent implements MulticastAgent {
          }
 
          // ===========================================
-         // Mapping destination sets do rings
+         // Mapping destination sets to ensembles
 
          mapGroupsToEnsembles();
 
          // ===========================================
-         // Checking ensemble nodes
+         // Checking ensemble processes
 
          JSONArray processesArray = (JSONArray) config.get("ensemble_processes");
          Iterator<Object> it_process = processesArray.iterator();
@@ -361,97 +377,74 @@ public class RidgeMulticastAgent implements MulticastAgent {
          while (it_process.hasNext()) {
             JSONObject jsnode = (JSONObject) it_process.next();
 
-            String role       = (String) jsnode.get("role");
-            long   pid        = (Long)   jsnode.get("pid");
-            long   ensembleId = (Long)   jsnode.get("ensemble");
-            String host       = (String) jsnode.get("host");
-            long   port       = (Long)   jsnode.get("port");
-
-            JSONArray nodeRings = (JSONArray) jsnode.get("node_rings");
-            Iterator<Object> it_nodeRing = nodeRings.iterator();
-
-            while (it_nodeRing.hasNext()) {
-               JSONObject jsnodering = (JSONObject) it_nodeRing.next();
-
-               int ring_id = getJSInt(jsnodering, "ring_id");
-               JSONArray nodeRoles = (JSONArray) jsnodering.get("roles");
-
-               Iterator<Object> it_nodeRole = nodeRoles.iterator();
-
-               boolean isCoordinator = false;
-               while (it_nodeRole.hasNext()) {
-                  String roleString = (String) it_nodeRole.next();
-                  if (roleString.equals("proposer"))
-                     isCoordinator = true;
-               }
-               if (isCoordinator) {
-                  long nodeProposerPort = (Long) jsnodering.get("proposer_port");
-                  RidgeEnsembleData nodeRing = RidgeEnsembleData.getById((int) ring_id);
-                  nodeRing.setCoordinator(nodeLocation, (int) nodeProposerPort);
-                  log.info("Set Ring " + nodeRing.getId() + " to proposer at " + nodeLocation + ":" + nodeProposerPort);
-               }
-
+            String role       = (String)  jsnode.get("role"    );
+            int    pid        = getJSInt (jsnode,    "pid"     );
+            int    ensembleId = getJSInt (jsnode,    "ensemble");
+            String host       = (String)  jsnode.get("host"    );
+            int    port       = getJSInt (jsnode,    "port"    );
+            
+            Ensemble ensemble = Ensemble.getEnsemble(ensembleId);
+            
+            if (role.equals("coordinator")) {
+               Coordinator coordinator = new Coordinator(pid, host, port);
+               ensemble.setCoordinator(coordinator);
+            }
+            
+            if (role.equals("acceptor")) {
+               Acceptor acc  = new Acceptor (pid, host, port);
             }
          }
-
+         
          // ===========================================
-         // Connect to all ring coordinators
-         for (RidgeEnsembleData ring : RidgeEnsembleData.ensemblesList)
-            ring.connectToCoordinator();
+         // Checking acceptor sequences
 
-         // ===========================================
-         // Creating the learner in all relevant rings
-
-         if (hasLocalGroup) {
-            int localGroupId = ids[0];
-            int localNodeId = ids[1];
-
-            RidgeGroup localGroup = (RidgeGroup) Group.getGroup(localGroupId);
-            setLocalGroup(localGroup);
-
-            // ----------------------------------------------
-            // creating zoo_host string in the format ip:port
-            String zoo_host;
-            JSONObject zoo_data = (JSONObject) config.get("zookeeper");
-            zoo_host = (String) zoo_data.get("location");
-            zoo_host += ":";
-            zoo_host += ((Long) zoo_data.get("port")).toString();
-            log.info("Setting zoo_host as " + zoo_host);
-
-            // ----------------------------------------------
-            // creating list of ringdescriptors
-            // (just for this learner; other ring nodes also have to parse their
-            // urp string)
-            List<RingDescription> localURPaxosRings = new ArrayList<RingDescription>();
-            for (RidgeEnsembleData ringData : localGroup.associatedRings) {
-               int ringId = ringData.getId();
-               int nodeId = (int) localNodeId;
-               ArrayList<PaxosRole> pxRoleList = new ArrayList<PaxosRole>();
-               pxRoleList.add(PaxosRole.Learner);
-               localURPaxosRings.add(new RingDescription(ringId, nodeId, pxRoleList));
-               log.info("Setting local node as learner in ring " + ringData.getId());
+         JSONArray acceptorSequencesArray = (JSONArray) config.get("acceptor_sequences");
+         Iterator<Object> it_accseq = acceptorSequencesArray.iterator();
+         
+         while (it_accseq.hasNext()) {
+            JSONObject asnode = (JSONObject) it_accseq.next();
+            
+            int     id         = getJSInt(asnode, "id");
+            int     ensembleId = getJSInt(asnode, "ensemble_id");
+            Boolean coordWrite = (Boolean) config.get("coordinator_writes");
+            
+            AcceptorSequence acceptorSequence = new AcceptorSequence(id, ensembleId, coordWrite);
+            
+            JSONArray acceptors = (JSONArray) config.get("acceptors");
+            Iterator<Object> it_acceptor = acceptors.iterator();
+            while(it_acceptor.hasNext()) {
+               int apid = getInt(it_acceptor.next());
+               Acceptor acceptor = (Acceptor) Acceptor.getProcess(apid);
+               acceptorSequence.addAcceptor(acceptor);
             }
-
-            // ----------------------------------------------
-            // Creating Paxos node from list of ring descriptors
-            URPaxosNode = new Node(zoo_host, localURPaxosRings);
-             .start();
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-               @Override
-               public void run() {
-                  try {
-                     URPaxosNode.stop();
-                  } catch (InterruptedException e) {
-                  }
-               }
-            });
-
-            // attach a learner thread to URPaxosNode to receive the messages
-            // from the rings
-            urpAgentLearner = new RidgeAgentLearner(this, URPaxosNode);
+            
          }
+         
+         // ===========================================
+         // Checking acceptor sequences
+         
+         JSONArray groupMembersArray = (JSONArray) config.get("group_members");
+         Iterator<Object> it_groupMember = groupMembersArray.iterator();
+         
+         while (it_groupMember.hasNext()) {
+            JSONObject gmnode = (JSONObject) it_groupMember.next();
+            
+            int    pid  = getJSInt(gmnode,    "pid"  );
+            int    gid  = getJSInt(gmnode,    "group");
+            String host = (String) gmnode.get("host" );
+            int    port = getJSInt(gmnode,    "port" );
 
-      } catch (IOException | ParseException | InterruptedException | KeeperException e) {
+            RidgeGroup rgroup = (RidgeGroup) RidgeGroup.getGroup(gid);
+            List<RidgeEnsembleData> groupEnsemblesData = rgroup.getCorrespondingRings();
+            
+            Learner learner = new Learner(pid, host, port);
+            for (RidgeEnsembleData red : groupEnsemblesData){
+               learner.subscribeToEnsemble(red.ensemble);               
+            }
+         }
+         
+
+      } catch (IOException | ParseException e) {
          e.printStackTrace();
          System.exit(1);
       }
