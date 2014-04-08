@@ -32,15 +32,17 @@ import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.ridge.Acceptor;
 import ch.usi.dslab.bezerra.ridge.AcceptorSequence;
+import ch.usi.dslab.bezerra.ridge.Client;
 import ch.usi.dslab.bezerra.ridge.Coordinator;
 import ch.usi.dslab.bezerra.ridge.Coordinator.Batcher;
+import ch.usi.dslab.bezerra.ridge.DeliverInterface;
 import ch.usi.dslab.bezerra.ridge.Ensemble;
 import ch.usi.dslab.bezerra.ridge.Learner;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.Timestamp;
 
-public class RidgeMulticastAgent implements MulticastAgent {
+public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
    public static final Logger log = Logger.getLogger(RidgeMulticastAgent.class);
    RidgeGroup localGroup = null;
    RidgeAgentLearner ridgeAgentLearner;
@@ -52,13 +54,34 @@ public class RidgeMulticastAgent implements MulticastAgent {
 
    // TODO: set those things
    ch.usi.dslab.bezerra.ridge.MulticastAgent ridgeMulticastAgent;
+   ch.usi.dslab.bezerra.ridge.Process        localProcess;
    long pid;
 
-   public RidgeMulticastAgent(String configFile, boolean isInGroup, int... ids) {
+   public RidgeMulticastAgent(String configFile, int pid, boolean isInGroup) {
       log.setLevel(Level.OFF);
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]>();
       conservativeDeliveryQueue = new LinkedBlockingQueue<Message>();
-      loadRidgeAgentConfig(configFile, isInGroup, ids);
+      optimisticDeliveryQueue = new LinkedBlockingQueue<Message>();
+      fastDeliveryQueue = new LinkedBlockingQueue<Message>();
+      
+      loadRidgeAgentConfig(configFile);
+      
+      // if this process is not in a group, it must be a client
+      // (or some other multicaster from outside the multi-ensemble infrastructure)
+      if (isInGroup) {
+         Learner learner;
+         localProcess = learner = (Learner) ch.usi.dslab.bezerra.ridge.Process.getProcess(pid);
+         System.out.println("pid = " + pid);
+         learner.setDeliverInterface(this);
+         ridgeMulticastAgent = new ch.usi.dslab.bezerra.ridge.MulticastAgent(learner);
+      }
+      // if this process is in a group, it must be a learner in at least one ensemble,
+      // not needing to send any credentials
+      else {
+         localProcess = new Client(pid);
+         ridgeMulticastAgent = ((Client) localProcess).getMulticastAgent();
+      }
+      localProcess.startRunning();
    }
 
    void mapGroupsToEnsembles() {
@@ -154,100 +177,25 @@ public class RidgeMulticastAgent implements MulticastAgent {
       return hash;
    }
 
-   // receive a message delivered by Ridge, check if it was addressed to this process and, if it was, enqueue the message for delivery
-   boolean checkMessageAndEnqueue(byte[] msg, long t_batch_ready, long batch_serial_start, long batch_serial_end, long t_learner_delivered) {
-
-      boolean localNodeIsDestination = false;
-      ByteBuffer mb = ByteBuffer.wrap(msg);
-      int ndests = mb.getInt();
-      for (int i = 0; i < ndests && mb.hasRemaining(); i++) {
-         int dest = mb.getInt();
-         if (dest == this.localGroup.getId())
-            localNodeIsDestination = true;
-      }
-
-      if (localNodeIsDestination) {
-         byte[] strippedMsg = Arrays.copyOfRange(msg, 4 + ndests * 4, msg.length);
-         if (deserializeToMessage) {
-            Message deserializedMsg = Message.createFromBytes(strippedMsg); // cmdContainer
-            deserializedMsg.t_batch_ready = t_batch_ready;
-            deserializedMsg.piggyback_proposer_serialstart = batch_serial_start;
-            deserializedMsg.piggyback_proposer_serialend = batch_serial_end;
-            deserializedMsg.t_learner_delivered = t_learner_delivered;
-            deserializedMsg.t_learner_deserialized = System.currentTimeMillis();
-            conservativeDeliveryQueue.add(deserializedMsg);
-         } else {
-            byteArrayDeliveryQueue.add(strippedMsg);
-         }
-      }
-
-      return localNodeIsDestination;
-   }
-
    RidgeEnsembleData retrieveMappedEnsemble(List<Group> destinations) {
       long destsHash = hashDestinationSet(destinations);
-      RidgeEnsembleData mappedRing = mappingGroupsToEnsembles.get(destsHash);
-      return mappedRing;
+      RidgeEnsembleData mappedEnsemble = mappingGroupsToEnsembles.get(destsHash);
+      return mappedEnsemble;
    }
 
-   RidgeEnsembleData retrieveMappedRing(Group destination) {
+   RidgeEnsembleData retrieveMappedEnsemble(Group destination) {
       long destHash = (long) Math.pow(2, destination.getId()); // just hashing
                                                                // right here
-      RidgeEnsembleData mappedRing = mappingGroupsToEnsembles.get(destHash);
-      return mappedRing;
+      RidgeEnsembleData mappedEnsemble = mappingGroupsToEnsembles.get(destHash);
+      return mappedEnsemble;
    }
 
-   synchronized private void sendToRing(RidgeMessage m, RidgeEnsembleData ring) {
+   synchronized private void sendToEnsemble(RidgeMessage m, RidgeEnsembleData ring) {
       ridgeMulticastAgent.multicast(m, ring.getEnsemble());
-   }
-
-   // ****************** MESSAGE FORMAT ******************
-   // | MESSAGE LENGTH (not counting length header) | NUMBER n OF DEST GROUPS |
-   // GROUPS | PAYLOAD |
-   // | 4 bytes | 4 bytes | 4*n | rest |
-
-   @Override
-   public void multicast(Group singleDestination, byte[] message) {
-      ArrayList<Group> dests = new ArrayList<Group>(1);
-      dests.add(singleDestination);
-      multicast(dests, message);
-   }
-
-   @Override
-   public void multicast(List<Group> destinations, byte[] message) {
-      RidgeEnsembleData destinationEnsemble = retrieveMappedEnsemble(destinations);
-      RidgeMessage ridgeMessage = new RidgeMessage(RidgeMessage.MESSAGE_MULTICAST,
-            destinationEnsemble.ensembleId,
-            -1l,
-            System.currentTimeMillis(),
-            this.pid,
-            message);
-      ridgeMulticastAgent.multicast(ridgeMessage, destinationEnsemble.getEnsemble());
-   }
-
-   @Override
-   public byte[] deliver() {
-      if (deserializeToMessage) {
-         log.error("!!! - tried to deliver byte[] when Multicast Agent is configured to deliver Message.");
-         return null;
-      }
-
-      byte[] msg = null;
-      try {
-         msg = byteArrayDeliveryQueue.take();
-      } catch (InterruptedException e) {
-         e.printStackTrace();
-      }
-      return msg;
    }
 
    @Override
    public Message deliverMessage() {
-      if (!deserializeToMessage) {
-         log.error("!!! - tried to deliver Message when Multicast Agent is configured to deliver byte[].");
-         return null;
-      }
-
       Message msg = null;
       try {
          msg = conservativeDeliveryQueue.take();
@@ -255,11 +203,6 @@ public class RidgeMulticastAgent implements MulticastAgent {
          e.printStackTrace();
       }
       return msg;
-   }
-
-   @Override
-   public boolean isDeserializingToMessage() {
-      return deserializeToMessage;
    }
 
    static int getJSInt(JSONObject jsobj, String fieldName) {
@@ -281,7 +224,7 @@ public class RidgeMulticastAgent implements MulticastAgent {
    // URPRings
    @SuppressWarnings("unchecked")
    // TODO: Using legacy API in the following method (Iterator part)
-   public void loadRidgeAgentConfig(String filename, boolean hasLocalGroup, int... ids) {
+   public void loadRidgeAgentConfig(String filename) {
 
       // create all groups
       // create all ensembles
@@ -342,7 +285,7 @@ public class RidgeMulticastAgent implements MulticastAgent {
 
             RidgeEnsembleData ensembleData = new RidgeEnsembleData(ensemble_id, ensemble);
 
-            String learnerBroadcastMode = (String) config.get("learner_broadcast_mode");
+            String learnerBroadcastMode = (String) jsensemble.get("learner_broadcast_mode");
             if (learnerBroadcastMode.equals("DYNAMIC"))
                ensemble.setConfiguration(Ensemble.DYNAMIC);
             else if (learnerBroadcastMode.equals("RING"))
@@ -406,11 +349,13 @@ public class RidgeMulticastAgent implements MulticastAgent {
             
             int     id         = getJSInt(asnode, "id");
             int     ensembleId = getJSInt(asnode, "ensemble_id");
-            Boolean coordWrite = (Boolean) config.get("coordinator_writes");
+            boolean coordWrite = (Boolean) asnode.get("coordinator_writes");
+            
+            System.out.println(id + " " + ensembleId + " " + coordWrite);
             
             AcceptorSequence acceptorSequence = new AcceptorSequence(id, ensembleId, coordWrite);
             
-            JSONArray acceptors = (JSONArray) config.get("acceptors");
+            JSONArray acceptors = (JSONArray) asnode.get("acceptors");
             Iterator<Object> it_acceptor = acceptors.iterator();
             while(it_acceptor.hasNext()) {
                int apid = getInt(it_acceptor.next());
@@ -458,8 +403,7 @@ public class RidgeMulticastAgent implements MulticastAgent {
 
    public void setLocalGroup(RidgeGroup g) {
       this.localGroup = g;
-      ArrayList<RidgeEnsembleData> correspondingRings = g.getCorrespondingRings();
-
+      ArrayList<RidgeEnsembleData> correspondingEnsembles = g.getCorrespondingRings();
    }
 
    @Override
@@ -484,6 +428,49 @@ public class RidgeMulticastAgent implements MulticastAgent {
             groupIds,
             message);
       ridgeMulticastAgent.multicast(wrapperMessage, red.ensemble);
+   }
+   
+   @SuppressWarnings("unchecked")
+   boolean checkIfLocalMessage(RidgeMessage message) {
+      final int localGroupId = getLocalGroup().getId();
+      List<Integer> destinationGroupIds = (List<Integer>) message.getItem(0);
+      if (destinationGroupIds.contains(localGroupId))
+         return true;
+      else
+         return false;
+   }
+
+   @Override
+   public void deliverConservatively(RidgeMessage message) {
+      if (checkIfLocalMessage(message) == false) return;
+      try {
+         conservativeDeliveryQueue.put(message);
+      } catch (InterruptedException e) {
+         e.printStackTrace();
+         System.exit(1);
+      }
+   }
+
+   @Override
+   public void deliverOptimistically(RidgeMessage message) {
+      if (checkIfLocalMessage(message) == false) return;
+      try {
+         optimisticDeliveryQueue.put(message);
+      } catch (InterruptedException e) {
+         e.printStackTrace();
+         System.exit(1);
+      }
+   }
+
+   @Override
+   public void deliverFast(RidgeMessage message) {
+      if (checkIfLocalMessage(message) == false) return;
+      try {
+         fastDeliveryQueue.put(message);
+      } catch (InterruptedException e) {
+         e.printStackTrace();
+         System.exit(1);
+      }
    }
 
 }

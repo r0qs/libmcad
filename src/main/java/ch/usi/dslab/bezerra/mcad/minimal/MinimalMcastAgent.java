@@ -43,21 +43,20 @@ public class MinimalMcastAgent implements MulticastAgent {
          e.printStackTrace();
       }
    }
-
-   @Override
+//   @Override
    public void multicast(Group single_destination, byte[] message) {
       MMAGroup g = (MMAGroup) single_destination;
       for (MMANode node : g.nodeList)
          send(node, message);      
    }
 
-   @Override
+//   @Override
    public void multicast(List<Group> destinations, byte[] message) {
       for (Group g : destinations)
          multicast(g, message);
    }
 
-   @Override
+//   @Override
    public byte[] deliver() {
       try {
          return deliveredMessages.take();
@@ -73,7 +72,7 @@ public class MinimalMcastAgent implements MulticastAgent {
       return null;
    }
    
-   @Override
+//   @Override
    public boolean isDeserializingToMessage() {
       return false;
    }
