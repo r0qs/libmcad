@@ -43,7 +43,7 @@ public class URPMcastAgent implements MulticastAgent {
    BlockingQueue<byte[]> byteArrayDeliveryQueue;
    BlockingQueue<Message> messageDeliveryQueue;
    
-   boolean deserializeToMessage = false;
+   boolean deserializeToMessage = true;
    
    Multicaster multicaster;
    
@@ -242,14 +242,14 @@ public class URPMcastAgent implements MulticastAgent {
    // |                4 bytes                      |         4 bytes         |  4*n   |   rest  |
 
    
-   @Override
+//   @Override
    public void multicast(Group singleDestination, byte [] message) {
       ArrayList<Group> dests = new ArrayList<Group>(1);
       dests.add(singleDestination);
       multicast(dests, message);
    }
    
-   @Override
+//   @Override
    public void multicast(List<Group> destinations, byte [] message) {
       multicaster.enqueueForMulticasting(destinations, message);
    }
@@ -267,7 +267,7 @@ public class URPMcastAgent implements MulticastAgent {
       sendToRing(destinationRing, extMsg);
    }
 
-   @Override
+//   @Override
    public byte [] deliver() {
       if (deserializeToMessage) {
          log.error("!!! - tried to deliver byte[] when Multicast Agent is configured to deliver Message.");
@@ -301,7 +301,6 @@ public class URPMcastAgent implements MulticastAgent {
       return msg;
    }
    
-   @Override
    public boolean isDeserializingToMessage() {
       return deserializeToMessage;
    }

@@ -10,6 +10,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import ch.usi.dslab.bezerra.mcad.minimal.MinimalMcastAgent;
+import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMcastAgent;
 
 public class MulticastAgentFactory {
@@ -49,8 +50,12 @@ public class MulticastAgentFactory {
             log.info("Creating URPMcastAgent");
             return new URPMcastAgent(configFile, isInGroup, ids);
          }
+         else if (agent_type.equals("RidgeMulticastAgent")) {
+            log.info("Creating RidgeMulticastAgent");
+            return new RidgeMulticastAgent(configFile, ids[1], isInGroup);
+         }
          else {
-            log.error("agent_type field in " + configFile + " didn't match any known MulticastAgent type");
+            log.error("agent_type field in " + configFile + " didn't match any known MulticastAgentOld type");
          }
          
       } catch (IOException e) {

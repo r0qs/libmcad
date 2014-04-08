@@ -3,7 +3,7 @@
   
   "batch_size_threshold_bytes" : 30,
   
-  "batch_time_threshold_ms"  : 50,
+  "batch_time_threshold_ms"  : 5,
   
   "groups" :
   [
@@ -116,26 +116,26 @@
   "group_members" :
   [
     {
-      "pid"   : 3,
+      "pid"   : 9,
       "group" : 1,
       "host"  : "localhost",
       "port"  : 50003
     },
     {
       "role" : "learner",
-      "pid"  : 4,
+      "pid"  : 10,
       "group" : 1
       "host" : "localhost",
       "port" : 50004
     },
     {
-      "pid"   : 5,
+      "pid"   : 11,
       "group" : 2,
       "host"  : "localhost",
       "port"  : 50003
     },
     {
-      "pid"   : 6,
+      "pid"   : 12,
       "group" : 2,
       "host"  : "localhost",
       "port"  : 50003

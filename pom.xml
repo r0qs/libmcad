@@ -95,6 +95,12 @@
 			<version>git</version>
 		</dependency>
 
+		<dependency>
+			<groupId>ch.usi.dslab.bezerra.ridge</groupId>
+			<artifactId>ridge</artifactId>
+			<version>git</version>
+		</dependency>
+
 	</dependencies>
 
 </project>
