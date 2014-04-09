@@ -20,9 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.zookeeper.KeeperException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -44,7 +43,9 @@ import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.Timestamp;
 
 public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
-   public static final Logger log = Logger.getLogger(RidgeMulticastAgent.class);
+   static Logger logger = LogManager.getLogger("RidgeMulticastAgent");
+   
+//   public static final Logger log = Logger.getLogger(RidgeMulticastAgent.class);
    RidgeGroup localGroup = null;
    static Map<Long, RidgeEnsembleData> mappingGroupsToEnsembles;
    BlockingQueue<byte[]>  byteArrayDeliveryQueue;
@@ -60,7 +61,6 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
    long pid;
 
    public RidgeMulticastAgent(String configFile, int pid, boolean isInGroup) {
-      log.setLevel(Level.OFF);
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]>();
       conservativeDeliveryQueue = new LinkedBlockingQueue<Message>();
       optimisticDeliveryQueue = new LinkedBlockingQueue<Message>();
@@ -107,7 +107,7 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
       });
       // =================================
 
-      log.info("about to call recursive mapping with groups in " + groups);
+      logger.info("about to call recursive mapping with groups in " + groups);
       recursivelyMapAllGroupCombinations(groups, new ArrayList<Group>(), -1, false, 0);
 
    }
@@ -163,7 +163,7 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
          RidgeEnsembleData bestCandidateEnsemble = candidates.isEmpty() ? null : candidates.get(0);
          mappingGroupsToEnsembles.put(hash, bestCandidateEnsemble);
 
-         log.info("Added mapping of destination set " + destinations + " (with hash " + hash + ") to ensemble "
+         logger.info("Added mapping of destination set " + destinations + " (with hash " + hash + ") to ensemble "
                + (bestCandidateEnsemble == null ? "null" : bestCandidateEnsemble.getId()));
 
       } else {
@@ -277,7 +277,7 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
 
             RidgeGroup group = (RidgeGroup) Group.getOrCreateGroup((int) group_id);
 
-            log.info("Done creating group " + group.getId());
+            logger.info("Done creating group {}", group.getId());
          }
 
          // ===========================================
@@ -312,7 +312,7 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
                destGroup.addAssociatedEnsemble(ensembleData);
             }
 
-            log.info("Done creating ensemble data for ensemble " + ensembleData.getId());
+            logger.info("Done creating ensemble data for ensemble {}", ensembleData.getId());
          }
 
          // ===========================================
@@ -460,7 +460,7 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
 
    @Override
    public void deliverConservatively(RidgeMessage wrappedMessage) {
-      System.out.println(String.format("/___ Learner delivered message %s conservatively", wrappedMessage.getId()));
+      logger.info("/___ Learner delivered message {} conservatively", wrappedMessage.getId());
       if (checkIfLocalMessage(wrappedMessage) == false) return;
       try {
          conservativeDeliveryQueue.put(getApplicationMessage(wrappedMessage));
@@ -472,7 +472,7 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
 
    @Override
    public void deliverOptimistically(RidgeMessage wrappedMessage) {
-      System.out.println(String.format("/___ Learner delivered message %s optimistically", wrappedMessage.getId()));
+      logger.info("/___ Learner delivered message {} optimistically", wrappedMessage.getId());
       if (checkIfLocalMessage(wrappedMessage) == false) return;
       try {
          optimisticDeliveryQueue.put(getApplicationMessage(wrappedMessage));
@@ -484,7 +484,7 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
 
    @Override
    public void deliverFast(RidgeMessage wrappedMessage) {
-      System.out.println(String.format("/___ Learner delivered message %s fast", wrappedMessage.getId()));
+      logger.info("/___ Learner delivered message {} fast", wrappedMessage.getId());
       if (checkIfLocalMessage(wrappedMessage) == false) return;
       try {
          fastDeliveryQueue.put(getApplicationMessage(wrappedMessage));
