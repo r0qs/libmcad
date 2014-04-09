@@ -87,7 +87,7 @@ for node in config["ring_nodes"] :
     
     node_location = node["node_location"]
 
-    class_path    = "-cp $HOME/libmcad/target/libmcad-1.jar"    
+    class_path    = "-cp $HOME/libmcad/target/libmcad-git.jar"    
     
     node_path    = "ch.usi.dslab.bezerra.mcad.uringpaxos.URPHelperNode"
     
