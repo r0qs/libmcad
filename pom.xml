@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ch.usi.dslab.bezerra.mcad</groupId>
 	<artifactId>libmcad</artifactId>
-	<version>1</version>
+	<version>git</version>
 	<name>Library for Multicast Adaptor</name>
 	<packaging>jar</packaging>
 
