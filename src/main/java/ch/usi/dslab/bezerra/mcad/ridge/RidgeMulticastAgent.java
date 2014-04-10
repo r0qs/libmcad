@@ -27,8 +27,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
+import ch.usi.dslab.bezerra.mcad.OptimisticMulticastAgent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.ridge.Acceptor;
 import ch.usi.dslab.bezerra.ridge.AcceptorSequence;
@@ -42,7 +44,7 @@ import ch.usi.dslab.bezerra.ridge.RidgeMessage;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.Timestamp;
 
-public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
+public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastAgent, FastMulticastAgent {
    static Logger logger = LogManager.getLogger("RidgeMulticastAgent");
    
 //   public static final Logger log = Logger.getLogger(RidgeMulticastAgent.class);
@@ -58,7 +60,8 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
    // TODO: set those things
    ch.usi.dslab.bezerra.ridge.MulticastAgent ridgeMulticastAgent;
    ch.usi.dslab.bezerra.ridge.Process        localProcess;
-   long pid;
+   RidgeAgentLearner ridgeAgentLearner;
+   int pid;
 
    public RidgeMulticastAgent(String configFile, int pid, boolean isInGroup) {
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]>();
@@ -76,8 +79,7 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
          
          Learner learner;
          localProcess = learner = (Learner) ch.usi.dslab.bezerra.ridge.Process.getProcess(pid);
-         System.out.println("pid = " + pid);
-         learner.setDeliverInterface(this);
+         ridgeAgentLearner   = new RidgeAgentLearner(this, learner);
          ridgeMulticastAgent = new ch.usi.dslab.bezerra.ridge.MulticastAgent(learner);
       }
       // if this process is in a group, it must be a learner in at least one ensemble,
@@ -201,17 +203,6 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
 
    synchronized private void sendToEnsemble(RidgeMessage m, RidgeEnsembleData ring) {
       ridgeMulticastAgent.multicast(m, ring.getEnsemble());
-   }
-
-   @Override
-   public Message deliverMessage() {
-      Message msg = null;
-      try {
-         msg = conservativeDeliveryQueue.take();
-      } catch (InterruptedException e) {
-         e.printStackTrace();
-      }
-      return msg;
    }
 
    static int getJSInt(JSONObject jsobj, String fieldName) {
@@ -444,54 +435,37 @@ public class RidgeMulticastAgent implements MulticastAgent, DeliverInterface {
       ridgeMulticastAgent.multicast(wrapperMessage, red.ensemble);
    }
    
-   @SuppressWarnings("unchecked")
-   boolean checkIfLocalMessage(RidgeMessage message) {
-      final int localGroupId = getLocalGroup().getId();
-      List<Integer> destinationGroupIds = (List<Integer>) message.getItem(0);
-      if (destinationGroupIds.contains(localGroupId))
-         return true;
-      else
-         return false;
-   }
-   
-   Message getApplicationMessage(RidgeMessage wrapperMessage) {
-      return (Message) wrapperMessage.getItem(1);
+   @Override
+   public Message deliverMessage() {
+      Message msg = null;
+      try {
+         msg = conservativeDeliveryQueue.take();
+      } catch (InterruptedException e) {
+         e.printStackTrace();
+      }
+      return msg;
    }
 
    @Override
-   public void deliverConservatively(RidgeMessage wrappedMessage) {
-      logger.info("/___ Learner delivered message {} conservatively", wrappedMessage.getId());
-      if (checkIfLocalMessage(wrappedMessage) == false) return;
+   public Message deliverMessageOptimistically() {
+      Message msg = null;
       try {
-         conservativeDeliveryQueue.put(getApplicationMessage(wrappedMessage));
+         msg = optimisticDeliveryQueue.take();
       } catch (InterruptedException e) {
          e.printStackTrace();
-         System.exit(1);
       }
+      return msg;
    }
 
    @Override
-   public void deliverOptimistically(RidgeMessage wrappedMessage) {
-      logger.info("/___ Learner delivered message {} optimistically", wrappedMessage.getId());
-      if (checkIfLocalMessage(wrappedMessage) == false) return;
+   public Message deliverMessageFast() {
+      Message msg = null;
       try {
-         optimisticDeliveryQueue.put(getApplicationMessage(wrappedMessage));
+         msg = fastDeliveryQueue.take();
       } catch (InterruptedException e) {
          e.printStackTrace();
-         System.exit(1);
       }
-   }
-
-   @Override
-   public void deliverFast(RidgeMessage wrappedMessage) {
-      logger.info("/___ Learner delivered message {} fast", wrappedMessage.getId());
-      if (checkIfLocalMessage(wrappedMessage) == false) return;
-      try {
-         fastDeliveryQueue.put(getApplicationMessage(wrappedMessage));
-      } catch (InterruptedException e) {
-         e.printStackTrace();
-         System.exit(1);
-      }
+      return msg;
    }
 
 }
