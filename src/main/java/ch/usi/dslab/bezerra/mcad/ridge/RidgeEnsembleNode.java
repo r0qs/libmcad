@@ -1,7 +1,5 @@
 package ch.usi.dslab.bezerra.mcad.ridge;
 
-import com.sun.media.jfxmedia.logging.Logger;
-
 import ch.usi.dslab.bezerra.ridge.Coordinator;
 import ch.usi.dslab.bezerra.ridge.DeliverInterface;
 import ch.usi.dslab.bezerra.ridge.Learner;
