@@ -85,7 +85,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
       // if this process is in a group, it must be a learner in at least one ensemble,
       // not needing to send any credentials
       else {
-         localProcess = new Client(pid);
+         localProcess = new RidgeClientReceiver(pid);
          ridgeMulticastAgent = ((Client) localProcess).getMulticastAgent();
       }
       localProcess.startRunning();
