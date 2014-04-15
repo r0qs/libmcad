@@ -1,20 +1,25 @@
 package ch.usi.dslab.bezerra.mcad.ridge;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import ch.usi.dslab.bezerra.mcad.ClientReceiver;
+import ch.usi.dslab.bezerra.mcad.Group;
+import ch.usi.dslab.bezerra.mcad.MulticastClient;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.ridge.Client;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage;
 
 
-public class RidgeClientReceiver extends Client implements ClientReceiver {
+public class RidgeMulticastClient extends Client implements MulticastClient {
+   
+   RidgeMulticastAgent ridgeMulticastAgent;
    
    BlockingQueue<Message> receivedReplies;
    
-   public RidgeClientReceiver(int id) {
+   public RidgeMulticastClient(int id, RidgeMulticastAgent rmcAgent) {
       super(id);
+      this.ridgeMulticastAgent = rmcAgent;
       receivedReplies = new LinkedBlockingDeque<Message>();
    }
    
@@ -24,8 +29,8 @@ public class RidgeClientReceiver extends Client implements ClientReceiver {
    }
 
    @Override
-   public Object deliver() {
-      Object delivery = null;
+   public Message deliverReply() {
+      Message delivery = null;
       try {
          delivery = receivedReplies.take();
       } catch (InterruptedException e) {
@@ -33,6 +38,11 @@ public class RidgeClientReceiver extends Client implements ClientReceiver {
          System.exit(1);
       }
       return delivery;
+   }
+
+   @Override
+   public void multicast(List<Group> destinations, Message message) {
+      ridgeMulticastAgent.multicast(destinations, message);
    }
 
 }

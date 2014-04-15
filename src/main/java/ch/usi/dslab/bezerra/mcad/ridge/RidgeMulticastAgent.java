@@ -58,7 +58,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
    static Map<Integer, RidgeGroup> processGroups = new ConcurrentHashMap<Integer, RidgeGroup>();
 
    // TODO: set those things
-   ch.usi.dslab.bezerra.ridge.MulticastAgent ridgeMulticastAgent;
+   ch.usi.dslab.bezerra.ridge.MulticastAgent lowerMulticastAgent;
    ch.usi.dslab.bezerra.ridge.Process        localProcess;
    RidgeAgentLearner ridgeAgentLearner;
    int pid;
@@ -80,15 +80,24 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
          Learner learner;
          localProcess = learner = (Learner) ch.usi.dslab.bezerra.ridge.Process.getProcess(pid);
          ridgeAgentLearner   = new RidgeAgentLearner(this, learner);
-         ridgeMulticastAgent = new ch.usi.dslab.bezerra.ridge.MulticastAgent(learner);
+         lowerMulticastAgent = new ch.usi.dslab.bezerra.ridge.MulticastAgent(learner);
       }
       // if this process is in a group, it must be a learner in at least one ensemble,
       // not needing to send any credentials
       else {
-         localProcess = new RidgeClientReceiver(pid);
-         ridgeMulticastAgent = ((Client) localProcess).getMulticastAgent();
+         localProcess = new RidgeMulticastClient(pid, this);
+         lowerMulticastAgent = ((Client) localProcess).getMulticastAgent();
       }
       localProcess.startRunning();
+   }
+   
+   public RidgeMulticastClient getClient() {
+      if (localProcess instanceof RidgeMulticastClient)
+         return (RidgeMulticastClient) localProcess;
+      else {
+         System.err.println("RidgeMulticastAgent is not associated with a RidgeClientReceiver (is this really a client?)");
+         return null;
+      }
    }
    
    static RidgeGroup getProcessGroup(int pid) {
@@ -202,7 +211,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
    }
 
    synchronized private void sendToEnsemble(RidgeMessage m, RidgeEnsembleData ring) {
-      ridgeMulticastAgent.multicast(m, ring.getEnsemble());
+      lowerMulticastAgent.multicast(m, ring.getEnsemble());
    }
 
    static int getJSInt(JSONObject jsobj, String fieldName) {
@@ -432,7 +441,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
             new Timestamp(System.currentTimeMillis(), this.pid),
             groupIds,
             message);
-      ridgeMulticastAgent.multicast(wrapperMessage, red.ensemble);
+      lowerMulticastAgent.multicast(wrapperMessage, red.ensemble);
    }
    
    @Override
