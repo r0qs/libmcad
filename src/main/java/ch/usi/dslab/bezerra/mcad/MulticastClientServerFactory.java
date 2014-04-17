@@ -14,7 +14,7 @@ import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMulticastClient;
 
 
-public class MulticastClientFactory {
+public class MulticastClientServerFactory {
    public static final Logger logger = LogManager.getLogger(MulticastAgentFactory.class);
    
    public static MulticastClient getClient(int clientId, String configFile) {
@@ -53,5 +53,10 @@ public class MulticastClientFactory {
       }
       
       return clirec;
+   }
+
+   public static MulticastServer getServer(int serverId, String configFile) {
+      // TODO
+      return null;
    }
 }
