@@ -18,7 +18,7 @@ public class MulticastClientServerFactory {
    public static final Logger logger = LogManager.getLogger(MulticastAgentFactory.class);
    
    public static MulticastClient getClient(int clientId, String configFile) {
-      MulticastClient clirec = null;
+      MulticastClient client = null;
       
       try {
       
@@ -38,9 +38,9 @@ public class MulticastClientServerFactory {
             logger.info("Creating URPMcastAgent");
             return new URPMulticastClient(clientId, configFile);
          }
-         else if (agent_type.equals("RidgeMulticastAgent")) {
+         else if (agent_type.equals("RidgeMulticastClient")) {
             logger.info("Creating RidgeMulticastAgent");
-            RidgeMulticastAgent rcmagent = new RidgeMulticastAgent(configFile, clientId, true);
+            RidgeMulticastAgent rcmagent = new RidgeMulticastAgent(configFile, clientId, false);
             return rcmagent.getClient();
          }
          else {
@@ -52,11 +52,42 @@ public class MulticastClientServerFactory {
          System.exit(1);
       }
       
-      return clirec;
+      return client;
    }
 
    public static MulticastServer getServer(int serverId, String configFile) {
-      // TODO
-      return null;
+      MulticastServer server = null;
+      
+      try {
+      
+         JSONParser parser = new JSONParser();
+         
+         Object obj = parser.parse(new FileReader(configFile));         
+         JSONObject config = (JSONObject) obj;         
+         String agent_type = (String) config.get("agent_class");
+         
+         logger.info("Agent Type: " + agent_type);
+         
+         if (agent_type.equals("MinimalMcastAgent")) {
+            // TODO
+         }
+         else if (agent_type.equals("URPMcastAgent")) {
+            // TODO
+         }
+         else if (agent_type.equals("RidgeMulticastAgent")) {
+            logger.info("Creating RidgeMulticastServer");
+            RidgeMulticastAgent rcmagent = new RidgeMulticastAgent(configFile, serverId, true);
+            return rcmagent.getServer();
+         }
+         else {
+            logger.error("agent_type field in " + configFile + " didn't match any known MulticastAgentOld type");
+         }
+      }
+      catch(ParseException | IOException e) {
+         e.printStackTrace();
+         System.exit(1);
+      }
+      
+      return server;
    }
 }
