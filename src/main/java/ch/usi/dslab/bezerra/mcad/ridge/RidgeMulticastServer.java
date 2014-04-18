@@ -16,6 +16,11 @@ public class RidgeMulticastServer implements MulticastServer {
    }
    
    @Override
+   public int getId() {
+      return associatedLearner.getPid();
+   }
+   
+   @Override
    public boolean isConnectedToClient(int clientId) {
       return associatedLearner.isConnectedToClient(clientId);
    }
