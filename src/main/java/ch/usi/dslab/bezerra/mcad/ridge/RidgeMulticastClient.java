@@ -24,6 +24,11 @@ public class RidgeMulticastClient extends Client implements MulticastClient {
    }
    
    @Override
+   public void connectToServer(int serverId) {
+      connectToLearner(serverId);
+   }
+   
+   @Override
    public void uponDelivery(RidgeMessage reply) {
       receivedReplies.add(reply);
    }

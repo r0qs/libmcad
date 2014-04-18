@@ -3,13 +3,14 @@ package ch.usi.dslab.bezerra.mcad;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 @SuppressWarnings("rawtypes")
-public class Group {
+public abstract class Group {
    public static Logger log = Logger.getLogger(Group.class);
    
    static Class groupImplementationClass = Group.class;
@@ -74,5 +75,7 @@ public class Group {
    public void setId(int groupId) {
       this.groupId = groupId;
    }
+   
+   public abstract List<Integer> getMembers();
    
 }

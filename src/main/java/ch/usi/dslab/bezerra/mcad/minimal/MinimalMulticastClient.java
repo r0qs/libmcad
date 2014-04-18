@@ -13,6 +13,11 @@ public class MinimalMulticastClient implements MulticastClient {
    }
    
    @Override
+   public void connectToServer(int serverId) {
+      // TODO Auto-generated method stub
+   }
+   
+   @Override
    public Message deliverReply() {
       // TODO Auto-generated method stub
       return null;
@@ -21,7 +26,6 @@ public class MinimalMulticastClient implements MulticastClient {
    @Override
    public void multicast(List<Group> destinations, Message message) {
       // TODO Auto-generated method stub
-      
    }
 
 }

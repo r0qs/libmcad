@@ -1,6 +1,7 @@
 package ch.usi.dslab.bezerra.mcad.uringpaxos;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import ch.usi.dslab.bezerra.mcad.Group;
 
@@ -31,5 +32,11 @@ public class URPGroup extends Group {
    
    ArrayList<URPRingData> getCorrespondingRings() {
       return associatedRings;
+   }
+
+   @Override
+   public List<Integer> getMembers() {
+      // TODO Auto-generated method stub
+      return null;
    }
 }
