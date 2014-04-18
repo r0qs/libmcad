@@ -5,6 +5,7 @@ import java.util.List;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
 public interface MulticastClient {
-   public Message deliverReply();
-   public void    multicast(List<Group> destinations, Message msg);
+   void    connectToServer(int serverId);
+   Message deliverReply();
+   void    multicast(List<Group> destinations, Message msg);
 }

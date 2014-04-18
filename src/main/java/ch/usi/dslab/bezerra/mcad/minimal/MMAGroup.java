@@ -1,6 +1,7 @@
 package ch.usi.dslab.bezerra.mcad.minimal;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import ch.usi.dslab.bezerra.mcad.Group;
 
@@ -21,6 +22,12 @@ public class MMAGroup extends Group {
    
    public void addNode(MMANode node) {
       nodeList.add(node);
+   }
+
+   @Override
+   public List<Integer> getMembers() {
+      // TODO Auto-generated method stub
+      return null;
    }
 
 }
