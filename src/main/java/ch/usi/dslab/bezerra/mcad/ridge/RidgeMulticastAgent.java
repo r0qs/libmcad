@@ -100,6 +100,15 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
       }
    }
    
+   public RidgeMulticastServer getServer() {
+      if (localProcess instanceof Learner)
+         return new RidgeMulticastServer(this, (Learner) localProcess);
+      else {
+         System.err.println("RidgeMulticastAgent is not associated with a Learner (is this really a server?)");
+         return null;
+      }
+   }
+   
    static RidgeGroup getProcessGroup(int pid) {
       return processGroups.get(pid);
    }
