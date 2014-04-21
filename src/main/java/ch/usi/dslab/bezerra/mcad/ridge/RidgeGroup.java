@@ -42,15 +42,19 @@ public class RidgeGroup extends Group {
    @Override
    public List<Integer> getMembers() {
 //      if (membersCache == null) {
-         Set<Learner> associatedLearners = new HashSet<Learner>();
+         Set<Learner> associatedLearners = new HashSet<Learner>(associatedEnsembles.get(0).ensemble.getLearners());
          for (RidgeEnsembleData ensembleData : associatedEnsembles)
-            associatedLearners.addAll(ensembleData.ensemble.getLearners());
+            associatedLearners.retainAll(ensembleData.ensemble.getLearners());
          List<Integer> members = new ArrayList<Integer>(associatedLearners.size());
          for (Learner learner : associatedLearners)
             members.add(learner.getPid());
          Collections.sort(members);
          this.membersCache = members;
 //      }
+     
+      for (int id : membersCache) {
+         System.out.println(String.format("Group %d has member %d", this.getId(), id));
+      }
       return membersCache;
    }
 }

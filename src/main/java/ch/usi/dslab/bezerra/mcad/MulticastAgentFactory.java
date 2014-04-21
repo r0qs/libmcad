@@ -55,7 +55,7 @@ public class MulticastAgentFactory {
             return new RidgeMulticastAgent(configFile, ids[1], isInGroup);
          }
          else {
-            log.error("agent_type field in " + configFile + " didn't match any known MulticastAgentOld type");
+            log.error("agent_type field in " + configFile + " didn't match any known MulticastAgent type");
          }
          
       } catch (IOException e) {
