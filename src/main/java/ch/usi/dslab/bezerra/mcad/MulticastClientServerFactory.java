@@ -38,7 +38,7 @@ public class MulticastClientServerFactory {
             logger.info("Creating URPMcastAgent");
             return new URPMulticastClient(clientId, configFile);
          }
-         else if (agent_type.equals("RidgeMulticastClient")) {
+         else if (agent_type.equals("RidgeMulticastAgent")) {
             logger.info("Creating RidgeMulticastAgent");
             RidgeMulticastAgent rcmagent = new RidgeMulticastAgent(configFile, clientId, false);
             return rcmagent.getClient();
