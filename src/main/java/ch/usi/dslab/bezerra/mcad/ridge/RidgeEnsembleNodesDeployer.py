@@ -27,11 +27,18 @@ class launcherThread (threading.Thread):
 #====================================
 #====================================
 
+if len(sys.argv) < 2 :
+    print("Usage: " + sys.argv[0] + " config_file + [classpath]")
+    
 system_config_file = sys.argv[1]
+
+extra_classpath = ""
 xterm = False
-if len(sys.argv) > 2 :
-    if sys.argv[2] == "x" :
+for param in sys.argv[2:] :
+    if param == "x" :
         xterm = True
+    else :
+        extra_classpath += ":" + param
 
 print("Deploying system helper nodes described in " + system_config_file)
 
@@ -59,7 +66,7 @@ for process in config["ensemble_processes"] :
     host = process["host"]
     port = process["port"]
     
-    class_path   = "-cp $HOME/libmcad/target/libmcad-git.jar"    
+    class_path   = "-cp $HOME/libmcad/target/libmcad-git.jar" + extra_classpath
     node_path    = "ch.usi.dslab.bezerra.mcad.ridge.RidgeEnsembleNode"
     java_string  = "java -XX:+UseG1GC " + class_path + " " + node_path
     arguments    = system_config_file + " " + str(pid)
