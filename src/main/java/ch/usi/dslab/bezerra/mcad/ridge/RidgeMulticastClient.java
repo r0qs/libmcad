@@ -29,7 +29,7 @@ public class RidgeMulticastClient extends Client implements MulticastClient {
    }
    
    @Override
-   public void uponDelivery(RidgeMessage reply) {
+   public void uponDelivery(Message reply) {
       receivedReplies.add(reply);
    }
 
