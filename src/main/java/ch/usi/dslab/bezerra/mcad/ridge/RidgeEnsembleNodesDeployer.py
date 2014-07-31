@@ -30,7 +30,7 @@ class launcherThread (threading.Thread):
 if len(sys.argv) < 2 :
     print("Usage: " + sys.argv[0] + " config_file + [classpath]")
     
-system_config_file = sys.argv[1]
+system_config_file = os.path.abspath(sys.argv[1])
 
 extra_classpath = ""
 xterm = False
@@ -38,7 +38,7 @@ for param in sys.argv[2:] :
     if param == "x" :
         xterm = True
     else :
-        extra_classpath += ":" + param
+        extra_classpath += ":" + os.path.abspath(param)
 
 print("Deploying system helper nodes described in " + system_config_file)
 
