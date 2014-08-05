@@ -1,0 +1,89 @@
+{
+  "agent_class" : "URPMcastAgent" ,
+  
+  "groups" :
+  [
+    {
+      "group_id" : 1
+    } ,
+    {
+      "group_id" : 2
+    }
+  ] ,
+  
+  "zookeeper" :
+  {
+    "location" : "localhost" ,
+    "port" : 2181,
+    "path" : "$HOME/zoo/bin/zkServer.sh"
+  } ,
+  
+  
+  "rings" :
+  [
+    {
+      "ring_id" : 1 ,
+      "destination_groups" : [1]
+    } ,
+    {
+      "ring_id" : 2 ,
+      "destination_groups" : [2]
+    } ,
+    {
+      "ring_id" : 3 ,
+      "destination_groups" : [1, 2]
+    }
+  ] ,
+  
+  "ring_nodes" :
+  [
+    {
+      "node_id" : 11 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring_id" : 1 , "roles" : ["acceptor", "proposer"] , "proposer_port" : 50001}
+      ]
+    } ,
+    {
+      "node_id" : 12 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring_id" : 1 , "roles" : ["acceptor"] }
+      ]
+    } ,
+    {
+      "node_id" : 21 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring_id" : 2 , "roles" : ["acceptor", "proposer"] , "proposer_port" : 50002}
+      ]
+    } ,
+    {
+      "node_id" : 22 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring_id" : 2 , "roles" : ["acceptor"] }
+      ]
+    } ,
+    {
+      "node_id" : 31 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring_id" : 3 , "roles" : ["acceptor", "proposer"] , "proposer_port" : 50003}
+      ]
+    } ,
+    {
+      "node_id" : 32 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring_id" : 3 , "roles" : ["acceptor"] }
+      ]
+    }
+  ]
+}
