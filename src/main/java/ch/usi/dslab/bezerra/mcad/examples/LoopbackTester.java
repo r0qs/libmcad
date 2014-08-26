@@ -7,7 +7,7 @@ import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastAgentFactory;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
-public class LoopTester {
+public class LoopbackTester {
 
    public static void main(String[] args) {
       String configFile = args[0];
