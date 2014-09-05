@@ -5,6 +5,10 @@
   
   "batch_time_threshold_ms"  : 5 ,
   
+  "deliver_conservative"       : true  ,
+  "deliver_optimistic_uniform" : false ,
+  "deliver_optimistic_fast"    : false ,
+  
   "groups" :
   [
     {

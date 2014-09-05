@@ -239,7 +239,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
    // *** TODO: check how gaps in the groups and rings sequence affects
    // correctness
    // *** TODO: has to make sure that the max group is known before creating
-   // URPRings
+   // Ensembles
    @SuppressWarnings("unchecked")
    // TODO: Using legacy API in the following method (Iterator part)
    public static void loadRidgeAgentConfig(String filename) {
@@ -276,6 +276,14 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
 
          int batchTimeThreshold = getJSInt(config, "batch_time_threshold_ms");
          Batcher.setMessageSizeThreshold(batchTimeThreshold);
+         
+         boolean deliverConservative = (Boolean) config.get("deliver_conservative");
+         boolean deliverOptUniform   = (Boolean) config.get("deliver_optimistic_uniform");
+         boolean deliverOptFast      = (Boolean) config.get("deliver_optimistic_fast");
+         
+         ch.usi.dslab.bezerra.ridge.MulticastAgent.setConservative(deliverConservative);
+         ch.usi.dslab.bezerra.ridge.MulticastAgent.setOptimistic(deliverOptUniform);
+         ch.usi.dslab.bezerra.ridge.MulticastAgent.setFast(deliverOptFast);
          
          JSONArray groupsArray = (JSONArray) config.get("groups");
          Iterator<Object> it_group = groupsArray.iterator();
@@ -458,6 +466,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
       Message msg = null;
       try {
          msg = conservativeDeliveryQueue.take();
+         msg.rewind();
       } catch (InterruptedException e) {
          e.printStackTrace();
       }
