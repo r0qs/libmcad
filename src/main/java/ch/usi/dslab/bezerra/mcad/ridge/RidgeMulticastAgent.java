@@ -37,6 +37,7 @@ import ch.usi.dslab.bezerra.ridge.AcceptorSequence;
 import ch.usi.dslab.bezerra.ridge.Client;
 import ch.usi.dslab.bezerra.ridge.Coordinator;
 import ch.usi.dslab.bezerra.ridge.Coordinator.Batcher;
+import ch.usi.dslab.bezerra.ridge.Coordinator.Skipper;
 import ch.usi.dslab.bezerra.ridge.DeliverInterface;
 import ch.usi.dslab.bezerra.ridge.Ensemble;
 import ch.usi.dslab.bezerra.ridge.Learner;
@@ -279,11 +280,13 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
          
          boolean deliverConservative = (Boolean) config.get("deliver_conservative");
          boolean deliverOptUniform   = (Boolean) config.get("deliver_optimistic_uniform");
-         boolean deliverOptFast      = (Boolean) config.get("deliver_optimistic_fast");
-         
+         boolean deliverOptFast      = (Boolean) config.get("deliver_optimistic_fast");         
          ch.usi.dslab.bezerra.ridge.MulticastAgent.setConservative(deliverConservative);
          ch.usi.dslab.bezerra.ridge.MulticastAgent.setOptimistic(deliverOptUniform);
          ch.usi.dslab.bezerra.ridge.MulticastAgent.setFast(deliverOptFast);
+         
+         int deltaNullMessages = getJSInt(config, "delta_null_messages_ms");
+         Skipper.setDelta(deltaNullMessages);
          
          JSONArray groupsArray = (JSONArray) config.get("groups");
          Iterator<Object> it_group = groupsArray.iterator();
