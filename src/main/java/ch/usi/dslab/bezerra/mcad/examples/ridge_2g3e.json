@@ -2,8 +2,8 @@
   "agent_class" : "RidgeMulticastAgent" ,
   
   "batch_size_threshold_bytes" : 30 ,
-  
-  "batch_time_threshold_ms"  : 5 ,
+  "batch_time_threshold_ms"    : 5 ,
+  "delta_null_messages_ms"     : 1 ,
   
   "deliver_conservative"       : true  ,
   "deliver_optimistic_uniform" : false ,

@@ -29,7 +29,7 @@ public class Sender {
    }
    
    public void sendMessage(String text, List<Group> destinations) {
-      Message multicastMessage = new Message(text);
+      Message multicastMessage = new Message(text, System.currentTimeMillis());
       mcagent.multicast(destinations, multicastMessage);
    }
    

@@ -16,7 +16,11 @@ public class Receiver extends Thread {
    public void run() {
       while (true) {
          Message msg = mcagent.deliverMessage();
-         System.out.println("delivered message: " + (String) msg.getItem(0));
+         
+         long now = System.currentTimeMillis();
+         String text = (String) msg.getNext();
+         long sendTime = (Long) msg.getNext();
+         System.out.println(String.format("delivered message \"%s\" within %d ms", text, now - sendTime));
       }
    }
 
