@@ -42,6 +42,7 @@ import ch.usi.dslab.bezerra.ridge.DeliverInterface;
 import ch.usi.dslab.bezerra.ridge.Ensemble;
 import ch.usi.dslab.bezerra.ridge.Learner;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage;
+import ch.usi.dslab.bezerra.ridge.Merger.ProcessLatencyEstimator;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.Timestamp;
 
@@ -278,15 +279,30 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
          int batchTimeThreshold = getJSInt(config, "batch_time_threshold_ms");
          Batcher.setMessageSizeThreshold(batchTimeThreshold);
          
-         boolean deliverConservative = (Boolean) config.get("deliver_conservative");
-         boolean deliverOptUniform   = (Boolean) config.get("deliver_optimistic_uniform");
-         boolean deliverOptFast      = (Boolean) config.get("deliver_optimistic_fast");         
-         ch.usi.dslab.bezerra.ridge.MulticastAgent.setConservative(deliverConservative);
-         ch.usi.dslab.bezerra.ridge.MulticastAgent.setOptimistic(deliverOptUniform);
-         ch.usi.dslab.bezerra.ridge.MulticastAgent.setFast(deliverOptFast);
+         if (config.containsKey("deliver_conservative")) {
+            boolean deliverConservative = (Boolean) config.get("deliver_conservative");
+            ch.usi.dslab.bezerra.ridge.MulticastAgent.setConservative(deliverConservative);
+         }
          
-         int deltaNullMessages = getJSInt(config, "delta_null_messages_ms");
-         Skipper.setDelta(deltaNullMessages);
+         if (config.containsKey("deliver_optimistic_uniform")) {
+            boolean deliverOptUniform = (Boolean) config.get("deliver_optimistic_uniform");
+            ch.usi.dslab.bezerra.ridge.MulticastAgent.setOptimistic(deliverOptUniform);
+         }
+
+         if (config.containsKey("deliver_optimistic_fast")) {
+            boolean deliverOptFast = (Boolean) config.get("deliver_optimistic_fast");
+            ch.usi.dslab.bezerra.ridge.MulticastAgent.setFast(deliverOptFast);
+         }
+         
+         if (config.containsKey("delta_null_messages_ms")) {
+            int deltaNullMessages = getJSInt(config, "delta_null_messages_ms");
+            Skipper.setDelta(deltaNullMessages);
+         }
+         
+         if (config.containsKey("latency_estimation_sample")) {
+            int latencyEstimationSample = getJSInt(config, "latency_estimation_sample");
+            ProcessLatencyEstimator.setSampleSize(latencyEstimationSample);
+         }
          
          JSONArray groupsArray = (JSONArray) config.get("groups");
          Iterator<Object> it_group = groupsArray.iterator();
