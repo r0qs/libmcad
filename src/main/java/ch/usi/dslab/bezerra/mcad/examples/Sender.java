@@ -33,6 +33,17 @@ public class Sender {
       mcagent.multicast(destinations, multicastMessage);
    }
    
+   public void sendBurst() {
+      int numMessages = 100;
+      for (int i = 0 ; i < numMessages ; i++) {
+         String text = String.format("msg_%d", i);
+         List<Group> destinations = new ArrayList<Group>();
+         destinations.add(Group.getGroup(1));
+         destinations.add(Group.getGroup(2));
+         sendMessage(text, destinations);
+      }
+   }
+   
    public static void main(String[] args) throws IOException {
       String configFile = args[0];
       int    senderId   = Integer.parseInt(args[1]);
@@ -42,15 +53,19 @@ public class Sender {
       String input = sender.askForInput();
       
       while (input.equalsIgnoreCase("end") == false) {
-         String[] params = input.split(" ");
-         
-         String message = params[0];
-         List<Group> destinationGroups = new ArrayList<Group>();
-         for (int i = 1 ; i < params.length ; i++) {
-            int groupId = Integer.parseInt(params[i]);
-            destinationGroups.add(Group.getGroup(groupId));
+
+         if (input.equalsIgnoreCase("burst"))
+            sender.sendBurst();
+         else {
+            String[] params = input.split(" ");
+            String message = params[0];
+            List<Group> destinationGroups = new ArrayList<Group>();
+            for (int i = 1 ; i < params.length ; i++) {
+               int groupId = Integer.parseInt(params[i]);
+               destinationGroups.add(Group.getGroup(groupId));
+            }
+            sender.sendMessage(message, destinationGroups);
          }
-         sender.sendMessage(message, destinationGroups);
          
          input = sender.askForInput();
       }
