@@ -9,6 +9,8 @@
   "deliver_optimistic_uniform" : false ,
   "deliver_optimistic_fast"    : false ,
   
+  "latency_estimation_sample"  : 5 ,
+  
   "groups" :
   [
     {
