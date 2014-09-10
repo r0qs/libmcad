@@ -6,6 +6,7 @@
 import os
 import sys
 import json
+import inspect
 import threading
 from pprint import pprint
 from time import sleep
@@ -23,6 +24,12 @@ class launcherThread (threading.Thread):
             print ".-rRr-. executing: " + cmd
             os.system(cmd);
 #             sleep(0.5)
+
+def script_dir():
+#    returns the module path without the use of __file__.  Requires a function defined 
+#    locally in the module.
+#    from http://stackoverflow.com/questions/729583/getting-file-path-of-imported-module
+   return os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda _: None)))
 
 #====================================
 #====================================
@@ -66,7 +73,7 @@ for process in config["ensemble_processes"] :
     host = process["host"]
     port = process["port"]
     
-    class_path   = "-cp $HOME/libmcad/target/libmcad-git.jar" + extra_classpath
+    class_path   = "-cp " + script_dir() + "/../../../../../../../../../target/libmcad-git.jar " + extra_classpath
     node_path    = "ch.usi.dslab.bezerra.mcad.ridge.RidgeEnsembleNode"
     java_string  = "java -XX:+UseG1GC " + class_path + " " + node_path
     arguments    = system_config_file + " " + str(pid)
