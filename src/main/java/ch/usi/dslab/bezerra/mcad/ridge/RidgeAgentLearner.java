@@ -39,6 +39,7 @@ public class RidgeAgentLearner implements DeliverInterface {
    @Override
    public void deliverConservatively(RidgeMessage wrappedMessage) {
       logger.info("/___ Learner delivered message {} conservatively", wrappedMessage.getId());
+//      System.out.println("Learner delivered message " + wrappedMessage + " conservatively.");
       if (checkIfLocalMessage(wrappedMessage) == false) return;
       try {
          rmcAgent.conservativeDeliveryQueue.put(getApplicationMessage(wrappedMessage));
@@ -51,6 +52,7 @@ public class RidgeAgentLearner implements DeliverInterface {
    @Override
    public void deliverOptimistically(RidgeMessage wrappedMessage) {
       logger.info("/___ Learner delivered message {} optimistically", wrappedMessage.getId());
+//      System.out.println("Learner delivered message " + wrappedMessage + " optimistically.");
       if (checkIfLocalMessage(wrappedMessage) == false) return;
       try {
          rmcAgent.optimisticDeliveryQueue.put(getApplicationMessage(wrappedMessage));
@@ -63,6 +65,7 @@ public class RidgeAgentLearner implements DeliverInterface {
    @Override
    public void deliverFast(RidgeMessage wrappedMessage) {
       logger.info("/___ Learner delivered message {} fast", wrappedMessage.getId());
+//      System.out.println("Learner delivered message " + wrappedMessage + " fast.");
       if (checkIfLocalMessage(wrappedMessage) == false) return;
       try {
          rmcAgent.fastDeliveryQueue.put(getApplicationMessage(wrappedMessage));
