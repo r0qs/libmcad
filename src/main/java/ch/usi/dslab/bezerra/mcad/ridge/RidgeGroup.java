@@ -52,9 +52,9 @@ public class RidgeGroup extends Group {
          this.membersCache = members;
 //      }
      
-      for (int id : membersCache) {
-         System.out.println(String.format("Group %d has member %d", this.getId(), id));
-      }
+//      for (int id : membersCache) {
+//         System.out.println(String.format("Group %d has member %d", this.getId(), id));
+//      }
       return membersCache;
    }
 }

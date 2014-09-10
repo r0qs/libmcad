@@ -63,6 +63,8 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
       optimisticDeliveryQueue = new LinkedBlockingQueue<Message>();
       fastDeliveryQueue = new LinkedBlockingQueue<Message>();
       
+      this.pid = pid;
+      
       loadRidgeAgentConfig(configFile);
       
       // if this process is not in a group, it must be a client
@@ -489,6 +491,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
       Message msg = null;
       try {
          msg = optimisticDeliveryQueue.take();
+         msg.rewind();
       } catch (InterruptedException e) {
          e.printStackTrace();
       }
@@ -500,6 +503,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
       Message msg = null;
       try {
          msg = fastDeliveryQueue.take();
+         msg.rewind();
       } catch (InterruptedException e) {
          e.printStackTrace();
       }
