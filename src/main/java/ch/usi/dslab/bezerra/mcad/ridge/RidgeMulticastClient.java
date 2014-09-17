@@ -38,6 +38,7 @@ public class RidgeMulticastClient extends Client implements MulticastClient {
       Message delivery = null;
       try {
          delivery = receivedReplies.take();
+         delivery.rewind();
       } catch (InterruptedException e) {
          e.printStackTrace();
          System.exit(1);
