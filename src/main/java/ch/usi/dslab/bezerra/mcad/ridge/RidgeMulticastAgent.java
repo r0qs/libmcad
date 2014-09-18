@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,13 +43,14 @@ import ch.usi.dslab.bezerra.ridge.RidgeMessage.Timestamp;
 public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastAgent, FastMulticastAgent {
    static Logger logger = LogManager.getLogger("RidgeMulticastAgent");
    
-//   public static final Logger log = Logger.getLogger(RidgeMulticastAgent.class);
+   // public static final Logger log = Logger.getLogger(RidgeMulticastAgent.class);
    RidgeGroup localGroup = null;
    static Map<Long, RidgeEnsembleData> mappingGroupsToEnsembles;
    BlockingQueue<byte[]>  byteArrayDeliveryQueue;
    BlockingQueue<Message> conservativeDeliveryQueue;
    BlockingQueue<Message> optimisticDeliveryQueue;
    BlockingQueue<Message> fastDeliveryQueue;
+   
    // assume at most one group per process (although a group may be represented by multiple rings)
    static Map<Integer, RidgeGroup> processGroups = new ConcurrentHashMap<Integer, RidgeGroup>();
 
@@ -56,6 +59,10 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
    ch.usi.dslab.bezerra.ridge.Process        localProcess;
    RidgeAgentLearner ridgeAgentLearner;
    int pid;
+   
+   // to prevent this agent from creating messages with same timestamp
+   Timestamp lastTimestamp     = Timestamp.ZERO;
+   Object    lastTimestampLock = new Object(); // object used only for synchronization
 
    public RidgeMulticastAgent(String configFile, int pid, boolean isInGroup) {
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]>();
@@ -463,14 +470,22 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
       List<Integer> groupIds = new ArrayList<Integer>(destinations.size());
       for (Group g : destinations)
          groupIds.add(g.getId());
+      
+      // create timestamp
+      // TODO: should this method be synchronized? if multiple threads multicast at the same time,
+      // repeated timestamps might be created
+      Timestamp timestamp = Timestamp.createTimestamp(this.pid);
+      
+      // create ridge multicasg message
       RidgeMessage wrapperMessage = new RidgeMessage(
             MessageIdentifier.getNextMessageId(this.pid),
             RidgeMessage.MESSAGE_MULTICAST,
             red.ensembleId,
             -1,
-            new Timestamp(System.currentTimeMillis(), this.pid),
+            timestamp,
             groupIds,
             message);
+      
       lowerMulticastAgent.multicast(wrapperMessage, red.ensemble);
    }
    
