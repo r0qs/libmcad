@@ -47,7 +47,7 @@ public class TestClient {
             contained = pendingList.remove(id);
          }
          String listName = pendingList == pendingConsMessages ? "cons-pending" : (pendingList == pendingOptMessages ? "opt-pending" : "fast-pending");
-         System.out.println(String.format("Message %s" + (contained ? " " : " already ") + "removed from " + listName + " (pending - c: %d, o: %d, f:%d)", id, pendingConsMessages.size(), pendingOptMessages.size(), pendingFastMessages.size()));
+         System.out.println(String.format("Message %s" + (contained ? " " : " already ") + "removed from " + listName + " (pending - c: %d, o: %d, f: %d)", id, pendingConsMessages.size(), pendingOptMessages.size(), pendingFastMessages.size()));
       }
       
       private void wakeUp() {
