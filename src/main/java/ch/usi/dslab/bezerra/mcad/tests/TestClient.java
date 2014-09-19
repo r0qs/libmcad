@@ -16,16 +16,34 @@ import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 
 public class TestClient {
    
-   public static class Verifier extends Thread {
+   public static class ReplyDeliverer extends Thread {
       private TestClient parent;
       private Semaphore  wakeUpSignals = new Semaphore(0);;
       List<MessageIdentifier> pendingConsMessages = new ArrayList<MessageIdentifier>();
       List<MessageIdentifier> pendingOptMessages  = new ArrayList<MessageIdentifier>();
       List<MessageIdentifier> pendingFastMessages = new ArrayList<MessageIdentifier>();
+      private Semaphore outstandingPermits;
       
-      public Verifier(TestClient parent) {
-         super("Verifier");
+      public ReplyDeliverer(TestClient parent) {
+         super("ReplyDeliverer");
          this.parent = parent;
+      }
+      
+      public void setOutstanding(int num) {
+         outstandingPermits = new Semaphore(num);
+      }
+      
+      public void getPermit() {
+         try {
+            if (outstandingPermits != null) outstandingPermits.acquire();
+         } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(1);
+         }
+      }
+      
+      private void addPermit() {
+         if (outstandingPermits != null) outstandingPermits.release();
       }
       
       public void addPendingMessage(MessageIdentifier id) {
@@ -72,6 +90,7 @@ public class TestClient {
             int deliveryType = (Integer) reply.getNext();
             switch (deliveryType) {
                case DeliveryType.CONS : {
+                  addPermit();
                   removePendingMessage(mid, pendingConsMessages);
                   break;
                }
@@ -94,14 +113,14 @@ public class TestClient {
    int clientId;
    MulticastClient mcclient;
    BufferedReader br;
-   Verifier verifier;
+   ReplyDeliverer verifier;
    
    public TestClient (int clientId, List<Integer> contactServerIds, String configFile) {
       this.clientId = clientId;
       mcclient = MulticastClientServerFactory.getClient(clientId, configFile);
       for (int contactServerId : contactServerIds)
          mcclient.connectToServer(contactServerId);
-      verifier = new Verifier(this);
+      verifier = new ReplyDeliverer(this);
       verifier.start();
    }
    
@@ -111,6 +130,8 @@ public class TestClient {
       String input = br.readLine();
       return input;
    }
+   
+   
    
    public void sendMessage(List<Group> destinations) {
       MessageIdentifier mid = MessageIdentifier.getNextMessageId(clientId);
@@ -134,6 +155,26 @@ public class TestClient {
             destinations.add(Group.getGroup(2));
          if (destinations.size() > 0)
             sendMessage(destinations);
+      }
+   }
+   
+   public void sendClosedLoop(int outstanding, boolean random, boolean sendtog1, boolean sendtog2) {
+      if (!sendtog1 && !sendtog2) {
+         System.out.println("Must send to at least one group");
+         return;
+      }
+      verifier.setOutstanding(outstanding);
+      Random rand = new Random(System.nanoTime());
+      while (true) {
+         List<Group> destinations = new ArrayList<Group>();
+         if (sendtog1 && (!random || (random && rand.nextInt(2) == 1)))
+            destinations.add(Group.getGroup(1));
+         if (sendtog2 && (!random || (random && rand.nextInt(2) == 1)))
+            destinations.add(Group.getGroup(2));
+         if (destinations.size() > 0) {
+            verifier.getPermit();
+            sendMessage(destinations);
+         }
       }
    }
    
@@ -184,6 +225,17 @@ public class TestClient {
             }
             int burstLength = Integer.parseInt(params[params.length - 1]);
             client.sendBurst(burstLength, random, sendtog1, sendtog2);
+         }
+         if (input.contains("l")) {
+            boolean random = (input.contains("r"));
+            boolean sendtog1, sendtog2;
+            sendtog1 = sendtog2 = false;
+            for (int i = 1 ; i < params.length - 1 ; i++) {
+               if (isInt(params[i]) && getInt(params[i]) == 1) sendtog1 = true;
+               if (isInt(params[i]) && getInt(params[i]) == 2) sendtog2 = true;
+            }
+            int outstanding = Integer.parseInt(params[params.length - 1]);
+            client.sendClosedLoop(outstanding, random, sendtog1, sendtog2);
          }
          else {
             List<Group> destinationGroups = new ArrayList<Group>();

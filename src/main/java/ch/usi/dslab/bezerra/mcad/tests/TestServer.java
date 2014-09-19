@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
@@ -57,6 +59,50 @@ public class TestServer {
                for (String msg : messages)
                   System.out.println(msg);
             }
+         }
+      }
+   }
+   
+   public static class LatencyCalculator extends Thread {
+      private StatusPrinter printer;
+      private DescriptiveStatistics consStats = new DescriptiveStatistics(100);
+      private DescriptiveStatistics  optStats = new DescriptiveStatistics(100);
+      private DescriptiveStatistics fastStats = new DescriptiveStatistics(100);
+      
+      public LatencyCalculator(StatusPrinter printer) {
+         this.printer = printer;
+      }
+      
+      public void addConsLatency(long value) {
+         consStats.addValue(value);
+      }
+      
+      public void addOptLatency(long value) {
+         optStats.addValue(value);
+      }
+      
+      public void addFastLatency(long value) {
+         fastStats.addValue(value);
+      }
+      
+      public void run () {
+         while (true) {
+            try {
+               Thread.sleep(1000);
+            } catch (InterruptedException e) {
+               e.printStackTrace();
+               System.exit(1);
+            }
+            
+            String latencyLine = String.format(
+                  "latencies: c: [%.1f - %.1f - %.1f]\n" +
+                  "           o: [%.1f - %.1f - %.1f]\n" +
+                  "           f: [%.1f - %.1f - %.1f]",
+                  consStats.getPercentile(25), consStats.getPercentile(50), consStats.getPercentile(75),
+                  optStats .getPercentile(25),  optStats.getPercentile(50),  optStats.getPercentile(75),
+                  fastStats.getPercentile(25), fastStats.getPercentile(50), fastStats.getPercentile(75));
+            
+            printer.print(this, latencyLine);
          }
       }
    }
@@ -189,12 +235,14 @@ public class TestServer {
       Map<String, ListHashCalculator> printers = new ConcurrentHashMap<String, ListHashCalculator>();
       SpeculativeDeliveryVerifier optVerifier;
       SpeculativeDeliveryVerifier fastVerifier;
+      LatencyCalculator latencyCalculator;
       
-      public ConservativeDeliverer(TestServer parent, SpeculativeDeliveryVerifier optVerifier, SpeculativeDeliveryVerifier fastVerifier) {
+      public ConservativeDeliverer(TestServer parent, SpeculativeDeliveryVerifier optVerifier, SpeculativeDeliveryVerifier fastVerifier, LatencyCalculator latencyCalculator) {
          super("ConservativeDeliverer");
          mcServer = parent.mcserver;
          this.optVerifier  = optVerifier;
          this.fastVerifier = fastVerifier;
+         this.latencyCalculator = latencyCalculator;
          allDeliveriesHashPrinter.start();
       }
       
@@ -229,6 +277,8 @@ public class TestServer {
             Message reply = new Message(mid, DeliveryType.CONS);
             mcServer.sendReply(clientId, reply);
 
+            long latency = now - timestamp;  
+            latencyCalculator.addConsLatency(latency);
 //            System.out.println(String.format("cons-delivered message %s within %d ms", mid, now - timestamp));
             optVerifier.addConservativeDelivery(mid);
             fastVerifier.addConservativeDelivery(mid);
@@ -239,10 +289,12 @@ public class TestServer {
    public static class OptimisticDeliverer extends Thread {
       MulticastServer mcServer;
       private SpeculativeDeliveryVerifier optVerifier;
-      public OptimisticDeliverer(TestServer parent, SpeculativeDeliveryVerifier optVerifier) {
+      LatencyCalculator latencyCalculator;
+      public OptimisticDeliverer(TestServer parent, SpeculativeDeliveryVerifier optVerifier, LatencyCalculator latencyCalculator) {
          super("OptimisticDeliverer");
          mcServer = parent.mcserver;
          this.optVerifier = optVerifier;
+         this.latencyCalculator = latencyCalculator;
       }
       
       public void run() {
@@ -260,6 +312,8 @@ public class TestServer {
             Message reply = new Message(mid, DeliveryType.OPT);
             mcServer.sendReply(clientId, reply);
 
+            long latency = now - timestamp;  
+            latencyCalculator.addOptLatency(latency);
 //            System.out.println(String.format("opt-delivered message %s within %d ms", mid, now - timestamp));
             optVerifier.addSpeculativeDelivery(mid);
          }
@@ -269,10 +323,12 @@ public class TestServer {
    public static class FastDeliverer extends Thread {
       MulticastServer mcServer;
       SpeculativeDeliveryVerifier fastVerifier;
-      public FastDeliverer(TestServer parent, SpeculativeDeliveryVerifier fastVerifier) {
+      LatencyCalculator latencyCalculator;
+      public FastDeliverer(TestServer parent, SpeculativeDeliveryVerifier fastVerifier, LatencyCalculator latencyCalculator) {
          super("FastDeliverer");
          mcServer = parent.mcserver;
          this.fastVerifier = fastVerifier;
+         this.latencyCalculator = latencyCalculator;
       }
       
       public void run() {
@@ -290,6 +346,8 @@ public class TestServer {
             Message reply = new Message(mid, DeliveryType.FAST);
             mcServer.sendReply(clientId, reply);
 
+            long latency = now - timestamp;  
+            latencyCalculator.addFastLatency(latency);
 //            System.out.println(String.format("fast-delivered message %s within %d ms", mid, now - timestamp));
             fastVerifier.addSpeculativeDelivery(mid);
          }
@@ -303,15 +361,19 @@ public class TestServer {
    OptimisticDeliverer    optThread;
    FastDeliverer         fastThread;
    
+   LatencyCalculator latencyCalculator; 
+   
    public TestServer(int serverId, String configFile) {
       mcserver = MulticastClientServerFactory.getServer(serverId, configFile);
       SpeculativeDeliveryVerifier optVerifier = new SpeculativeDeliveryVerifier(StatusPrinter.getInstance(), "opt");
       SpeculativeDeliveryVerifier fastVerifier = new SpeculativeDeliveryVerifier(StatusPrinter.getInstance(), "fast");
       optVerifier.start();
       fastVerifier.start();
-      consThread = new ConservativeDeliverer(this, optVerifier, fastVerifier);
-      optThread  = new OptimisticDeliverer(this, optVerifier);
-      fastThread = new FastDeliverer(this, fastVerifier);
+      latencyCalculator = new LatencyCalculator(StatusPrinter.getInstance());
+      latencyCalculator.start();
+      consThread = new ConservativeDeliverer(this, optVerifier, fastVerifier, latencyCalculator);
+      optThread  = new OptimisticDeliverer(this, optVerifier, latencyCalculator);
+      fastThread = new FastDeliverer(this, fastVerifier, latencyCalculator);
    }
    
    public void start() {
