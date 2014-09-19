@@ -3,6 +3,7 @@
 import inspect
 import os
 import time
+import random
 
 def script_dir():
 #    returns the module path without the use of __file__.  Requires a function defined 
@@ -10,10 +11,12 @@ def script_dir():
 #    from http://stackoverflow.com/questions/729583/getting-file-path-of-imported-module
    return os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda _: None)))
 
-sender_id = str(12345)
+random.seed()
+rand_id = random.randint(0,2147483647)
+sender_id = str(rand_id)
 
 java_bin = "java -XX:+UseG1GC"
-debug_port = str(40000 + int(sender_id))
+debug_port = str(random.randint(20000,65535))
 debug_server_str = "-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:" + debug_port + ",server=y,suspend=n"
 libmcast_cp = "-cp " + script_dir() + "/../../../../../../../../../target/libmcad-git.jar"
 
