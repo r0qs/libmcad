@@ -78,7 +78,7 @@ public class TestServer {
       }
       
       public void run() {
-         long printInterval = 1000;
+         long printInterval = 2500;
          while (true) {
             try {
                Thread.sleep(printInterval);
