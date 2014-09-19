@@ -474,7 +474,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
       // create timestamp
       // TODO: should this method be synchronized? if multiple threads multicast at the same time,
       // repeated timestamps might be created
-      Timestamp timestamp = Timestamp.createTimestamp(this.pid);
+      Timestamp timestamp = Timestamp.createUniqueTimestamp(this.pid);
       
       // create ridge multicasg message
       RidgeMessage wrapperMessage = new RidgeMessage(
