@@ -3,9 +3,13 @@ package ch.usi.dslab.bezerra.mcad.tests;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
@@ -16,16 +20,102 @@ import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 
 public class TestServer {
    
-   public static class ListHashPrinter extends Thread {
+   public static class StatusPrinter extends Thread {
+      Map<Object, String> pendingMessages = new HashMap<Object, String>();
+      private final int INTERVAL = 2500;
+      private static StatusPrinter instance = null;
+      boolean running = false;
+      
+      public static StatusPrinter getInstance() {
+         if (instance == null) instance = new StatusPrinter();
+         return instance;
+      }
+      
+      private StatusPrinter() {}
+      
+      synchronized public void print(Object o, String text) {
+         synchronized (pendingMessages) {
+            pendingMessages.put(o, text);
+         }
+         if (running == false) {
+            start();
+            running = true;
+         }
+      }
+      
+      public void run() {
+         while (true) {
+            try {
+               Thread.sleep(INTERVAL);
+            } catch (InterruptedException e) {
+               e.printStackTrace();
+               System.exit(1);
+            }
+            
+            synchronized (pendingMessages) {
+               Collection<String> messages = pendingMessages.values();
+               for (String msg : messages)
+                  System.out.println(msg);
+            }
+         }
+      }
+   }
+   
+   public static class SpeculativeDeliveryVerifier extends Thread {
+      public List<MessageIdentifier> speculativeSequence  = new LinkedList<MessageIdentifier>();
+      public List<MessageIdentifier> conservativeSequence = new LinkedList<MessageIdentifier>();
+      private StatusPrinter printer;
+      private String name;
+      private AtomicLong numDeliveries = new AtomicLong(0);
+      private AtomicLong mistakes = new AtomicLong(0);
+      
+      public SpeculativeDeliveryVerifier(StatusPrinter printer, String name) {
+         this.printer = printer;
+         this.name    = name;
+      }
+      
+      synchronized public void addSpeculativeDelivery(MessageIdentifier mid) {
+         speculativeSequence.add(mid);
+         checkMatch();
+      }
+      
+      synchronized public void addConservativeDelivery(MessageIdentifier mid) {
+         conservativeSequence.add(mid);
+         numDeliveries.incrementAndGet();
+         checkMatch();
+      }
+      
+      synchronized private void checkMatch() {
+         while (speculativeSequence.isEmpty() == false && conservativeSequence.isEmpty() == false) {
+            MessageIdentifier smid = speculativeSequence.remove(0);
+            MessageIdentifier cmid = conservativeSequence.remove(0);
+            if (smid.equals(cmid) == false) mistakes.incrementAndGet();
+         }
+      }
+      
+      public void run() {
+         while (true) {
+            long m = mistakes.get();
+            long d = numDeliveries.get();
+            double rate = 100.0d * ((double) m) / ((double) d);
+            String status = String.format("mistakes(%s): %d/%d = %.2f%%", name, m, d, rate);
+            printer.print(this, status);
+         }
+      }
+   }
+   
+   public static class ListHashCalculator extends Thread {
       private String listName;
       private List<Object> objList;
       private String lastHash = "";
+      private StatusPrinter printer;
       
       @SuppressWarnings({ "unchecked", "rawtypes" })
-      public ListHashPrinter(String listName, List objList) {
+      public ListHashCalculator(StatusPrinter printer, String listName, List objList) {
          super ("ListHashPrinter");
          this.listName = listName;
          this.objList  = objList;
+         this.printer  = printer;
       }
       
       public String byteArrayToHexString(byte[] b) {
@@ -86,7 +176,7 @@ public class TestServer {
                e.printStackTrace();
                System.exit(1);
             }
-            System.out.println(String.format("hash of [%s]: %s", listName, getListHash()));
+            printer.print(this, (String.format("hash of [%s]: %s", listName, getListHash())));
          }
       }
    }
@@ -94,13 +184,17 @@ public class TestServer {
    public static class ConservativeDeliverer extends Thread {
       MulticastServer mcServer;
       List<MessageIdentifier> allDeliveries = new ArrayList<MessageIdentifier>();
-      ListHashPrinter         allDeliveriesHashPrinter = new ListHashPrinter("all", allDeliveries);
+      ListHashCalculator         allDeliveriesHashPrinter = new ListHashCalculator(StatusPrinter.getInstance(), "all", allDeliveries);
       Map<String, List<MessageIdentifier>> receivedMessages = new ConcurrentHashMap<String, List<MessageIdentifier>>();
-      Map<String, ListHashPrinter> printers = new ConcurrentHashMap<String, ListHashPrinter>();
+      Map<String, ListHashCalculator> printers = new ConcurrentHashMap<String, ListHashCalculator>();
+      SpeculativeDeliveryVerifier optVerifier;
+      SpeculativeDeliveryVerifier fastVerifier;
       
-      public ConservativeDeliverer(TestServer parent) {
+      public ConservativeDeliverer(TestServer parent, SpeculativeDeliveryVerifier optVerifier, SpeculativeDeliveryVerifier fastVerifier) {
          super("ConservativeDeliverer");
          mcServer = parent.mcserver;
+         this.optVerifier  = optVerifier;
+         this.fastVerifier = fastVerifier;
          allDeliveriesHashPrinter.start();
       }
       
@@ -109,7 +203,7 @@ public class TestServer {
          if (destMsgs == null) {
             destMsgs = new ArrayList<MessageIdentifier>();
             receivedMessages.put(destsStr, destMsgs);
-            ListHashPrinter lhp = new ListHashPrinter(destsStr, destMsgs);
+            ListHashCalculator lhp = new ListHashCalculator(StatusPrinter.getInstance(), destsStr, destMsgs);
             lhp.start();
          }
          synchronized (destMsgs) {
@@ -135,16 +229,20 @@ public class TestServer {
             Message reply = new Message(mid, DeliveryType.CONS);
             mcServer.sendReply(clientId, reply);
 
-            System.out.println(String.format("cons-delivered message %s within %d ms", mid, now - timestamp));
+//            System.out.println(String.format("cons-delivered message %s within %d ms", mid, now - timestamp));
+            optVerifier.addConservativeDelivery(mid);
+            fastVerifier.addConservativeDelivery(mid);
          }
       }
    }
    
    public static class OptimisticDeliverer extends Thread {
       MulticastServer mcServer;
-      public OptimisticDeliverer(TestServer parent) {
+      private SpeculativeDeliveryVerifier optVerifier;
+      public OptimisticDeliverer(TestServer parent, SpeculativeDeliveryVerifier optVerifier) {
          super("OptimisticDeliverer");
          mcServer = parent.mcserver;
+         this.optVerifier = optVerifier;
       }
       
       public void run() {
@@ -162,16 +260,19 @@ public class TestServer {
             Message reply = new Message(mid, DeliveryType.OPT);
             mcServer.sendReply(clientId, reply);
 
-            System.out.println(String.format("opt-delivered message %s within %d ms", mid, now - timestamp));
+//            System.out.println(String.format("opt-delivered message %s within %d ms", mid, now - timestamp));
+            optVerifier.addSpeculativeDelivery(mid);
          }
       }
    }
    
    public static class FastDeliverer extends Thread {
       MulticastServer mcServer;
-      public FastDeliverer(TestServer parent) {
+      SpeculativeDeliveryVerifier fastVerifier;
+      public FastDeliverer(TestServer parent, SpeculativeDeliveryVerifier fastVerifier) {
          super("FastDeliverer");
          mcServer = parent.mcserver;
+         this.fastVerifier = fastVerifier;
       }
       
       public void run() {
@@ -189,10 +290,13 @@ public class TestServer {
             Message reply = new Message(mid, DeliveryType.FAST);
             mcServer.sendReply(clientId, reply);
 
-            System.out.println(String.format("fast-delivered message %s within %d ms", mid, now - timestamp));
+//            System.out.println(String.format("fast-delivered message %s within %d ms", mid, now - timestamp));
+            fastVerifier.addSpeculativeDelivery(mid);
          }
       }
    }   
+   
+   
    
    MulticastServer mcserver;
    ConservativeDeliverer consThread;
@@ -201,9 +305,13 @@ public class TestServer {
    
    public TestServer(int serverId, String configFile) {
       mcserver = MulticastClientServerFactory.getServer(serverId, configFile);
-      consThread = new ConservativeDeliverer(this);
-      optThread  = new OptimisticDeliverer(this);
-      fastThread = new FastDeliverer(this);
+      SpeculativeDeliveryVerifier optVerifier = new SpeculativeDeliveryVerifier(StatusPrinter.getInstance(), "opt");
+      SpeculativeDeliveryVerifier fastVerifier = new SpeculativeDeliveryVerifier(StatusPrinter.getInstance(), "fast");
+      optVerifier.start();
+      fastVerifier.start();
+      consThread = new ConservativeDeliverer(this, optVerifier, fastVerifier);
+      optThread  = new OptimisticDeliverer(this, optVerifier);
+      fastThread = new FastDeliverer(this, fastVerifier);
    }
    
    public void start() {
