@@ -36,7 +36,7 @@ import ch.usi.dslab.bezerra.ridge.Coordinator.Skipper;
 import ch.usi.dslab.bezerra.ridge.Ensemble;
 import ch.usi.dslab.bezerra.ridge.Learner;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage;
-import ch.usi.dslab.bezerra.ridge.Merger.ProcessLatencyEstimator;
+import ch.usi.dslab.bezerra.ridge.ProcessLatencyEstimator;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.Timestamp;
 
