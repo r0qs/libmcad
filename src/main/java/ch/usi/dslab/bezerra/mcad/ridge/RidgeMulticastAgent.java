@@ -226,6 +226,10 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
       lowerMulticastAgent.multicast(m, ring.getEnsemble());
    }
 
+   static double getJSDouble(JSONObject jsobj, String fieldName) {
+      return ((Number)jsobj.get(fieldName)).doubleValue();
+   }
+   
    static int getJSInt(JSONObject jsobj, String fieldName) {
       return ((Long) jsobj.get(fieldName)).intValue();
    }
@@ -304,6 +308,11 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
             int latencyEstimationSample = getJSInt(config, "latency_estimation_sample");
             ProcessLatencyEstimator.setSampleSize(latencyEstimationSample);
          }
+         
+         if (config.containsKey("latency_estimation_devs")) {
+            double numDevs = getJSDouble(config, "latency_estimation_devs");
+            ProcessLatencyEstimator.setNumDevs(numDevs);
+         }         
          
          JSONArray groupsArray = (JSONArray) config.get("groups");
          Iterator<Object> it_group = groupsArray.iterator();
