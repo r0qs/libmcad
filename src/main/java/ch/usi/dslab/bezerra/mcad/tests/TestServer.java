@@ -141,6 +141,14 @@ public class TestServer {
       
       public void run() {
          while (true) {
+            
+            try {
+               Thread.sleep(1000);
+            } catch (InterruptedException e) {
+               e.printStackTrace();
+               System.exit(1);
+            }
+            
             long m = mistakes.get();
             long d = numDeliveries.get();
             double rate = 100.0d * ((double) m) / ((double) d);

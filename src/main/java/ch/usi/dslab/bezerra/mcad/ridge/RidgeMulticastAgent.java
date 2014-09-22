@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,7 +30,7 @@ import ch.usi.dslab.bezerra.ridge.AcceptorSequence;
 import ch.usi.dslab.bezerra.ridge.Client;
 import ch.usi.dslab.bezerra.ridge.Coordinator;
 import ch.usi.dslab.bezerra.ridge.Coordinator.Batcher;
-import ch.usi.dslab.bezerra.ridge.Coordinator.Skipper;
+import ch.usi.dslab.bezerra.ridge.Coordinator.NullMessageSender;
 import ch.usi.dslab.bezerra.ridge.Ensemble;
 import ch.usi.dslab.bezerra.ridge.Learner;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage;
@@ -301,7 +299,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
          
          if (config.containsKey("delta_null_messages_ms")) {
             int deltaNullMessages = getJSInt(config, "delta_null_messages_ms");
-            Skipper.setDelta(deltaNullMessages);
+            NullMessageSender.setDelta(deltaNullMessages);
          }
          
          if (config.containsKey("latency_estimation_sample")) {
