@@ -64,8 +64,10 @@ public class TestClient {
          synchronized (pendingList) {
             contained = pendingList.remove(id);
          }
-         String listName = pendingList == pendingConsMessages ? "cons-pending" : (pendingList == pendingOptMessages ? "opt-pending" : "fast-pending");
-         System.out.println(String.format("Message %s" + (contained ? " " : " already ") + "removed from " + listName + " (pending - c: %d, o: %d, f: %d)", id, pendingConsMessages.size(), pendingOptMessages.size(), pendingFastMessages.size()));
+         if (parent.printPending) {
+            String listName = pendingList == pendingConsMessages ? "cons-pending" : (pendingList == pendingOptMessages ? "opt-pending" : "fast-pending");
+            System.out.println(String.format("Message %s" + (contained ? " " : " already ") + "removed from " + listName + " (pending - c: %d, o: %d, f: %d)", id, pendingConsMessages.size(), pendingOptMessages.size(), pendingFastMessages.size()));
+         }
       }
       
       private void wakeUp() {
@@ -114,6 +116,7 @@ public class TestClient {
    MulticastClient mcclient;
    BufferedReader br;
    ReplyDeliverer verifier;
+   boolean printPending = true;
    
    public TestClient (int clientId, List<Integer> contactServerIds, String configFile) {
       this.clientId = clientId;
@@ -163,6 +166,7 @@ public class TestClient {
          System.out.println("Must send to at least one group");
          return;
       }
+      printPending = false;
       verifier.setOutstanding(outstanding);
       Random rand = new Random(System.nanoTime());
       while (true) {
