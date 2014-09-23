@@ -18,6 +18,7 @@ import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
 import ch.usi.dslab.bezerra.mcad.OptimisticMulticastAgent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
+import ch.usi.dslab.bezerra.ridge.Merger;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 
 public class TestServer {
@@ -59,6 +60,26 @@ public class TestServer {
                for (String msg : messages)
                   System.out.println(msg);
             }
+         }
+      }
+   }
+
+   public static class FastDelInversionCollector extends Thread {
+      StatusPrinter printer;
+      public FastDelInversionCollector (StatusPrinter printer) {
+         this.printer = printer;
+      }
+      public void run () {
+         while (true) {
+            try {
+               Thread.sleep(1000);
+            } catch (InterruptedException e) {
+               e.printStackTrace();
+               System.exit(1);
+            }
+            double inversionRate = Merger.getInversionRate();
+            String invStatus = String.format("fast inversion rate = %.2f%%", inversionRate * 100.0d);
+            printer.print(this, invStatus);
          }
       }
    }
@@ -375,8 +396,10 @@ public class TestServer {
       mcserver = MulticastClientServerFactory.getServer(serverId, configFile);
       SpeculativeDeliveryVerifier optVerifier = new SpeculativeDeliveryVerifier(StatusPrinter.getInstance(), "opt");
       SpeculativeDeliveryVerifier fastVerifier = new SpeculativeDeliveryVerifier(StatusPrinter.getInstance(), "fast");
+      FastDelInversionCollector inversioner = new FastDelInversionCollector(StatusPrinter.getInstance());
       optVerifier.start();
       fastVerifier.start();
+      inversioner.start();
       latencyCalculator = new LatencyCalculator(StatusPrinter.getInstance());
       latencyCalculator.start();
       consThread = new ConservativeDeliverer(this, optVerifier, fastVerifier, latencyCalculator);
