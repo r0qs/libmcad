@@ -2,6 +2,7 @@
 
 import inspect
 import os
+import sys
 import time
 
 def script_dir():
@@ -13,6 +14,9 @@ def script_dir():
 # deploying (for now only ridge) multicast infrastructure
 ridge_deployer = script_dir() + "/../ridge/RidgeEnsembleNodesDeployer.py "
 config_file = script_dir() + "/ridge_2g3e.json "
+
+if len(sys.argv) > 1 :
+    config_file = sys.argv[1]
 
 # to serialize your own app objects, you must add your own classpath to the mcast deployment
 # app_classpath = "/path/to/class/your-app.jar "

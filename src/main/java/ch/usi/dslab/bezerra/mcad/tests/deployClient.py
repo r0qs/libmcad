@@ -26,6 +26,10 @@ app_classpath = ""
 
 sender_class = "ch.usi.dslab.bezerra.mcad.tests.TestClient"
 config_file = script_dir() + "/ridge_2g3e.json"
+
+if len(sys.argv) > 1 :
+    config_file = sys.argv[1]
+
 contact_servers = [9, 10, 11]
 contact_servers_str = str(contact_servers).replace(',','').strip('[]')
 

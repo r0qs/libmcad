@@ -18,8 +18,8 @@ def script_dir():
 # Such node must be in the ridge configuration file, under the *group_members* section. This
 # means that (for now) the whole system configuration is static, given in the config file.
 
-if len(sys.argv) != 2 :
-    print "usage: " + sys.argv[0] + " <receiver id>"
+if len(sys.argv) != 2 and len(sys.argv) != 3 :
+    print "usage: " + sys.argv[0] + " <receiver id> [<config_file>]"
     sys.exit(1)
 receiver_id = sys.argv[1] + " "
 
@@ -36,6 +36,9 @@ app_classpath = ""
 receiver_class = "ch.usi.dslab.bezerra.mcad.tests.TestServer"
 
 config_file = script_dir() + "/ridge_2g3e.json "
+
+if len(sys.argv) > 2 :
+    config_file = sys.argv[2]
 
 silence_receivers = False
 #silence_receivers = True
