@@ -34,7 +34,9 @@ public class TestServer {
          return instance;
       }
       
-      private StatusPrinter() {}
+      private StatusPrinter() {
+         super("StatusPrinter");
+      }
       
       synchronized public void print(Object o, String text) {
          synchronized (pendingMessages) {
@@ -67,6 +69,7 @@ public class TestServer {
    public static class FastDelInversionCollector extends Thread {
       StatusPrinter printer;
       public FastDelInversionCollector (StatusPrinter printer) {
+         super("FastDelInversionCollector");
          this.printer = printer;
       }
       public void run () {
@@ -91,6 +94,7 @@ public class TestServer {
       private DescriptiveStatistics fastStats = new DescriptiveStatistics();
       
       public LatencyCalculator(StatusPrinter printer) {
+         super("LatencyCalculator");
          this.printer = printer;
       }
       
@@ -137,6 +141,7 @@ public class TestServer {
       private AtomicLong mistakes = new AtomicLong(0);
       
       public SpeculativeDeliveryVerifier(StatusPrinter printer, String name) {
+         super("SpeculativeDeliveryVerifier");
          this.printer = printer;
          this.name    = name;
       }
@@ -187,7 +192,7 @@ public class TestServer {
       
       @SuppressWarnings({ "unchecked", "rawtypes" })
       public ListHashCalculator(StatusPrinter printer, String listName, List objList) {
-         super ("ListHashPrinter");
+         super ("ListHashCalculator");
          this.listName = listName;
          this.objList  = objList;
          this.printer  = printer;
