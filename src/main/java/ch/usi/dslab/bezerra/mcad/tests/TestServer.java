@@ -89,9 +89,9 @@ public class TestServer {
    
    public static class LatencyCalculator extends Thread {
       private StatusPrinter printer;
-      private DescriptiveStatistics consStats = new DescriptiveStatistics();
-      private DescriptiveStatistics  optStats = new DescriptiveStatistics();
-      private DescriptiveStatistics fastStats = new DescriptiveStatistics();
+      private DescriptiveStatistics consStats = new DescriptiveStatistics(10000);
+      private DescriptiveStatistics  optStats = new DescriptiveStatistics(10000);
+      private DescriptiveStatistics fastStats = new DescriptiveStatistics(10000);
       
       public LatencyCalculator(StatusPrinter printer) {
          super("LatencyCalculator");
