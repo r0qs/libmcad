@@ -120,12 +120,12 @@ public class TestServer {
             }
             
             String latencyLine = String.format(
-                  "latencies: c: [%.1f - %.1f - %.1f]\n" +
-                  "           o: [%.1f - %.1f - %.1f]\n" +
-                  "           f: [%.1f - %.1f - %.1f]",
-                  consStats.getPercentile(25), consStats.getPercentile(50), consStats.getPercentile(75),
-                  optStats .getPercentile(25),  optStats.getPercentile(50),  optStats.getPercentile(75),
-                  fastStats.getPercentile(25), fastStats.getPercentile(50), fastStats.getPercentile(75));
+                  "latencies: c: [%.1f - %.1f - %.1f] avg: %.2f\n" +
+                  "           o: [%.1f - %.1f - %.1f] avg: %.2f\n" +
+                  "           f: [%.1f - %.1f - %.1f] avg: %.2f",
+                  consStats.getPercentile(25), consStats.getPercentile(50), consStats.getPercentile(75), consStats.getMean(),
+                   optStats.getPercentile(25),  optStats.getPercentile(50),  optStats.getPercentile(75),  optStats.getMean(),
+                  fastStats.getPercentile(25), fastStats.getPercentile(50), fastStats.getPercentile(75), fastStats.getMean());
             
             printer.print(this, latencyLine);
          }
