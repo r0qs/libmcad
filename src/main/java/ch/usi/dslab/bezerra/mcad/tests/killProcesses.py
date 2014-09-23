@@ -35,8 +35,8 @@ config_json = open(system_config_file)
 config = json.load(config_json)
 
 # kill all the java processes running in any of the hosts of the ensemble nodes
-for process in config["ensemble_processes"] :
+for process in config["ensemble_processes"] + config["group_members"] :
     host = process["host"]
     os.system("ssh " + host + " \"killall -9 java\"")
-    
+
 print("Done.")
