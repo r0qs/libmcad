@@ -304,12 +304,12 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
          
          if (config.containsKey("latency_estimation_sample")) {
             int latencyEstimationSample = getJSInt(config, "latency_estimation_sample");
-            ProcessLatencyEstimator.setSampleSize(latencyEstimationSample);
+            ProcessLatencyEstimator.setGlobalSampleSize(latencyEstimationSample);
          }
          
          if (config.containsKey("latency_estimation_devs")) {
             double numDevs = getJSDouble(config, "latency_estimation_devs");
-            ProcessLatencyEstimator.setNumDevs(numDevs);
+            ProcessLatencyEstimator.setGlobalNumDevs(numDevs);
          }         
          
          JSONArray groupsArray = (JSONArray) config.get("groups");
