@@ -10,7 +10,7 @@
   "deliver_optimistic_fast"    : true ,
   
   "latency_estimation_sample"  : 100 ,
-  "latency_estimation_devs"    : 0 ,
+  "latency_estimation_devs"    : 2.5 ,
   
   "groups" :
   [
