@@ -34,9 +34,9 @@ import ch.usi.dslab.bezerra.ridge.Coordinator.NullMessageSender;
 import ch.usi.dslab.bezerra.ridge.Ensemble;
 import ch.usi.dslab.bezerra.ridge.Learner;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage;
-import ch.usi.dslab.bezerra.ridge.ProcessLatencyEstimator;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.Timestamp;
+import ch.usi.dslab.bezerra.ridge.optimistic.ProcessLatencyEstimator;
 
 public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastAgent, FastMulticastAgent {
    static Logger logger = LogManager.getLogger("RidgeMulticastAgent");
@@ -492,6 +492,8 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
             timestamp,
             groupIds,
             message);
+      
+      wrapperMessage.copyTimelineStamps(message);
       
       lowerMulticastAgent.multicast(wrapperMessage, red.ensemble);
    }

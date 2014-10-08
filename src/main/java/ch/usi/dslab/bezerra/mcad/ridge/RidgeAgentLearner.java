@@ -33,7 +33,9 @@ public class RidgeAgentLearner implements DeliverInterface {
    }
    
    Message getApplicationMessage(RidgeMessage wrapperMessage) {
-      return (Message) wrapperMessage.getItem(1);
+      Message appMessage = (Message) wrapperMessage.getItem(1);
+      appMessage.copyTimelineStamps(wrapperMessage);
+      return appMessage;
    }
 
    @Override

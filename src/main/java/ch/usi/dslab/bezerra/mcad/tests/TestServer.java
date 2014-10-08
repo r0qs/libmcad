@@ -120,12 +120,12 @@ public class TestServer {
             }
             
             String latencyLine = String.format(
-                  "latencies: c: [%.1f - %.1f - %.1f] avg: %.2f\n" +
-                  "           o: [%.1f - %.1f - %.1f] avg: %.2f\n" +
-                  "           f: [%.1f - %.1f - %.1f] avg: %.2f",
-                  consStats.getPercentile(25), consStats.getPercentile(50), consStats.getPercentile(75), consStats.getMean(),
-                   optStats.getPercentile(25),  optStats.getPercentile(50),  optStats.getPercentile(75),  optStats.getMean(),
-                  fastStats.getPercentile(25), fastStats.getPercentile(50), fastStats.getPercentile(75), fastStats.getMean());
+                  "lat c: [%.1f - %.1f - %.1f] avg: %.2f last: %.2f\n" +
+                  "    o: [%.1f - %.1f - %.1f] avg: %.2f last: %.2f\n" +
+                  "    f: [%.1f - %.1f - %.1f] avg: %.2f last: %.2f",
+                  consStats.getPercentile(25), consStats.getPercentile(50), consStats.getPercentile(75), consStats.getMean(), ((consStats.getN() > 0) ? consStats.getElement((int)(consStats.getN() - 1)) : Double.NaN),
+                   optStats.getPercentile(25),  optStats.getPercentile(50),  optStats.getPercentile(75),  optStats.getMean(), (( optStats.getN() > 0) ?  optStats.getElement((int)( optStats.getN() - 1)) : Double.NaN),
+                  fastStats.getPercentile(25), fastStats.getPercentile(50), fastStats.getPercentile(75), fastStats.getMean(), ((fastStats.getN() > 0) ? fastStats.getElement((int)(fastStats.getN() - 1)) : Double.NaN));
             
             printer.print(this, latencyLine);
          }
@@ -316,6 +316,8 @@ public class TestServer {
 //            System.out.println(String.format("cons-delivered message %s within %d ms", mid, now - timestamp));
             optVerifier.addConservativeDelivery(mid);
             fastVerifier.addConservativeDelivery(mid);
+            
+            ConsTimelineCollector.sample = msg;
          }
       }
    }
@@ -387,8 +389,42 @@ public class TestServer {
          }
       }
    }   
-   
-   
+
+   public static class ConsTimelineCollector extends Thread {
+      public static Message sample = new Message();
+      private StatusPrinter printer;
+
+      public ConsTimelineCollector(StatusPrinter printer) {
+         this.printer = printer;
+      }
+
+      @Override
+      public void run() {
+         long printInterval = 2500;
+         while (true) {
+            try {
+               Thread.sleep(printInterval);
+            } catch (InterruptedException e) {
+               e.printStackTrace();
+               System.exit(1);
+            }
+
+            Message samp = sample;
+
+            long sendTime     = samp.t_coord_recv        - samp.t_client_send;
+            long coordOptTime = samp.t_coord_opt_merge   - samp.t_coord_recv;
+            long batchTime    = samp.t_batch_ready       - samp.t_coord_opt_merge;
+            long mcastTime    = samp.t_learner_received  - samp.t_batch_ready;
+            long mergeTime    = samp.t_learner_delivered - samp.t_learner_received;
+            long latency      = samp.t_learner_delivered - samp.t_client_send;
+            
+            String consTimeline = String.format("T %d (s %d cm %d b %d mc %d lm %d)",
+                  latency, sendTime, coordOptTime, batchTime, mcastTime, mergeTime);
+            
+            printer.print(this, consTimeline);
+         }
+      }
+   }
    
    MulticastServer mcserver;
    ConservativeDeliverer consThread;
@@ -402,6 +438,8 @@ public class TestServer {
       SpeculativeDeliveryVerifier optVerifier = new SpeculativeDeliveryVerifier(StatusPrinter.getInstance(), "opt");
       SpeculativeDeliveryVerifier fastVerifier = new SpeculativeDeliveryVerifier(StatusPrinter.getInstance(), "fast");
       FastDelInversionCollector inversioner = new FastDelInversionCollector(StatusPrinter.getInstance());
+      ConsTimelineCollector consTimelineCollector = new ConsTimelineCollector(StatusPrinter.getInstance());
+      consTimelineCollector.start();
       optVerifier.start();
       fastVerifier.start();
       inversioner.start();
