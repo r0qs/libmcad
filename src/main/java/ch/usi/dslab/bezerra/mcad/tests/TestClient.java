@@ -233,6 +233,8 @@ public class TestClient {
                if (isInt(params[i]) && getInt(params[i]) == 2) sendtog2 = true;
             }
             int burstLength = Integer.parseInt(params[params.length - 1]);
+            System.out.println(String.format("sending burst - length: %d, random: %b, to g1: %b, to g2: %b",
+                  burstLength, random, sendtog1, sendtog2));
             client.sendBurst(burstLength, random, sendtog1, sendtog2);
          }
          if (input.contains("l")) {
@@ -244,6 +246,8 @@ public class TestClient {
                if (isInt(params[i]) && getInt(params[i]) == 2) sendtog2 = true;
             }
             int outstanding = Integer.parseInt(params[params.length - 1]);
+            System.out.println(String.format("sending closed loop - outstanding: %d, random: %b, to g1: %b, to g2: %b",
+                  outstanding, random, sendtog1, sendtog2));
             client.sendClosedLoop(outstanding, random, sendtog1, sendtog2);
          }
          else {
