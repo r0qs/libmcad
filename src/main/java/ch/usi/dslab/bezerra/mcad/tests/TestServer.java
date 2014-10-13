@@ -139,6 +139,7 @@ public class TestServer {
       private String name;
       private AtomicLong numDeliveries = new AtomicLong(0);
       private AtomicLong mistakes = new AtomicLong(0);
+      private DescriptiveStatistics recentMistakes   = new DescriptiveStatistics(1000);
       
       public SpeculativeDeliveryVerifier(StatusPrinter printer, String name) {
          super("SpeculativeDeliveryVerifier");
@@ -161,7 +162,13 @@ public class TestServer {
          while (speculativeSequence.isEmpty() == false && conservativeSequence.isEmpty() == false) {
             MessageIdentifier smid = speculativeSequence.remove(0);
             MessageIdentifier cmid = conservativeSequence.remove(0);
-            if (smid.equals(cmid) == false) mistakes.incrementAndGet();
+            if (smid.equals(cmid) == false) {
+               mistakes.incrementAndGet();
+               recentMistakes.addValue(1);
+            }
+            else {
+               recentMistakes.addValue(0);
+            }
          }
       }
       
@@ -178,7 +185,8 @@ public class TestServer {
             long m = mistakes.get();
             long d = numDeliveries.get();
             double rate = 100.0d * ((double) m) / ((double) d);
-            String status = String.format("mistakes(%s): %d/%d = %.2f%%", name, m, d, rate);
+            double recentrate = 100.0d * (recentMistakes.getSum()) / ((double) recentMistakes.getN()); 
+            String status = String.format("mistakes(%s): %d/%d = %.2f%%; rec: %.2f%%", name, m, d, rate, recentrate);
             printer.print(this, status);
          }
       }
