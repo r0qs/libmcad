@@ -70,6 +70,12 @@ public class TestClient {
          }
       }
       
+      private boolean containsPendingMessage(MessageIdentifier id, List<MessageIdentifier> pendingList) {
+         synchronized (pendingList) {
+            return pendingList.contains(id);
+         }
+      }
+      
       private void wakeUp() {
          wakeUpSignals.release();
       }
@@ -92,8 +98,10 @@ public class TestClient {
             int deliveryType = (Integer) reply.getNext();
             switch (deliveryType) {
                case DeliveryType.CONS : {
-                  addPermit();
                   removePendingMessage(mid, pendingConsMessages);
+                  if (containsPendingMessage(mid, pendingConsMessages) == false) {
+                     addPermit();
+                  }
                   break;
                }
                case DeliveryType.OPT : {
