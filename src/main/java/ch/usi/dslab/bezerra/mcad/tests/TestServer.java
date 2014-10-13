@@ -139,7 +139,7 @@ public class TestServer {
       private String name;
       private AtomicLong numDeliveries = new AtomicLong(0);
       private AtomicLong mistakes = new AtomicLong(0);
-      private DescriptiveStatistics recentMistakes   = new DescriptiveStatistics(1000);
+      private DescriptiveStatistics recentMistakes   = new DescriptiveStatistics(100000);
       
       public SpeculativeDeliveryVerifier(StatusPrinter printer, String name) {
          super("SpeculativeDeliveryVerifier");
