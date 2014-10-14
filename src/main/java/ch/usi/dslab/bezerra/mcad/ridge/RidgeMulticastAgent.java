@@ -297,6 +297,11 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
             ch.usi.dslab.bezerra.ridge.MulticastAgent.setFast(deliverOptFast);
          }
          
+         if (config.containsKey("direct_fast")) {
+            boolean directFast = (Boolean) config.get("direct_fast");
+            ch.usi.dslab.bezerra.ridge.MulticastAgent.setDirectFast(directFast);
+         }
+         
          if (config.containsKey("delta_null_messages_ms")) {
             int deltaNullMessages = getJSInt(config, "delta_null_messages_ms");
             NullMessageSender.setDelta(deltaNullMessages);
