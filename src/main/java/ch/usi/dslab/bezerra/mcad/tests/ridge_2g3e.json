@@ -6,7 +6,7 @@
   "delta_null_messages_ms"     : 1 ,
   
   "deliver_conservative"       : true ,
-  "deliver_optimistic_uniform" : true ,
+  "deliver_optimistic_uniform" : false ,
   "deliver_optimistic_fast"    : true ,
   "direct_fast"                : true ,
   
@@ -150,6 +150,12 @@
       "group" : 2,
       "host"  : "localhost",
       "port"  : 50011
+    },
+    {
+      "pid"   : 12,
+      "group" : 1,
+      "host"  : "localhost",
+      "port"  : 50012
     }
   ]
   

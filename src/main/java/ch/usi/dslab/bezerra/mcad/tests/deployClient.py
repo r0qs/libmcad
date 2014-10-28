@@ -31,7 +31,7 @@ config_file = script_dir() + "/ridge_2g3e.json"
 if len(sys.argv) > 1 :
     config_file = sys.argv[1]
 
-contact_servers = [9, 10, 11]
+contact_servers = [9, 10, 11, 12]
 contact_servers_str = str(contact_servers).replace(',','').strip('[]')
 
 sender_cmd = java_bin + " " + debug_server_str + " " + libmcast_cp + " " + app_classpath + " " + sender_class + " " + config_file + " " + sender_id + " " + contact_servers_str

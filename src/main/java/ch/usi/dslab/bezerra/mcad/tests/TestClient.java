@@ -245,7 +245,7 @@ public class TestClient {
                   burstLength, random, sendtog1, sendtog2));
             client.sendBurst(burstLength, random, sendtog1, sendtog2);
          }
-         if (input.contains("l")) {
+         else if (input.contains("l")) {
             boolean random = (input.contains("r"));
             boolean sendtog1, sendtog2;
             sendtog1 = sendtog2 = false;
