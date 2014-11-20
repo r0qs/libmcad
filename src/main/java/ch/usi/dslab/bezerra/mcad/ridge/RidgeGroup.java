@@ -50,6 +50,7 @@ public class RidgeGroup extends Group {
             members.add(learner.getPid());
          Collections.sort(members);
          this.membersCache = members;
+         
 //      }
      
 //      for (int id : membersCache) {
