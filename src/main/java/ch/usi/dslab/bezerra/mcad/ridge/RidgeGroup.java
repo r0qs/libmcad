@@ -35,7 +35,7 @@ public class RidgeGroup extends Group {
          associatedEnsembles.add(e);
    }
    
-   ArrayList<RidgeEnsembleData> getCorrespondingRings() {
+   ArrayList<RidgeEnsembleData> getCorrespondingEnsembles() {
       return associatedEnsembles;
    }
 

@@ -400,10 +400,10 @@ public class TestServer {
 
    public static class ConsTimelineCollector extends Thread {
       public static Message sample = new Message();
-      private StatusPrinter printer;
+//      private StatusPrinter printer;
 
       public ConsTimelineCollector(StatusPrinter printer) {
-         this.printer = printer;
+//         this.printer = printer;
       }
 
       @Override
@@ -417,19 +417,19 @@ public class TestServer {
                System.exit(1);
             }
 
-            Message samp = sample;
+//            Message samp = sample;
 
-            long sendTime     = samp.t_coord_recv        - samp.t_client_send;
-            long coordOptTime = samp.t_coord_opt_merge   - samp.t_coord_recv;
-            long batchTime    = samp.t_batch_ready       - samp.t_coord_opt_merge;
-            long mcastTime    = samp.t_learner_received  - samp.t_batch_ready;
-            long mergeTime    = samp.t_learner_delivered - samp.t_learner_received;
-            long latency      = samp.t_learner_delivered - samp.t_client_send;
+//            long sendTime     = samp.t_coord_recv        - samp.t_client_send;
+//            long coordOptTime = samp.t_coord_opt_merge   - samp.t_coord_recv;
+//            long batchTime    = samp.t_batch_ready       - samp.t_coord_opt_merge;
+//            long mcastTime    = samp.t_learner_received  - samp.t_batch_ready;
+//            long mergeTime    = samp.t_learner_delivered - samp.t_learner_received;
+//            long latency      = samp.t_learner_delivered - samp.t_client_send;
             
-            String consTimeline = String.format("T %d (s %d cm %d b %d mc %d lm %d)",
-                  latency, sendTime, coordOptTime, batchTime, mcastTime, mergeTime);
+//            String consTimeline = String.format("T %d (s %d cm %d b %d mc %d lm %d)",
+//                  latency, sendTime, coordOptTime, batchTime, mcastTime, mergeTime);
             
-            printer.print(this, consTimeline);
+//            printer.print(this, consTimeline);
          }
       }
    }

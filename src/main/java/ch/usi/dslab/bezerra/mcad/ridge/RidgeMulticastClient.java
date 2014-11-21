@@ -8,7 +8,6 @@ import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastClient;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.ridge.Client;
-import ch.usi.dslab.bezerra.ridge.RidgeMessage;
 
 
 public class RidgeMulticastClient extends Client implements MulticastClient {

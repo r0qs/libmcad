@@ -220,6 +220,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
       return mappedEnsemble;
    }
 
+   @SuppressWarnings("unused")
    synchronized private void sendToEnsemble(RidgeMessage m, RidgeEnsembleData ring) {
       lowerMulticastAgent.multicast(m, ring.getEnsemble());
    }
@@ -398,7 +399,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
             }
             
             if (role.equals("acceptor")) {
-               Acceptor acc  = new Acceptor (pid, host, port);
+               /* Acceptor acc = */ new Acceptor (pid, host, port);
             }
          }
          
@@ -449,7 +450,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
 
             processGroups.put(pid, rgroup);
             
-            List<RidgeEnsembleData> groupEnsemblesData = rgroup.getCorrespondingRings();
+            List<RidgeEnsembleData> groupEnsemblesData = rgroup.getCorrespondingEnsembles();
             Learner learner = new Learner(pid, host, port);
             for (RidgeEnsembleData red : groupEnsemblesData){
                learner.subscribeToEnsemble(red.ensemble);               
@@ -471,7 +472,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
 
    public void setLocalGroup(RidgeGroup g) {
       this.localGroup = g;
-      ArrayList<RidgeEnsembleData> correspondingEnsembles = g.getCorrespondingRings();
+//      ArrayList<RidgeEnsembleData> correspondingEnsembles = g.getCorrespondingEnsembles();
    }
 
    @Override

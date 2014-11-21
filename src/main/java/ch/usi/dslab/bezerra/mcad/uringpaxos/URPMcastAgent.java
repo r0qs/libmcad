@@ -7,14 +7,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -199,11 +196,11 @@ public class URPMcastAgent implements MulticastAgent {
          byte[] strippedMsg = Arrays.copyOfRange(msg, 4 + ndests * 4, msg.length);
          if (deserializeToMessage) {
             Message deserializedMsg = Message.createFromBytes(strippedMsg); // cmdContainer
-            deserializedMsg.t_batch_ready = t_batch_ready;
-            deserializedMsg.piggyback_proposer_serialstart = batch_serial_start;
-            deserializedMsg.piggyback_proposer_serialend   = batch_serial_end;
+//            deserializedMsg.t_batch_ready = t_batch_ready;
+//            deserializedMsg.piggyback_proposer_serialstart = batch_serial_start;
+//            deserializedMsg.piggyback_proposer_serialend   = batch_serial_end;
             deserializedMsg.t_learner_delivered = t_learner_delivered;
-            deserializedMsg.t_learner_deserialized = System.currentTimeMillis();
+//            deserializedMsg.t_learner_deserialized = System.currentTimeMillis();
             messageDeliveryQueue.add(deserializedMsg);
          }
          else {
@@ -404,7 +401,7 @@ public class URPMcastAgent implements MulticastAgent {
          while (it_node.hasNext()) {
             JSONObject jsnode    = (JSONObject) it_node.next();
             
-            long      nodeId       = (Long)      jsnode.get("node_id");
+//            long      nodeId       = (Long)      jsnode.get("node_id");
             String    nodeLocation = (String)    jsnode.get("node_location");            
             
             JSONArray nodeRings    = (JSONArray) jsnode.get("node_rings");            
@@ -510,7 +507,7 @@ public class URPMcastAgent implements MulticastAgent {
    
    public void setLocalGroup(URPGroup g) {
       this.localGroup = g;
-      ArrayList<URPRingData> correspondingRings = g.getCorrespondingRings();
+//      ArrayList<URPRingData> correspondingRings = g.getCorrespondingRings();
       
    }
 

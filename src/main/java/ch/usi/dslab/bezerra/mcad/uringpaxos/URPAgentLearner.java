@@ -5,8 +5,6 @@ import org.apache.log4j.Logger;
 
 import ch.usi.da.paxos.api.PaxosNode;
 import ch.usi.da.paxos.message.Value;
-import ch.usi.da.paxos.storage.Decision;
-import ch.usi.dslab.bezerra.mcad.MulticastAgentFactory;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
 public class URPAgentLearner implements Runnable {
@@ -15,11 +13,11 @@ public class URPAgentLearner implements Runnable {
    URPMcastAgent mcAgent;
    Thread urpAgentLearnerThread;
    private final static Logger logger;
-   private final static Logger valuelogger;
+//   private final static Logger valuelogger;
    
    static {
       logger      = Logger.getLogger(URPMcastAgent.class);
-      valuelogger = Logger.getLogger(Value.class);
+//      valuelogger = Logger.getLogger(Value.class);
       log.setLevel(Level.OFF);
    }
 
@@ -53,9 +51,10 @@ public class URPAgentLearner implements Runnable {
                               
                while (batch.hasNext()) {
                   byte[] msg = (byte []) batch.getNext(); // cmdContainer
-                  mcAgent.checkMessageAndEnqueue(msg, batch.t_batch_ready,
-                        batch.piggyback_proposer_serialstart, batch.piggyback_proposer_serialend,
-                        t_learner_delivered);
+//                  mcAgent.checkMessageAndEnqueue(msg, batch.t_batch_ready,
+//                        batch.piggyback_proposer_serialstart, batch.piggyback_proposer_serialend,
+//                        t_learner_delivered);
+                  mcAgent.checkMessageAndEnqueue(msg, 0, 0, 0, t_learner_delivered);
                }               
             }            
          }

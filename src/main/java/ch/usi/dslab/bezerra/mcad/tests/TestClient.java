@@ -155,7 +155,7 @@ public class TestClient {
       Message multicastMessage = new Message(clientId, mid, System.currentTimeMillis(), destinationString);
       
       // DEBUG
-      multicastMessage.t_client_send = System.currentTimeMillis();
+//      multicastMessage.t_client_send = System.currentTimeMillis();
       //======
       
       mcclient.multicast(destinations, multicastMessage);

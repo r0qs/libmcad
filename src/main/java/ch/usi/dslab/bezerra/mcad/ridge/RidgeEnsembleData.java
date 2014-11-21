@@ -2,13 +2,13 @@ package ch.usi.dslab.bezerra.mcad.ridge;
 
 import java.util.ArrayList;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 import ch.usi.dslab.bezerra.ridge.Ensemble;
 
 public class RidgeEnsembleData {
    static ArrayList<RidgeEnsembleData> ensemblesList;
-   private final static Logger log = Logger.getLogger(RidgeEnsembleData.class);
+//   private final static Logger log = Logger.getLogger(RidgeEnsembleData.class);
 
    int ensembleId;
    ArrayList<RidgeGroup> destinationGroups;
