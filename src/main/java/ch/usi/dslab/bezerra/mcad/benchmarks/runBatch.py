@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-from benchCommon import localcmd, availableNodes
+from benchCommon import localcmd, availableNodes, clockSynchronizer, systemParamSetter,\
+    sshcmdbg, sshcmd, cleaner
 import sys
 import time
 import benchCommon
@@ -15,11 +16,15 @@ serverClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer "
 clientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient "
 gathererClass="ch.usi.dslab.bezerra.sense.DataGatherer "
 
-benchCommon.localcmd(benchCommon.systemParamSetter)
-benchCommon.localcmd(benchCommon.clockSynchronizer)
+localcmd(cleaner)
+
+time.sleep(5)
+
+localcmd(systemParamSetter)
+localcmd(clockSynchronizer)
 
 for node in availableNodes :
-    benchCommon.sshcmdbg(node, benchCommon.continousClockSynchronizer)
+    sshcmdbg(node, benchCommon.continousClockSynchronizer)
 
 incFactor = 1.2
 incParcel = 0
@@ -36,8 +41,10 @@ while numClients <= maxClients :
     localcmd(deployer + " " + config)
     
     javaservercmd = "java -XX:+UseG1GC -Xmx8g -cp " + HOME + "/libmcad/target/libmcad-git.jar " + serverClass
-    benchCommon.sshcmdbg("node7", javaservercmd + "7 " + config)
-    benchCommon.sshcmdbg("node8", javaservercmd + "8 " + config)
+    sshcmdbg("node7", javaservercmd + "7 " + config)
+    sshcmdbg("node8", javaservercmd + "8 " + config)
+    
+    time.sleep(5)
     
     javaclientcmd = "java -XX:+UseG1GC -Xmx8g -cp " + HOME + "/libmcad/target/libmcad-git.jar " + clientClass
 
@@ -62,8 +69,8 @@ while numClients <= maxClients :
     javagatherercmd += " throughput optimistic "   + str(numClients)
     javagatherercmd += " mistakes server "         + str(2)
     
-    benchCommon.sshcmd("node41", javagatherercmd)
+    sshcmd("node41", javagatherercmd)
     
-    benchCommon.localcmd(benchCommon.cleaner)
+    localcmd(benchCommon.cleaner)
 
     numClients = int(ceil(numClients * incFactor + incParcel))
