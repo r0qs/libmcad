@@ -41,8 +41,8 @@ while numClients <= maxClients :
     localcmd(deployer + " " + config)
     
     javaservercmd = "java -XX:+UseG1GC -Xmx8g -cp " + HOME + "/libmcad/target/libmcad-git.jar " + serverClass
-    sshcmdbg("node7", javaservercmd + "7 " + config)
-    sshcmdbg("node8", javaservercmd + "8 " + config)
+    sshcmdbg(benchCommon.server1, javaservercmd + "7 " + config)
+    sshcmdbg(benchCommon.server2, javaservercmd + "8 " + config)
     
     time.sleep(5)
     
