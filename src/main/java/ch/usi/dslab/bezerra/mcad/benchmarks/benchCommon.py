@@ -20,73 +20,38 @@ benchCommonPath = os.path.dirname(os.path.realpath(__file__)) + "/benchCommon.py
 def noderange(first,last) :
     return ["node" + str(val) for val in range(first, last + 1)]
 
-availableNodes = noderange(1,40)
+fixedNodes = noderange(1,8)
+availableNodes = noderange(1,35) + noderange(41,42) + noderange(44, 50)
 #availableNodes = noderange(1,10) + noderange(21,40)
 
 # single experiment
-onceRunner = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/runAllOnce.py"
-cleaner = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/cleanUp.py"
-socialNetworkDir = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/"
-clockSynchronizer = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/clockSynchronizer.py"
-continousClockSynchronizer = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/continuousClockSynchronizer.py"
-systemParamSetter = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/systemParamSetter.py"
+onceRunner = HOME + "/libmcad/benchLink/runAllOnce.py"
+cleaner = HOME + "/libmcad/benchLink/cleanUp.py"
+clockSynchronizer = HOME + "/libmcad/benchLink/clockSynchronizer.py"
+continousClockSynchronizer = HOME + "/libmcad/benchLink/continuousClockSynchronizer.py"
+systemParamSetter = HOME + "/libmcad/benchLink/systemParamSetter.py"
+clockSyncInterval = 3
+sysConfigFile = HOME + "libmcad/benchLink/ridge_config.json"
 
 # parameters
 javabin = "java -XX:+UseG1GC -Xmx8g"
-javacp = "-cp " + HOME + "/chirper/target/chirper-git.jar"
-javaRunnerClass = "ch.usi.dslab.bezerra.chirper.benchmarks.TestRunner"
-javaChirperServerClass = "ch.usi.dslab.bezerra.chirper.ChirperServer"
+javacp = "-cp " + HOME + "/libmcad/target/libmcad-git.jar"
 duration = "60"
-
-######################
-# default workload
-workloadName = "mix"
-weightPost = 7.5
-weightFollow = 3.75
-weightUnfollow = 3.75
-weightGetTimeline = 85
-######################
 
 # CLIENTS
 numPermits = 1
 numUsers = 100000
-clientDeployer = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/deployTestRunners.py"
+clientDeployer = HOME + "/libmcad/benchLink/deployTestRunners.py"
 
-# CHIRPER
-replicasPerPartition = 2
-ensembleSize = 3
-sysConfigFile = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/generatedSysConfig.json"
-partitionsFile = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/generatedPartitionsConfig.json"
-chirperServerDeployer = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/deployServerChirper.py"
-# RIDGE
-javaRidgeNodeClass = "ch.usi.dslab.bezerra.mcad.ridge.RidgeEnsembleNode"
-multicastDeployer = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/deployRidge.py"
-batch_size_threshold_bytes = 1024
-batch_time_threshold_ms    = 5
-delta_null_messages_ms     = 3
-latency_estimation_sample  = 10
-latency_estimation_devs    = 0
-latency_estimation_max     = 10
-clockSyncInterval          = 3
-
-# RETWIS
-retwisServerPort = 56789
-javaRetwisUserCreatorClass = "ch.usi.dslab.bezerra.chirper.benchmarks.RetwisUserCreator"
-userIdMapFile = HOME + "/chirper/retwisIdMap.ser"
-retwisServerDeployer = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/deployServerRetwis.py"
-retwisConfigFile = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/redis.conf"
-retwisDefaultConfigFile = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/redis_default.conf"
 
 # MONITORING
 gathererDeployer = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/deployGatherer.py"
 javaGathererClass = "ch.usi.dslab.bezerra.sense.DataGatherer"
 javaBWMonitorClass = "ch.usi.dslab.bezerra.sense.monitors.BWMonitor"
 javaCPUMonitorClass = "ch.usi.dslab.bezerra.sense.monitors.CPUMonitor"
-clilogdirRetwis = "/tmp/client_log_retwis"
-clilogdirChirper = "/tmp/client_log_chirper"
-nonclilogdirRetwis = "/tmp/nonclient_log_retwis"
-nonclilogdirChirper = "/tmp/nonclient_log_chirper"
-gathererBaseLogDir = HOME + "/logsChirper/"
+clilogdirRidge = "/tmp/client_log_ridge"
+nonclilogdirRidge = "/tmp/nonclient_log_ridge"
+gathererBaseLogDir = HOME + "/logsRidge/"
 gathererPort = "60000"
 
 # ===================================================
