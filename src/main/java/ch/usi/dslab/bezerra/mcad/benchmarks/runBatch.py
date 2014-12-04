@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from benchCommon import localcmd
 import sys
 import time
