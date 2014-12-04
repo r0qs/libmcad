@@ -28,6 +28,7 @@ incParcel = 0
 
 minClients = 1
 maxClients = 100
+numPermits = 10
 
 numClients = minClients
 while numClients <= maxClients :
@@ -62,7 +63,7 @@ while numClients <= maxClients :
     # <command> <port> <directory> {<resource> <nodetype> <count>}+
     
     javagatherercmd  = "java -XX:+UseG1GC -Xmx8g -cp " + HOME + "/libmcad/target/libmcad-git.jar " + gathererClass
-    javagatherercmd += " 60000 " + "/home/bezerrac/logsRidge/clients_" + str(numClients)
+    javagatherercmd += " 60000 " + "/home/bezerrac/logsRidge/load_" + str(numClients * numPermits)
     javagatherercmd += " latency conservative "    + str(numClients)
     javagatherercmd += " latency optimistic "      + str(numClients)
     javagatherercmd += " throughput conservative " + str(numClients)
