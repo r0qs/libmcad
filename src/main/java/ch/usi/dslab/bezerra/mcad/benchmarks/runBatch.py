@@ -5,7 +5,7 @@ import sys
 import time
 import benchCommon
 
-numClients = sys.argv[1]
+numClients = int(sys.argv[1])
 clientId = 9
 from os.path import expanduser
 HOME = expanduser("~")
