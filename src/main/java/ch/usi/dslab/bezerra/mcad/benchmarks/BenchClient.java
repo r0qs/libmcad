@@ -128,7 +128,7 @@ public class BenchClient implements Runnable {
       int numPermits = Integer.parseInt(args[3]);
       // ===================================      
 
-      DataGatherer.configure(60, null, "node41", 60000);
+      DataGatherer.configure(60, null, "node40", 60000);
       
       BenchClient cli = new BenchClient(cid, configFile, msgSize, numPermits);
       

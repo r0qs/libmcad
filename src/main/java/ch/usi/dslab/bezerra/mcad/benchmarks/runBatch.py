@@ -70,7 +70,7 @@ while numClients <= maxClients :
     javagatherercmd += " throughput optimistic "   + str(numClients)
     javagatherercmd += " mistakes server "         + str(2)
     
-    sshcmd("node41", javagatherercmd)
+    sshcmd("node40", javagatherercmd)
     
     localcmd(benchCommon.cleaner)
 

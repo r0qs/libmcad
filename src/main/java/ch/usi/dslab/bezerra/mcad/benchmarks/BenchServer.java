@@ -24,7 +24,7 @@ public class BenchServer {
       MistakeRatePassiveMonitor mrpmonitor;
       
       public OrderVerifier(int sid) {
-         DataGatherer.configure(60, null, "node41", 60000);
+         DataGatherer.configure(60, null, "node40", 60000);
          mrpmonitor = new MistakeRatePassiveMonitor(sid, "server");
          instance = this;
       }
