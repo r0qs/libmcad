@@ -13,7 +13,7 @@ HOME = expanduser("~")
 clientNodes = ["node"+str(nid) for nid in range(9, 40 + 1)]
 
 deployer = HOME + "/libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/ridge/RidgeEnsembleNodesDeployer.py"
-config = HOME + "/libmcad/src/main/java/benchmark/ridge_config.json"
+config = HOME + "/libmcad/benchLink/ridge_config.json"
 localcmd(deployer + " " + config)
 
 serverClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer "
