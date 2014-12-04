@@ -6,8 +6,6 @@ import time
 import benchCommon
 from math import ceil
 
-numClients = int(sys.argv[1])
-clientId = 9
 from os.path import expanduser
 HOME = expanduser("~")
 
@@ -29,6 +27,7 @@ incParcel = 0
 minClients = 1
 maxClients = 100
 
+clientId = 9
 numClients = minClients
 while numClients <= maxClients :
     
