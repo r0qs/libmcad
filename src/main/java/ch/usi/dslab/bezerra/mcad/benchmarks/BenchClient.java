@@ -61,8 +61,9 @@ public class BenchClient implements Runnable {
       permits = new Semaphore(numPermits);
    }
 
-   void getSendPermit() {
+   int getSendPermit() {
       permits.acquireUninterruptibly();
+      return permits.availablePermits();
    }
    
    void addSendPermit() {      
@@ -70,7 +71,8 @@ public class BenchClient implements Runnable {
    }
    
    void sendMessage() {
-      getSendPermit();
+      int num = getSendPermit();
+      System.out.println("permits: " + num);
       BenchMessage msg = new BenchMessage(new byte[msgSize]);
       
       List<Group> allGroups = Group.getAllGroups();
