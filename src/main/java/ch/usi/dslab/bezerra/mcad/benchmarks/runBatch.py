@@ -21,7 +21,7 @@ localcmd(cleaner)
 time.sleep(5)
 
 localcmd(systemParamSetter)
-localcmd(clockSynchronizer)
+# localcmd(clockSynchronizer)
 
 incFactor = 1.2
 incParcel = 0
@@ -32,9 +32,9 @@ numPermits = 10
 
 numClients = minClients
 while numClients <= maxClients :
-    
-    for node in availableNodes :
-        sshcmdbg(node, benchCommon.continousClockSynchronizer)
+    localcmd(clockSynchronizer)
+#     for node in availableNodes :
+#         sshcmdbg(node, benchCommon.continousClockSynchronizer)
     
     deployer = HOME + "/libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/ridge/RidgeEnsembleNodesDeployer.py"
     config = HOME + "/libmcad/benchLink/ridge_config.json"
