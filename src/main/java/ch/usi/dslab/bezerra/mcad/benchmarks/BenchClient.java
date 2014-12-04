@@ -52,8 +52,6 @@ public class BenchClient implements Runnable {
          mcclient.connectToServer(sids.get(sindex));
       }
       
-      DataGatherer.configure(60, null, "node41", 60000);
-      
       optLatMonitor  = new LatencyPassiveMonitor(clientId, "optimistic");
       consLatMonitor = new LatencyPassiveMonitor(clientId, "conservative");
       optTPMonitor   = new ThroughputPassiveMonitor(clientId, "optimistic");
@@ -125,13 +123,13 @@ public class BenchClient implements Runnable {
       String configFile = args[1];
       int msgSize = Integer.parseInt(args[2]);
       // ===================================      
+
+      DataGatherer.configure(60, null, "node41", 60000);
       
       BenchClient cli = new BenchClient(cid, configFile, msgSize);
       
       Thread benchClientThread = new Thread(cli, "BenchClient");
       benchClientThread.start();
-      
-      DataGatherer.configure(60, null, "node41", 60000);
       
       long start = System.currentTimeMillis();
       long now = start;
