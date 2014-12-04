@@ -26,16 +26,18 @@ localcmd(systemParamSetter)
 incFactor = 1
 incParcel = 1
 
-minClients = 1
+minClients = 2
 maxClients = 5
 numPermits = 1
 
 numClients = minClients
 while numClients <= maxClients :
+    print ("\n\n\n\n\n\n\n\n\n\n\Running with " + str(numClients) + " clients.")
+
     localcmd(clockSynchronizer)
 #     for node in availableNodes :
 #         sshcmdbg(node, benchCommon.continousClockSynchronizer)
-    
+
     deployer = HOME + "/libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/ridge/RidgeEnsembleNodesDeployer.py"
     config = HOME + "/libmcad/benchLink/ridge_config.json"
     localcmd(deployer + " " + config)
@@ -73,5 +75,6 @@ while numClients <= maxClients :
     sshcmd("node40", javagatherercmd)
     
     localcmd(benchCommon.cleaner)
+    time.sleep(10)
 
     numClients = int(ceil(numClients * incFactor + incParcel))
