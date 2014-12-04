@@ -97,7 +97,7 @@ public class BenchClient implements Runnable {
          
          long nowNano = System.nanoTime();
          if (optimistic) {
-            long sendTime = optimisticStarts.get(reqId);
+            long sendTime = optimisticStarts.remove(reqId);
             long recvTime = nowNano;
             optLatMonitor.logLatency(sendTime, recvTime);
             optTPMonitor.incrementCount();
@@ -105,7 +105,7 @@ public class BenchClient implements Runnable {
          }
          else {
             addSendPermit();
-            long sendTime = conservativeStarts.get(reqId);
+            long sendTime = conservativeStarts.remove(reqId);
             long recvTime = nowNano;
             consLatMonitor.logLatency(sendTime, recvTime);
             consTPMonitor.incrementCount();

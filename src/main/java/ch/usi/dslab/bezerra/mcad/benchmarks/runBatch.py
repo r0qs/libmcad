@@ -20,14 +20,14 @@ localcmd(cleaner)
 
 time.sleep(5)
 
-localcmd(systemParamSetter)
-localcmd(clockSynchronizer)
+# localcmd(systemParamSetter)
+# localcmd(clockSynchronizer)
 
 incFactor = 1.2
 incParcel = 0
 
 minClients = 1
-maxClients = 100
+maxClients = 1
 
 clientId = 9
 numClients = minClients
