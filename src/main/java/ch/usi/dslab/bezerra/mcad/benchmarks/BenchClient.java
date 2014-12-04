@@ -101,7 +101,7 @@ public class BenchClient implements Runnable {
             long recvTime = nowNano;
             optLatMonitor.logLatency(sendTime, recvTime);
             optTPMonitor.incrementCount();
-            System.out.println("opt-reply for message " + reqId);
+//            System.out.println("opt-reply for message " + reqId);
          }
          else {
             addSendPermit();
@@ -109,7 +109,7 @@ public class BenchClient implements Runnable {
             long recvTime = nowNano;
             consLatMonitor.logLatency(sendTime, recvTime);
             consTPMonitor.incrementCount();
-            System.out.println("cons-reply for message " + reqId);
+//            System.out.println("cons-reply for message " + reqId);
          }
          
          now = System.currentTimeMillis();
