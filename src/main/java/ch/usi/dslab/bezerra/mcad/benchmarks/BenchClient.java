@@ -40,9 +40,9 @@ public class BenchClient implements Runnable {
    LatencyPassiveMonitor    optLatMonitor, consLatMonitor;
    ThroughputPassiveMonitor optTPMonitor , consTPMonitor ;
    int msgSize;
-   Semaphore permits = new Semaphore(1);
+   Semaphore permits;
    
-   public  BenchClient (int clientId, String configFile, int msgSize) {
+   public  BenchClient (int clientId, String configFile, int msgSize, int numPermits) {
       BenchMessage.globalCliId = clientId;
       this.msgSize = msgSize;
       mcclient = MulticastClientServerFactory.getClient(clientId, configFile);
@@ -57,6 +57,8 @@ public class BenchClient implements Runnable {
       consLatMonitor = new LatencyPassiveMonitor(clientId, "conservative");
       optTPMonitor   = new ThroughputPassiveMonitor(clientId, "optimistic");
       consTPMonitor  = new ThroughputPassiveMonitor(clientId, "conservative");
+      
+      permits = new Semaphore(numPermits);
    }
 
    void getSendPermit() {
@@ -123,11 +125,12 @@ public class BenchClient implements Runnable {
       int cid = Integer.parseInt(args[0]);
       String configFile = args[1];
       int msgSize = Integer.parseInt(args[2]);
+      int numPermits = Integer.parseInt(args[3]);
       // ===================================      
 
       DataGatherer.configure(60, null, "node41", 60000);
       
-      BenchClient cli = new BenchClient(cid, configFile, msgSize);
+      BenchClient cli = new BenchClient(cid, configFile, msgSize, numPermits);
       
       Thread benchClientThread = new Thread(cli, "BenchClient");
       benchClientThread.start();

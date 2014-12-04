@@ -26,8 +26,9 @@ localcmd(clockSynchronizer)
 incFactor = 1.2
 incParcel = 0
 
-minClients = 80
-maxClients = 200
+minClients = 1
+maxClients = 100
+numPermits = 10
 
 numClients = minClients
 while numClients <= maxClients :
@@ -51,7 +52,7 @@ while numClients <= maxClients :
     remainingClients = numClients
     while remainingClients > 0 :
         for clinode in clientNodes :
-            benchCommon.sshcmdbg(clinode, javaclientcmd + str(clientId) + " " + config + " 100")
+            benchCommon.sshcmdbg(clinode, javaclientcmd + str(clientId) + " " + config + " 100 " + str(numPermits))
             clientId += 1
             remainingClients -= 1
             if remainingClients <= 0 :
@@ -62,7 +63,7 @@ while numClients <= maxClients :
     # <command> <port> <directory> {<resource> <nodetype> <count>}+
     
     javagatherercmd  = "java -XX:+UseG1GC -Xmx8g -cp " + HOME + "/libmcad/target/libmcad-git.jar " + gathererClass
-    javagatherercmd += " 60000 " + "/home/bezerrac/logsRidge/clients_" + str(numClients)
+    javagatherercmd += " 60000 " + "/home/bezerrac/logsRidge/load_" + str(numClients * numPermits)
     javagatherercmd += " latency conservative "    + str(numClients)
     javagatherercmd += " latency optimistic "      + str(numClients)
     javagatherercmd += " throughput conservative " + str(numClients)
