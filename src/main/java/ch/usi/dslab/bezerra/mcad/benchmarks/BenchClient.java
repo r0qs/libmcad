@@ -97,10 +97,10 @@ public class BenchClient implements Runnable {
          long    reqId      = (Long) reply.getItem(0);
          boolean optimistic = (Boolean) reply.getItem(1);
          
-         now = System.nanoTime();
+         long nowNano = System.nanoTime();
          if (optimistic) {
             long sendTime = optimisticStarts.get(reqId);
-            long recvTime = now;
+            long recvTime = nowNano;
             optLatMonitor.logLatency(sendTime, recvTime);
             optTPMonitor.incrementCount();
             System.out.println("opt-reply for message " + reqId);
@@ -108,11 +108,13 @@ public class BenchClient implements Runnable {
          else {
             addSendPermit();
             long sendTime = conservativeStarts.get(reqId);
-            long recvTime = now;
+            long recvTime = nowNano;
             consLatMonitor.logLatency(sendTime, recvTime);
             consTPMonitor.incrementCount();
             System.out.println("cons-reply for message " + reqId);
          }
+         
+         now = System.currentTimeMillis();
       }
    }
    
