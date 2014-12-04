@@ -36,6 +36,7 @@ javagatherercmd += " latency conservative "    + str(numClients)
 javagatherercmd += " latency optimistic "      + str(numClients)
 javagatherercmd += " throughput conservative " + str(numClients)
 javagatherercmd += " throughput optimistic "   + str(numClients)
+javagatherercmd += " mistakes server "         + str(2)
 
 benchCommon.sshcmdbg("node41", javagatherercmd)
 
