@@ -58,6 +58,7 @@ public class BenchClient implements Runnable {
       optTPMonitor   = new ThroughputPassiveMonitor(clientId, "optimistic");
       consTPMonitor  = new ThroughputPassiveMonitor(clientId, "conservative");
       
+      System.out.println(String.format("Creating client %d with %d permits", clientId, numPermits));
       permits = new Semaphore(numPermits);
    }
 
@@ -72,7 +73,7 @@ public class BenchClient implements Runnable {
    
    void sendMessage() {
       int num = getSendPermit();
-      System.out.println("permits: " + num);
+//      System.out.println("permits: " + num);
       BenchMessage msg = new BenchMessage(new byte[msgSize]);
       
       List<Group> allGroups = Group.getAllGroups();
