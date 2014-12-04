@@ -67,6 +67,7 @@ public class BenchServer {
             Message reply = new Message(msgSeq, optimistic);
             mcserver.sendReply(clientId, reply);
             OrderVerifier.instance.addConsDelivery(clientId, msgSeq);
+            System.out.println("cons-delivered message " + clientId + "." + msgSeq);
             now = System.currentTimeMillis();
          }
       }
@@ -90,6 +91,7 @@ public class BenchServer {
             Message reply = new Message(msgSeq, optimistic);
             mcserver.sendReply(clientId, reply);
             OrderVerifier.instance.addOptDelivery(clientId, msgSeq);
+            System.out.println("opt-delivered message " + clientId + "." + msgSeq);
             now = System.currentTimeMillis();
          }
       }
