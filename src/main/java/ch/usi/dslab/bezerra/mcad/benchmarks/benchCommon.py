@@ -21,7 +21,7 @@ def noderange(first,last) :
     return ["node" + str(val) for val in range(first, last + 1)]
 
 fixedNodes = noderange(41,42) + noderange(44,49)
-availableNodes = noderange(1,42) + noderange(44,72) + noderange(74,79)
+availableNodes = noderange(41,42) + noderange(44,72) + noderange(74,79)
 #availableNodes = noderange(1,10) + noderange(21,40)
 
 # single experiment
