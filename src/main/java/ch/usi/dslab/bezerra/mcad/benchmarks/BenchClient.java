@@ -24,6 +24,7 @@ public class BenchClient implements Runnable {
       private static AtomicLong nextMsgSeq = new AtomicLong();
       int cliId;
       long seq;
+      public BenchMessage() {super();}
       public BenchMessage(Object... objs) {
          super(objs);
          this.cliId = globalCliId;
