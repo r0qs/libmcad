@@ -27,7 +27,7 @@ public class BenchClient implements Runnable {
       public BenchMessage() {super();}
       public BenchMessage(Object... objs) {
          super(objs);
-         this.cliId = globalCliId;
+         cliId = globalCliId;
          seq = nextMsgSeq.incrementAndGet();
       }
    }
@@ -50,6 +50,7 @@ public class BenchClient implements Runnable {
          List<Integer> sids = g.getMembers();
          int sindex = clientId % sids.size();
          mcclient.connectToServer(sids.get(sindex));
+         System.out.println(String.format("Clientd %d connected to server %s", clientId, sids.get(sindex)));
       }
       
       optLatMonitor  = new LatencyPassiveMonitor(clientId, "optimistic");
