@@ -26,8 +26,8 @@ localcmd(clockSynchronizer)
 incFactor = 1.2
 incParcel = 0
 
-minClients = 1
-maxClients = 100
+minClients = 80
+maxClients = 200
 
 numClients = minClients
 while numClients <= maxClients :
