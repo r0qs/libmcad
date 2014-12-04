@@ -25,6 +25,8 @@ public class RidgeMulticastClient extends Client implements MulticastClient {
    @Override
    public void connectToServer(int serverId) {
       connectToLearner(serverId);
+      Message ack = deliverReply();
+      System.out.println(String.format("Client %d: %s", this.getPid(), ack.getItem(0)));
    }
    
    @Override
