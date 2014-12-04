@@ -23,9 +23,9 @@ def noderange(first,last) :
 server1="node47"
 server2="node48"
 fixedNodes = noderange(41,42) + noderange(44,49)
-availableNodes = noderange(41,42) + noderange(44,70)
-availableNodes = noderange(41,42) + noderange(44,72) + noderange(74,79)
+#availableNodes = noderange(41,42) + noderange(44,70)
 #availableNodes = noderange(1,10) + noderange(21,40)
+availableNodes = noderange(41,42) + noderange(44,72) + noderange(74,79)
 
 # single experiment
 onceRunner = HOME + "/libmcad/benchLink/runAllOnce.py"
