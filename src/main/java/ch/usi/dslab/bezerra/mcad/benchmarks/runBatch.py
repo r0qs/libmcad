@@ -23,12 +23,12 @@ time.sleep(5)
 localcmd(systemParamSetter)
 # localcmd(clockSynchronizer)
 
-incFactor = 1.2
-incParcel = 0
+incFactor = 1
+incParcel = 1
 
 minClients = 1
-maxClients = 100
-numPermits = 10
+maxClients = 5
+numPermits = 1
 
 numClients = minClients
 while numClients <= maxClients :
