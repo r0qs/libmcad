@@ -29,7 +29,6 @@ incParcel = 0
 minClients = 1
 maxClients = 100
 
-clientId = 9
 numClients = minClients
 while numClients <= maxClients :
     
@@ -48,6 +47,7 @@ while numClients <= maxClients :
     
     javaclientcmd = "java -XX:+UseG1GC -Xmx8g -cp " + HOME + "/libmcad/target/libmcad-git.jar " + clientClass
 
+    clientId = 9
     remainingClients = numClients
     while remainingClients > 0 :
         for clinode in clientNodes :
