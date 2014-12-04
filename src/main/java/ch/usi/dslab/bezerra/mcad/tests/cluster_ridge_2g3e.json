@@ -8,7 +8,7 @@
   "deliver_conservative"       : true ,
   "deliver_optimistic_uniform" : true ,
   "deliver_optimistic_fast"    : true ,
-  "direct_fast"                : true ,
+  "direct_fast"                : false ,
   
   "latency_estimation_sample"  : 5 ,
   "latency_estimation_devs"    : 0 ,
