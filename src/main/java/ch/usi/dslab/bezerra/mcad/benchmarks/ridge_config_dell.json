@@ -49,42 +49,42 @@
       "role" : "coordinator",
       "pid"  : 1,
       "ensemble" : 1,
-      "host" : "node1",
+      "host" : "node41",
       "port" : 50001
     },
     {
       "role" : "acceptor",
       "pid"  : 2,
       "ensemble" : 1,
-      "host" : "node2",
+      "host" : "node42",
       "port" : 50002
     },
     {
       "role" : "coordinator",
       "pid"  : 3,
       "ensemble" : 2,
-      "host" : "node3",
+      "host" : "node49",
       "port" : 50003
     },
     {
       "role" : "acceptor",
       "pid"  : 4,
       "ensemble" : 2,
-      "host" : "node4",
+      "host" : "node44",
       "port" : 50004
     },
     {
       "role" : "coordinator",
       "pid"  : 5,
       "ensemble" : 3,
-      "host" : "node5",
+      "host" : "node45",
       "port" : 50005
     },
     {
       "role" : "acceptor",
       "pid"  : 6,
       "ensemble" : 3,
-      "host" : "node6",
+      "host" : "node46",
       "port" : 50006
     }
   ],
@@ -116,13 +116,13 @@
     {
       "pid"   : 7,
       "group" : 1,
-      "host"  : "node7",
+      "host"  : "node47",
       "port"  : 50007
     },
     {
       "pid"   : 8,
       "group" : 2,
-      "host"  : "node8",
+      "host"  : "node48",
       "port"  : 50008
     }
   ]
