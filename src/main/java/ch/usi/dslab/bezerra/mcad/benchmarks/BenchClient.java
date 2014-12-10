@@ -72,7 +72,7 @@ public class BenchClient implements Runnable {
    }
    
    void sendMessage() {
-      int num = getSendPermit();
+      /* int num = */ getSendPermit();
 //      System.out.println("permits: " + num);
       BenchMessage msg = new BenchMessage(new byte[msgSize]);
       

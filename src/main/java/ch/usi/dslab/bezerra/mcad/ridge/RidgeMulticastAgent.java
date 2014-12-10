@@ -37,8 +37,6 @@ import ch.usi.dslab.bezerra.ridge.RidgeMessage;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.Timestamp;
 import ch.usi.dslab.bezerra.ridge.optimistic.ProcessLatencyEstimator;
-import ch.usi.dslab.bezerra.ridge.storage.Storage;
-import ch.usi.dslab.bezerra.ridge.storage.StorageFactory;
 
 public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastAgent, FastMulticastAgent {
    static Logger logger = LogManager.getLogger("RidgeMulticastAgent");
@@ -328,6 +326,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
          String storageType = null;
          if (config.containsKey("storage_type")) {
             storageType = (String) config.get("storage_type");
+            Acceptor.setStorage(storageType);
          }
          
          JSONArray groupsArray = (JSONArray) config.get("groups");
@@ -399,21 +398,14 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
             
             Ensemble ensemble = Ensemble.getEnsemble(ensembleId);
             
-            Acceptor acc = null;
             if (role.equals("coordinator")) {
                Coordinator coordinator = new Coordinator(pid, host, port);
-               acc = coordinator;
                ensemble.setCoordinator(coordinator);
                coordinator.setEnsemble(ensemble);
             }
             
             if (role.equals("acceptor")) {
-               acc = new Acceptor (pid, host, port);
-            }
-            
-            if (role.equals("coordinator") || role.equals("acceptor")) {
-               Storage storage = StorageFactory.buildStorage(storageType, pid);
-               acc.setStorage(storage);               
+               new Acceptor (pid, host, port);
             }
          }
          

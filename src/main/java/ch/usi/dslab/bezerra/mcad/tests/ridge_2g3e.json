@@ -1,9 +1,9 @@
 {
   "agent_class" : "RidgeMulticastAgent" ,
   
-  "batch_size_threshold_bytes" : 30 ,
-  "batch_time_threshold_ms"    : 5 ,
-  "delta_null_messages_ms"     : 1 ,
+  "batch_size_threshold_bytes" : 65536 ,
+  "batch_time_threshold_ms"    : 50 ,
+  "delta_null_messages_ms"     : 100 ,
   
   "deliver_conservative"       : true ,
   "deliver_optimistic_uniform" : false ,
@@ -12,6 +12,8 @@
   
   "latency_estimation_sample"  : 5 ,
   "latency_estimation_devs"    : 0 ,
+
+  "storage_type"               : "bdb" ,
   
   "groups" :
   [
