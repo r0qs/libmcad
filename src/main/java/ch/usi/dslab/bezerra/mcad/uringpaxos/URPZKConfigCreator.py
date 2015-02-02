@@ -6,6 +6,7 @@ import shlex
 import subprocess
 import json
 import time
+from kazoo.client import KazooClient
 
 def sshcmd(node, cmdstring) :
     os.system("ssh " + node + " " + cmdstring)
@@ -23,9 +24,22 @@ def current_time_millis() :
 def getringconfig(ringid, parameter) :
     return False
 
-def set_parameter(path, value) :
+def set_parameter(zkclient, path, value) :
     sval = str(value)
     print "Setting znode " + path + " with value " + sval
+    zkclient.create(path, sval, makepath=True)
+    
+def set_all_parameters(globals, locals, config, zkclient) :
+    zk.delete("/ringpaxos", recursive=True)
+    for gpar in globals :
+        val = globals[gpar] if gpar not in config else config[gpar]
+        set_parameter(zkclient, "/ringpaxos/config/" + gpar, val)
+    
+    for ringcfg in config["rings"] :
+        ringid = ringcfg["ring_id"]
+        for lpar in locals :
+            val = locals[lpar] if lpar not in ringcfg else ringcfg[lpar]
+            set_parameter(zkclient, "/ringpaxos/topology" + str(ringid) + "/config/" + lpar, val)
 
 # arg1: zknode
 # arg2: zkport
@@ -57,7 +71,6 @@ local_parameters = {
     "learner_recovery": 1,
     "trim_modulo": 0,
     "auto_trim": 0,
-    #"proposer_batch_policy": "none",    
     "p1_resend_time": 10000,
     "value_resend_time": 10000
 }
@@ -68,15 +81,7 @@ config = json.load(mcadurpconfig)
 
 num_rings = len(config["rings"])
 
-def set_all_parameters(globals, locals, config) :
-    for gpar in globals :
-        val = globals[gpar] if gpar not in config else config[gpar]
-        set_parameter("/ringpaxos/config/" + gpar, val)
-    
-    for ringcfg in config["rings"] :
-        ringid = ringcfg["ring_id"]
-        for lpar in locals :
-            val = locals[lpar] if lpar not in ringcfg else ringcfg[lpar]
-            set_parameter("/ringpaxos/topology" + str(ringid) + "/config/" + lpar, val)
+zk = KazooClient(hosts=zknode + ":" + zkport)
+zk.start()
 
-set_all_parameters(global_parameters, local_parameters, config)
+set_all_parameters(global_parameters, local_parameters, config, zk)
