@@ -45,6 +45,10 @@ def set_all_parameters(globals, locals, config, zkclient) :
 # arg2: zkport
 # arg3: zkpath
 
+if len(sys.argv) != 5 :
+    print "   usage: " + sys.argv[0] + " zknode zkport zkpath configFile"
+    sys.exit()
+
 zknode = sys.argv[1]
 zkport = sys.argv[2]
 zkpath = sys.argv[3]
@@ -57,7 +61,27 @@ sshcmd(zknode, zkpath + "/bin/zkServer.sh start")
 
 # config paramaters
 
+local_parameters = {
+    "p1_resend_time": 1000,
+    "p1_preexecution_number": 5000,
+    "concurrent_values": 20,
+    "quorum_size": 2,
+    "buffer_size": 2097152,
+    "trim_quorum": 2,
+    "stable_storage": "ch.usi.da.paxos.storage.BufferArray",
+    "tcp_nodelay": 1,
+    "tcp_crc": 0,
+    "learner_recovery": 1,
+    "trim_modulo": 0,
+    "auto_trim": 0,
+    "value_size": 32768,
+    "value_count": 900000,
+    "value_resend_time": 10000,
+    "batch_policy": "none"
+}
+
 global_parameters = {
+    "deliver_skip_messages": 1,
     "multi_ring_start_time": current_time_millis(),
     "multi_ring_lambda": 20000,
     "multi_ring_delta_t": 10,
@@ -65,15 +89,7 @@ global_parameters = {
     "reference_ring": 0
 }
 
-local_parameters = {
-    "stable_storage": "ch.usi.da.paxos.storage.BufferArray",
-    "tcp_nodelay": 1,
-    "learner_recovery": 1,
-    "trim_modulo": 0,
-    "auto_trim": 0,
-    "p1_resend_time": 10000,
-    "value_resend_time": 10000
-}
+
 
 
 mcadurpconfig = open(mcadurpconfigfile)

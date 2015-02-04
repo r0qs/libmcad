@@ -463,10 +463,12 @@ public class URPMcastAgent implements MulticastAgent {
             // ----------------------------------------------
             // creating list of ringdescriptors
             // (just for this learner; other ring nodes also have to parse their urp string)
+            // *** ASSUME that the learner has the same id in ALL rings
             List<RingDescription> localURPaxosRings = new ArrayList<RingDescription>();
+            int nodeId = -1;
             for (URPRingData ringData : localGroup.associatedRings) {
                int ringId = ringData.getId();
-               int nodeId = (int) localNodeId;
+               nodeId = (int) localNodeId;
                ArrayList<PaxosRole> pxRoleList = new ArrayList<PaxosRole>();
                pxRoleList.add(PaxosRole.Learner);
                localURPaxosRings.add(new RingDescription(ringId, nodeId, pxRoleList));
@@ -488,7 +490,7 @@ public class URPMcastAgent implements MulticastAgent {
             });
             
             // attach a learner thread to URPaxosNode to receive the messages from the rings
-            urpAgentLearner = new URPAgentLearner(this, URPaxosNode);
+            urpAgentLearner = new URPAgentLearner(this, URPaxosNode, nodeId);
          }
          
          

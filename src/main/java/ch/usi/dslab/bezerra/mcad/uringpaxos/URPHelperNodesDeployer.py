@@ -31,6 +31,12 @@ class launcherThread (threading.Thread):
 #====================================
 #====================================
 
+# sys.argv[1] = config_file
+
+if len(sys.argv) not in [2,3] :
+    print "   usage: " + sys.argv[0] + "config_file [x]"
+    sys.exit()
+
 system_config_file = sys.argv[1]
 xterm = False
 if len(sys.argv) > 2 :
@@ -60,10 +66,11 @@ for node in config["ring_nodes"] :
 # URPMCad uses a single zookeeper server, for rendezvous purposes only
 # start zkserver standalone for urpaxos
 print("[re]starting zookeeper server at " + zookeeper_server_address)
-os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " stop")
-os.system("ssh " + zookeeper_server_location + " rm -rf /tmp/zookeeper")
-os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " start")
-os.system("ssh " + zookeeper_server_location + " " + zookeeper_client_path + " rmr /ringpaxos")
+os.system("./URPZKConfigCreator.py " + zookeeper_server_location + " " + zookeeper_server_port + " " + zookeeper_path + " " + system_config_file)
+# os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " stop")
+# os.system("ssh " + zookeeper_server_location + " rm -rf /tmp/zookeeper")
+# os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " start")
+# os.system("ssh " + zookeeper_server_location + " " + zookeeper_client_path + " rmr /ringpaxos")
 
 # MUST ASSUME THAT EACH HELPERNODE IS IN A SINGLE RING
 # AND THAT ALL NODES OF THE SAME RING ARE TOGETHER IN THE CONFIG FILE

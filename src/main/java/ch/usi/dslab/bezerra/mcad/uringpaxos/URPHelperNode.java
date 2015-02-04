@@ -21,6 +21,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.KeeperException;
 
+import ch.usi.da.paxos.Util;
 import ch.usi.da.paxos.api.PaxosNode;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
@@ -290,8 +291,7 @@ public class URPHelperNode {
       String urpx_str = args[1];
       boolean isProposer = urpx_str.contains("P");
       
-//      List<RingDescription> ringdesc = Util.parseRingsArgument(urpx_str);
-      List<RingDescription> ringdesc = null;
+      List<RingDescription> ringdesc = Util.parseRingsArgument(urpx_str);
       
       final Node ringNode = new Node(zoo_host, ringdesc);
       HelperProposer hp = null;

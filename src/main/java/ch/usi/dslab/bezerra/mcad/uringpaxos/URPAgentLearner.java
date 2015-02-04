@@ -12,6 +12,7 @@ public class URPAgentLearner implements Runnable {
    PaxosNode paxos;
    URPMcastAgent mcAgent;
    Thread urpAgentLearnerThread;
+   int learnerId;
    private final static Logger logger;
 //   private final static Logger valuelogger;
    
@@ -21,11 +22,18 @@ public class URPAgentLearner implements Runnable {
       log.setLevel(Level.OFF);
    }
 
-   public URPAgentLearner(URPMcastAgent mcAgent, PaxosNode paxos) {
+   public URPAgentLearner(URPMcastAgent mcAgent, PaxosNode paxos, int learnerId) {
       this.mcAgent = mcAgent;
       this.paxos = paxos;
+      this.learnerId = learnerId;
       urpAgentLearnerThread = new Thread(this);
       urpAgentLearnerThread.start();
+   }
+   
+   // assume that the learner has the same ids in ALL rings   
+   public int getLearnerId() {
+      // TODO
+      return -1;
    }
 
    @Override
@@ -36,7 +44,7 @@ public class URPAgentLearner implements Runnable {
       }
       while (true) {
          try {
-            Value v = paxos.getLearner().getDecisions().take().getValue();            
+            Value v = paxos.getLearner().getDecisions().take().getValue();
             if (!v.isSkip()) {
                byte[] rawBatch = v.getValue();
 

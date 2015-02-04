@@ -15,7 +15,7 @@
   {
     "location" : "localhost" ,
     "port" : 2181,
-    "path" : "$HOME/zoo/bin/zkServer.sh"
+    "path" : "$HOME/zoo"
   } ,
   
   
