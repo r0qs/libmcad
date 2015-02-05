@@ -343,6 +343,12 @@ public class TestServer {
       
       public void run() {
          while (true) {
+            
+            if (mcServer.getMulticastAgent() instanceof OptimisticMulticastAgent == false) {
+               System.out.println("The Multicast agent " + mcServer.getMulticastAgent().getClass().getName() + " does not support uniform-opt deliveries");
+               continue;
+            }
+            
             OptimisticMulticastAgent omcagent = (OptimisticMulticastAgent) mcServer.getMulticastAgent();
             
             Message msg = omcagent.deliverMessageOptimistically();
@@ -377,6 +383,12 @@ public class TestServer {
       
       public void run() {
          while (true) {
+            
+            if (mcServer.getMulticastAgent() instanceof FastMulticastAgent == false) {
+               System.out.println("The Multicast agent " + mcServer.getMulticastAgent().getClass().getName() + " does not support fast deliveries");
+               continue;
+            }
+            
             FastMulticastAgent fmcagent = (FastMulticastAgent) mcServer.getMulticastAgent();
             
             Message msg = fmcagent.deliverMessageFast();

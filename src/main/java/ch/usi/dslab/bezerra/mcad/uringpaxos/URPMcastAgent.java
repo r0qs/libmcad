@@ -29,6 +29,8 @@ import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
+import ch.usi.dslab.bezerra.mcad.Util;
+import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMulticastServer.URPMcastServerInfo;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
 public class URPMcastAgent implements MulticastAgent {
@@ -36,6 +38,7 @@ public class URPMcastAgent implements MulticastAgent {
    Node URPaxosNode = null;
    URPGroup localGroup = null;
    URPAgentLearner urpAgentLearner;
+   URPMulticastServer urpMcastServer;
    Map<Long, URPRingData> mappingGroupsToRings;
    BlockingQueue<byte[]> byteArrayDeliveryQueue;
    BlockingQueue<Message> messageDeliveryQueue;
@@ -395,21 +398,21 @@ public class URPMcastAgent implements MulticastAgent {
          // ===========================================
          // Checking ring nodes
          
-         JSONArray nodesArray = (JSONArray) config.get("ring_nodes");         
+         JSONArray nodesArray = (JSONArray) config.get("ring_nodes");
          Iterator<Object> it_node = nodesArray.iterator();
 
          while (it_node.hasNext()) {
             JSONObject jsnode    = (JSONObject) it_node.next();
             
 //            long      nodeId       = (Long)      jsnode.get("node_id");
-            String    nodeLocation = (String)    jsnode.get("node_location");            
+            String    nodeLocation = (String)    jsnode.get("node_location");
             
-            JSONArray nodeRings    = (JSONArray) jsnode.get("node_rings");            
+            JSONArray nodeRings    = (JSONArray) jsnode.get("node_rings");
             Iterator<Object> it_nodeRing = nodeRings.iterator();
-            
+
             while (it_nodeRing.hasNext()) {
                JSONObject jsnodering = (JSONObject) it_nodeRing.next();
-               
+
                long      ring_id   = (Long)      jsnodering.get("ring_id");
                JSONArray nodeRoles = (JSONArray) jsnodering.get("roles");
 
@@ -441,8 +444,22 @@ public class URPMcastAgent implements MulticastAgent {
          
          
          
-         // ===========================================
+         // ==========================================
          // Creating the learner in all relevant rings
+         
+         // The "learners" object is optional, and only used to specify server ports
+         boolean hasLearners = config.containsKey("learners");
+         if (hasLearners) {
+            JSONArray learnersArray = (JSONArray) config.get("learners");
+            Iterator<Object> it_learner = learnersArray.iterator();
+            while (it_learner.hasNext()) {
+               JSONObject jslearner = (JSONObject) it_learner.next();
+               int learner_id = Util.getJSInt(jslearner, "learner_id");
+               String learner_location = (String) jslearner.get("learner_location");
+               int learner_port = Util.getJSInt(jslearner, "learner_port");
+               URPMcastServerInfo.addServerToMap(learner_id, learner_location, learner_port);
+            }
+         }
          
          if (hasLocalGroup) {
             int localGroupId = ids[0];
@@ -491,6 +508,12 @@ public class URPMcastAgent implements MulticastAgent {
             
             // attach a learner thread to URPaxosNode to receive the messages from the rings
             urpAgentLearner = new URPAgentLearner(this, URPaxosNode, nodeId);
+            
+            // create mcastserver if that is the case
+            if (hasLearners) {
+               int port = URPMcastServerInfo.getServer(nodeId).getPort();
+               urpMcastServer = new URPMulticastServer(this, urpAgentLearner, port);
+            }
          }
          
          
@@ -500,6 +523,10 @@ public class URPMcastAgent implements MulticastAgent {
          System.exit(1);
       }      
       
+   }
+   
+   public URPMulticastServer getMulticastServer() {
+      return urpMcastServer;
    }
 
    @Override

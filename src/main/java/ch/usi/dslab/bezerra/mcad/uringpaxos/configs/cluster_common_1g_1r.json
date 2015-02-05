@@ -52,5 +52,21 @@
         { "ring_id" : 1 , "roles" : ["acceptor"] }
       ]
     }
+  ] ,
+  
+  "comment" : "the learners object is optional, and only used to specify server ports" ,
+  
+  "learners" :
+  [
+    {
+      "learner_id" : 14 ,
+      "learner_location" : "node14" ,
+      "learner_port" : 50014
+    } ,
+    {
+      "learner_id" : 15 ,
+      "learner_location" : "node15" ,
+      "learner_port" : 50015
+    }
   ]
 }

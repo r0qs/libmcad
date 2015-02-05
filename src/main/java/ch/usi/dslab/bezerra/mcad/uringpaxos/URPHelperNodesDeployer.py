@@ -10,12 +10,19 @@
 import os
 import sys
 import json
+import inspect
 import threading
 from pprint import pprint
 from time import sleep
 
 #====================================
 #====================================
+
+def script_dir():
+#    returns the module path without the use of __file__.  Requires a function defined 
+#    locally in the module.
+#    from http://stackoverflow.com/questions/729583/getting-file-path-of-imported-module
+   return os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda _: None)))
 
 class launcherThread (threading.Thread):
     def __init__(self, clist):
@@ -66,7 +73,7 @@ for node in config["ring_nodes"] :
 # URPMCad uses a single zookeeper server, for rendezvous purposes only
 # start zkserver standalone for urpaxos
 print("[re]starting zookeeper server at " + zookeeper_server_address)
-os.system("./URPZKConfigCreator.py " + zookeeper_server_location + " " + zookeeper_server_port + " " + zookeeper_path + " " + system_config_file)
+os.system(script_dir() + "/URPZKConfigCreator.py " + zookeeper_server_location + " " + zookeeper_server_port + " " + zookeeper_path + " " + system_config_file)
 # os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " stop")
 # os.system("ssh " + zookeeper_server_location + " rm -rf /tmp/zookeeper")
 # os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " start")

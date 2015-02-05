@@ -13,9 +13,12 @@ import ch.usi.dslab.bezerra.netwrapper.tcp.TCPSender;
 
 public class URPMulticastServer implements MulticastServer {
    
-   public static class ConnectionListener implements Runnable {
-
+   public static interface MessageType {
       public final static int CLIENT_CREDENTIALS = 0;
+   }
+   
+   public static class ConnectionListener implements Runnable {
+      
       boolean running = true;
       URPMulticastServer parent;
       Thread clThread;
@@ -34,12 +37,12 @@ public class URPMulticastServer implements MulticastServer {
                continue;
             else {
                TCPConnection connection = newTcpMsg.getConnection();
-               Message contents = (Message) newTcpMsg.getContents();
+               Message contents = newTcpMsg.getContents();
                contents.rewind();
                int msgType = (Integer) contents.getNext();
 
                switch (msgType) {
-                  case CLIENT_CREDENTIALS: {
+                  case MessageType.CLIENT_CREDENTIALS: {
                      int clientId = (Integer) contents.getNext();
                      parent.connectedClients.put(clientId, connection);
                      Message connectedAck = new Message("CONNECTED");
@@ -54,6 +57,43 @@ public class URPMulticastServer implements MulticastServer {
       }
    }
 
+   public static class URPMcastServerInfo {
+      
+      static Map<Integer, URPMcastServerInfo> serversMap = new ConcurrentHashMap<Integer, URPMcastServerInfo>();
+      public static void addServerToMap(int serverId, String host, int port) {
+         serversMap.put(serverId, new URPMcastServerInfo(serverId, host, port));
+      }
+      public static URPMcastServerInfo getServer(int id) {
+         return serversMap.get(id);
+      }
+      
+      int id;
+      String host;
+      int port;
+      TCPConnection tcpConnection;
+      public URPMcastServerInfo(int id, String host, int port) {
+         this.id   = id;
+         this.host = host;
+         this.port = port;
+      }
+      public int getId() {
+         return id;
+      }
+      public String getHost() {
+         return host;
+      }
+      public int getPort() {
+         return port;
+      }
+      public TCPConnection getTCPConnection() {
+         return tcpConnection;
+      }
+      public void setConnection(TCPConnection tcpConnection) {
+         this.tcpConnection = tcpConnection;
+      }
+      
+   }
+   
    MulticastAgent  associatedMulticastAgent;
    URPAgentLearner associatedLearner;
    TCPSender   serverTcpSender;
