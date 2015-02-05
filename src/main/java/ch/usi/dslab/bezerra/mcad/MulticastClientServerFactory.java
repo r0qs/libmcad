@@ -13,7 +13,6 @@ import ch.usi.dslab.bezerra.mcad.minimal.MinimalMulticastClient;
 import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMcastAgent;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMulticastClient;
-import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMulticastServer;
 
 
 public class MulticastClientServerFactory {
@@ -74,8 +73,9 @@ public class MulticastClientServerFactory {
             // TODO
          }
          else if (agent_type.equals("URPMcastAgent")) {
-            int groupId = 0;
-            URPMcastAgent urpmagent = new URPMcastAgent(configFile, true, groupId, serverId);
+            int groupId = Util.getJSInt(config, "localnode_group_id");
+            String common_config_file = (String) config.get("common_config_file");
+            URPMcastAgent urpmagent = new URPMcastAgent(common_config_file, true, groupId, serverId);
             return urpmagent.getMulticastServer();
          }
          else if (agent_type.equals("RidgeMulticastAgent")) {

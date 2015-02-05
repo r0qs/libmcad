@@ -17,6 +17,7 @@ import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
 import ch.usi.dslab.bezerra.mcad.OptimisticMulticastAgent;
+import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastAgent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.ridge.Merger;
 import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
@@ -346,7 +347,7 @@ public class TestServer {
             
             if (mcServer.getMulticastAgent() instanceof OptimisticMulticastAgent == false) {
                System.out.println("The Multicast agent " + mcServer.getMulticastAgent().getClass().getName() + " does not support uniform-opt deliveries");
-               continue;
+               break;
             }
             
             OptimisticMulticastAgent omcagent = (OptimisticMulticastAgent) mcServer.getMulticastAgent();
@@ -386,7 +387,7 @@ public class TestServer {
             
             if (mcServer.getMulticastAgent() instanceof FastMulticastAgent == false) {
                System.out.println("The Multicast agent " + mcServer.getMulticastAgent().getClass().getName() + " does not support fast deliveries");
-               continue;
+               break;
             }
             
             FastMulticastAgent fmcagent = (FastMulticastAgent) mcServer.getMulticastAgent();
@@ -455,6 +456,7 @@ public class TestServer {
    
    public TestServer(int serverId, String configFile) {
       mcserver = MulticastClientServerFactory.getServer(serverId, configFile);
+      
       SpeculativeDeliveryVerifier optVerifier = new SpeculativeDeliveryVerifier(StatusPrinter.getInstance(), "opt");
       SpeculativeDeliveryVerifier fastVerifier = new SpeculativeDeliveryVerifier(StatusPrinter.getInstance(), "fast");
       FastDelInversionCollector inversioner = new FastDelInversionCollector(StatusPrinter.getInstance());
@@ -462,7 +464,10 @@ public class TestServer {
       consTimelineCollector.start();
       optVerifier.start();
       fastVerifier.start();
-      inversioner.start();
+      
+      if (mcserver.getMulticastAgent() instanceof RidgeMulticastAgent)
+         inversioner.start();
+      
       latencyCalculator = new LatencyCalculator(StatusPrinter.getInstance());
       latencyCalculator.start();
       consThread = new ConservativeDeliverer(this, optVerifier, fastVerifier, latencyCalculator);

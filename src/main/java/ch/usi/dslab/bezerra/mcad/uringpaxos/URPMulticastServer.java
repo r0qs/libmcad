@@ -36,6 +36,7 @@ public class URPMulticastServer implements MulticastServer {
             if (newTcpMsg == null)
                continue;
             else {
+               System.out.println("New message received");
                TCPConnection connection = newTcpMsg.getConnection();
                Message contents = newTcpMsg.getContents();
                contents.rewind();
@@ -44,6 +45,7 @@ public class URPMulticastServer implements MulticastServer {
                switch (msgType) {
                   case MessageType.CLIENT_CREDENTIALS: {
                      int clientId = (Integer) contents.getNext();
+                     System.out.println("Client credentials: " + clientId);
                      parent.connectedClients.put(clientId, connection);
                      Message connectedAck = new Message("CONNECTED");
                      parent.sendReply(clientId, connectedAck);
@@ -99,6 +101,7 @@ public class URPMulticastServer implements MulticastServer {
    TCPSender   serverTcpSender;
    TCPReceiver serverTcpReceiver;
    Map<Integer, TCPConnection> connectedClients;
+   ConnectionListener connectionListener;
    
    public URPMulticastServer(MulticastAgent associatedAgent, URPAgentLearner associatedLearner, int port) {
       this.associatedMulticastAgent = associatedAgent;
@@ -106,6 +109,7 @@ public class URPMulticastServer implements MulticastServer {
       this.serverTcpSender = new TCPSender();
       this.serverTcpReceiver = new TCPReceiver(port);
       this.connectedClients = new ConcurrentHashMap<Integer, TCPConnection>();
+      this.connectionListener = new ConnectionListener(this);
    }
 
    @Override

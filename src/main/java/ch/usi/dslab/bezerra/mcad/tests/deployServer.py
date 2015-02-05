@@ -38,10 +38,14 @@ app_classpath = ""
 
 receiver_class = "ch.usi.dslab.bezerra.mcad.tests.TestServer"
 
-config_file = script_dir() + "/ridge_2g3e.json "
+
 
 if len(sys.argv) > 2 :
-    config_file = sys.argv[2]
+    alg = sys.argv[2]
+    if alg == "urp" :
+        config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_server_only.json "
+    elif alg == "ridge" :
+        config_file = script_dir() + "/ridge_2g3e.json "
 
 silence_receivers = False
 #silence_receivers = True

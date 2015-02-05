@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import ch.usi.da.paxos.TopologyManager;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastClient;
@@ -13,28 +12,42 @@ import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMulticastServer.MessageType;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMulticastServer.URPMcastServerInfo;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.netwrapper.tcp.TCPConnection;
+import ch.usi.dslab.bezerra.netwrapper.tcp.TCPMessage;
 import ch.usi.dslab.bezerra.netwrapper.tcp.TCPReceiver;
 import ch.usi.dslab.bezerra.netwrapper.tcp.TCPSender;
-import ch.usi.dslab.bezerra.ridge.RidgeMessage;
 
-public class URPMulticastClient implements MulticastClient {
-
+public class URPMulticastClient implements MulticastClient, Runnable {
+   
    private int clientId;
    TCPSender clientTCPSender;
    TCPReceiver clientTCPReceiver;
    BlockingQueue<Message> receivedReplies;
    MulticastAgent mcagent;
+   Thread receivingThread;
 
    public URPMulticastClient(int clientId, String configFile) {
       this.clientId = clientId;
       clientTCPSender = new TCPSender();
       clientTCPReceiver = new TCPReceiver();
       receivedReplies = new LinkedBlockingQueue<Message>();
+      receivingThread = new Thread(this, "URPMulticastClient");
+      receivingThread.start();
       mcagent = new URPMcastAgent(configFile, false);
    }
 
    public int getId() {
       return clientId;
+   }
+   
+   @Override
+   public void run() {
+      while(true) {
+         TCPMessage tcpmsg = clientTCPReceiver.receive(1000);
+         if (tcpmsg == null) continue;
+         
+         Message msg = tcpmsg.getContents();
+         receivedReplies.add(msg);
+      }
    }
 
    @Override

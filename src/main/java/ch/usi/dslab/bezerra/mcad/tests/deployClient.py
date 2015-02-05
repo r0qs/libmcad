@@ -27,11 +27,22 @@ app_classpath = ""
 
 sender_class = "ch.usi.dslab.bezerra.mcad.tests.TestClient"
 config_file = script_dir() + "/ridge_2g3e.json"
-
-if len(sys.argv) > 1 :
-    config_file = sys.argv[1]
-
 contact_servers = [9, 10, 11, 12]
+
+if len(sys.argv) != 2 :
+    print " usage: " + sys.argv[0] + " urp/ridge"
+    sys.exit()
+
+if len(sys.argv) == 2 :
+    alg = sys.argv[1]
+    if alg == "urp" :
+        config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_common_1g_1r.json "
+        contact_servers = [14]
+    elif alg == "ridge" :
+        config_file = script_dir() + "/ridge_2g3e.json"
+        contact_servers = [9, 10, 11, 12]
+
+
 contact_servers_str = str(contact_servers).replace(',','').strip('[]')
 
 sender_cmd = java_bin + " " + debug_server_str + " " + libmcast_cp + " " + app_classpath + " " + sender_class + " " + config_file + " " + sender_id + " " + contact_servers_str
