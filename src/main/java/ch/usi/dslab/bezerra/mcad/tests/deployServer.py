@@ -18,10 +18,19 @@ def script_dir():
 # Such node must be in the ridge configuration file, under the *group_members* section. This
 # means that (for now) the whole system configuration is static, given in the config file.
 
-if len(sys.argv) != 2 and len(sys.argv) != 3 :
-    print "usage: " + sys.argv[0] + " <receiver id> [<config_file>]"
+if len(sys.argv) not in [3,4] :
+    print "usage: " + sys.argv[0] + " <receiver id> <urp/ridge> [<config_file>]"
     sys.exit(1)
 receiver_id = sys.argv[1] + " "
+alg = sys.argv[2]
+if len(sys.argv) == 3 :
+    if alg == "urp" :
+        config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_server_only.json "
+    elif alg == "ridge" :
+        config_file = script_dir() + "/ridge_2g3e.json "
+else :
+    config_file = sys.argv[3]
+
 
 java_bin = "java -XX:+UseG1GC"
 libmcast_cp = "-cp " + script_dir() + "/../../../../../../../../../target/libmcad-git.jar"
@@ -37,15 +46,6 @@ jmx_server_str = "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.
 app_classpath = ""
 
 receiver_class = "ch.usi.dslab.bezerra.mcad.tests.TestServer"
-
-
-
-if len(sys.argv) > 2 :
-    alg = sys.argv[2]
-    if alg == "urp" :
-        config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_server_only.json "
-    elif alg == "ridge" :
-        config_file = script_dir() + "/ridge_2g3e.json "
 
 silence_receivers = False
 #silence_receivers = True

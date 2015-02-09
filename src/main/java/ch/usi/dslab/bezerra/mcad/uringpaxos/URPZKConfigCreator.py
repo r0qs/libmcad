@@ -37,6 +37,7 @@ def set_all_parameters(globals, locals, config, zkclient) :
     
     for ringcfg in config["rings"] :
         ringid = ringcfg["ring_id"]
+        set_parameter(zkclient, "/ringpaxos/topology" + str(ringid) + "/learners", "");
         for lpar in locals :
             val = locals[lpar] if lpar not in ringcfg else ringcfg[lpar]
             set_parameter(zkclient, "/ringpaxos/topology" + str(ringid) + "/config/" + lpar, val)
@@ -77,7 +78,7 @@ local_parameters = {
     "value_size": 32768,
     "value_count": 900000,
     "value_resend_time": 10000,
-    "batch_policy": "none"
+    "batch_policy": "none",
 }
 
 global_parameters = {
@@ -86,7 +87,7 @@ global_parameters = {
     "multi_ring_lambda": 20000,
     "multi_ring_delta_t": 10,
     "multi_ring_m": 1,
-    "reference_ring": 0
+    "reference_ring": 0,
 }
 
 

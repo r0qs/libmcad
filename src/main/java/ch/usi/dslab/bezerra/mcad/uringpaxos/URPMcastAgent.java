@@ -361,6 +361,18 @@ public class URPMcastAgent implements MulticastAgent {
          
          
          
+         // ----------------------------------------------
+         // creating zoo_host string in the format ip:port
+         
+         String zoo_host;
+         JSONObject zoo_data = (JSONObject) config.get("zookeeper");
+         zoo_host  = (String) zoo_data.get("location");
+         zoo_host += ":";
+         zoo_host += ((Long) zoo_data.get("port")).toString();
+         log.info("Setting zoo_host as " + zoo_host);
+
+         
+         
          // ===========================================
          // Creating Ring Info
 
@@ -369,9 +381,11 @@ public class URPMcastAgent implements MulticastAgent {
 
          while (it_ring.hasNext()) {
             JSONObject jsring  = (JSONObject) it_ring.next();
-            long       ring_id = (Long) jsring.get("ring_id");
+            int ring_id = Util.getJSInt(jsring, "ring_id");
             
-            URPRingData ringData = new URPRingData((int) ring_id);
+            URPRingData ringData = new URPRingData(ring_id);
+            URPRingWatcher ringWatcher = new URPRingWatcher(ring_id, zoo_host);
+            ringData.setWatcher(ringWatcher);
             
             JSONArray destGroupsArray = (JSONArray) jsring.get("destination_groups");
             Iterator<Object> it_destGroup = destGroupsArray.iterator();
@@ -392,7 +406,7 @@ public class URPMcastAgent implements MulticastAgent {
          // Mapping destination sets do rings
                   
          mapGroupsToRings();
-                           
+         
          
          
          // ===========================================
@@ -460,22 +474,13 @@ public class URPMcastAgent implements MulticastAgent {
                URPMcastServerInfo.addServerToMap(learner_id, learner_location, learner_port);
             }
          }
-         
+
          if (hasLocalGroup) {
             int localGroupId = ids[0];
             int localNodeId  = ids[1];
-            
+
             URPGroup localGroup = (URPGroup) Group.getGroup(localGroupId);
             setLocalGroup(localGroup);
-            
-            // ----------------------------------------------
-            // creating zoo_host string in the format ip:port
-            String zoo_host;
-            JSONObject zoo_data = (JSONObject) config.get("zookeeper");
-            zoo_host  = (String) zoo_data.get("location");
-            zoo_host += ":";
-            zoo_host += ((Long) zoo_data.get("port")).toString();
-            log.info("Setting zoo_host as " + zoo_host);
 
             // ----------------------------------------------
             // creating list of ringdescriptors
@@ -491,10 +496,10 @@ public class URPMcastAgent implements MulticastAgent {
                localURPaxosRings.add(new RingDescription(ringId, nodeId, pxRoleList));
                log.info("Setting local node as learner in ring " + ringData.getId());
             }
-            
+
             // ----------------------------------------------
             // Creating Paxos node from list of ring descriptors
-            URPaxosNode = new Node(zoo_host, localURPaxosRings);            
+            URPaxosNode = new Node(zoo_host, localURPaxosRings);
             URPaxosNode.start();
             Runtime.getRuntime().addShutdownHook(new Thread() {
                @Override

@@ -19,6 +19,10 @@ urp_deployer = script_dir() + "/../uringpaxos/URPHelperNodesDeployer.py "
 urp_config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_common_1g_1r.json "
 
 l = len(sys.argv)
+if l != 2 :
+    print "usage: " + sys.argv[0] + " urp/ridge"
+    sys.exit(1)
+
 if l > 1 :
     alg = sys.argv[1]
     if alg == "urp" :

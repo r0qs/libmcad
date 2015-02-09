@@ -4,20 +4,16 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ch.usi.da.paxos.ring.RingManager;
+
 public class URPRingData {
    static ArrayList<URPRingData> ringsList;
+
    private final static Logger log = Logger.getLogger(URPRingData.class);
-   
-   ArrayList<URPGroup> destinationGroups;
-   
-   int    ringId;
-   String coordinatorAddress;
-   int    coordinatorPort;
-   
-   SocketChannel coordinatorConnection;
    
    static {
       ringsList = new ArrayList<URPRingData>();
@@ -29,6 +25,16 @@ public class URPRingData {
             return urd;
       return null;
    }
+   
+   ArrayList<URPGroup> destinationGroups;
+   URPRingWatcher ringWatcher;
+   
+   int    ringId;
+   String coordinatorAddress;
+   int    coordinatorPort;
+   RingManager ringManager;
+   
+   SocketChannel coordinatorConnection;
    
    public URPRingData (int ringId) {
       this.ringId = ringId;
@@ -63,6 +69,14 @@ public class URPRingData {
    
    public int getProposerPort() {
       return coordinatorPort;
+   }
+   
+   public void setWatcher(URPRingWatcher watcher) {
+      ringWatcher = watcher;
+   }
+   
+   List<Integer> getLearners() {
+      return ringWatcher.getLearners();
    }
    
    public void addDestinationGroup(URPGroup g) {
