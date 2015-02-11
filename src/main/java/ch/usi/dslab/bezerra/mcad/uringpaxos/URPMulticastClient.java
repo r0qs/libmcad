@@ -75,6 +75,16 @@ public class URPMulticastClient implements MulticastClient, Runnable {
 
    }
    
+   @Override
+   public void connectToOneServerPerPartition() {
+      final List<Group> groups = URPGroup.getAllGroups();
+      for (Group group : groups) {
+         List<Integer> groupMembers = group.getMembers();
+         int chosenServerId = groupMembers.get(clientId % groupMembers.size());
+         connectToServer(chosenServerId);
+      }
+   }
+   
    void send(Message msg, int serverId) {
       URPMcastServerInfo serverInfo = URPMcastServerInfo.getServer(serverId);
       send(msg, serverInfo);

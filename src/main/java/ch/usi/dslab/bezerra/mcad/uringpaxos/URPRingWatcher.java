@@ -20,7 +20,8 @@ public class URPRingWatcher implements Watcher {
    String ringLearnersPath;
    String ringPath;
    String zkAddress;
-//   private Semaphore connectedSemaphore = new Semaphore(0);
+   private boolean learnersReceived = false;
+   private Semaphore learnersReceivedSemaphore = new Semaphore(0);
    
    public URPRingWatcher(int rId, String zkHostAndPort) {
       try {
@@ -45,10 +46,19 @@ public class URPRingWatcher implements Watcher {
          System.out.println("Adding learner " + learnerId + " to ring " + ringId);
          learners.add(learnerId);
       }
+      if (!learnersReceived) {
+         learnersReceived = true;
+         learnersReceivedSemaphore.release();
+      }      
    }
    
    synchronized List<Integer> getLearners() {
       return new ArrayList<Integer>(learners);
+   }
+   
+   public void waitForInitialLearnersInfo() {
+      if (!learnersReceived)
+         learnersReceivedSemaphore.acquireUninterruptibly();
    }
    
    @Override

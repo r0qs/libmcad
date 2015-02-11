@@ -26,8 +26,8 @@ libmcast_cp = "-cp " + script_dir() + "/../../../../../../../../../target/libmca
 app_classpath = ""
 
 sender_class = "ch.usi.dslab.bezerra.mcad.tests.TestClient"
-config_file = script_dir() + "/ridge_2g3e.json"
-contact_servers = [9, 10, 11, 12]
+config_file = script_dir() + "/ridge_1g1e.json"
+contact_servers = []# [9, 10, 11, 12]
 
 if len(sys.argv) != 2 :
     print " usage: " + sys.argv[0] + " urp/ridge"
@@ -37,10 +37,10 @@ if len(sys.argv) == 2 :
     alg = sys.argv[1]
     if alg == "urp" :
         config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_common_1g_1r.json "
-        contact_servers = [14]
+#         contact_servers = [14, 15]
     elif alg == "ridge" :
-        config_file = script_dir() + "/ridge_2g3e.json"
-        contact_servers = [9, 10, 11, 12]
+        config_file = script_dir() + "/ridge_1g1e.json"
+#         contact_servers = [9, 10, 11, 12]
 
 
 contact_servers_str = str(contact_servers).replace(',','').strip('[]')

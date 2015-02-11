@@ -46,16 +46,17 @@ public class BenchClient implements Runnable {
       BenchMessage.globalCliId = clientId;
       this.msgSize = msgSize;
       mcclient = MulticastClientServerFactory.getClient(clientId, configFile);
-      for (Group g : Group.getAllGroups()) {
-         List<Integer> sids = g.getMembers();
-         int sindex = clientId % sids.size();
-         mcclient.connectToServer(sids.get(sindex));
-         System.out.println(String.format("Clientd %d connected to server %s", clientId, sids.get(sindex)));
-      }
+      mcclient.connectToOneServerPerPartition();
+//      for (Group g : Group.getAllGroups()) {
+//         List<Integer> sids = g.getMembers();
+//         int sindex = clientId % sids.size();
+//         mcclient.connectToServer(sids.get(sindex));
+//         System.out.println(String.format("Clientd %d connected to server %s", clientId, sids.get(sindex)));
+//      }
       
-      optLatMonitor  = new LatencyPassiveMonitor(clientId, "optimistic");
+      optLatMonitor  = new LatencyPassiveMonitor(clientId, "optimistic", false);
       consLatMonitor = new LatencyPassiveMonitor(clientId, "conservative");
-      optTPMonitor   = new ThroughputPassiveMonitor(clientId, "optimistic");
+      optTPMonitor   = new ThroughputPassiveMonitor(clientId, "optimistic", false);
       consTPMonitor  = new ThroughputPassiveMonitor(clientId, "conservative");
       
       System.out.println(String.format("Creating client %d with %d permits", clientId, numPermits));

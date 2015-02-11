@@ -95,7 +95,7 @@ public class URPMcastAgent implements MulticastAgent {
    void mapGroupsToRings() {
       mappingGroupsToRings = new Hashtable<Long, URPRingData>();
       
-      ArrayList<Group> groups = Group.getAllGroups();
+      List<Group> groups = Group.getAllGroups();
       
       // sort the groups list by group_id
       Collections.sort(groups, new Comparator<Group> () {
@@ -111,7 +111,7 @@ public class URPMcastAgent implements MulticastAgent {
 
    }
    
-   void recursivelyMapAllGroupCombinations (ArrayList<Group> all, ArrayList<Group> destsPrevious, int curId, boolean curGroupIsPresent, long hash) {
+   void recursivelyMapAllGroupCombinations (List<Group> all, ArrayList<Group> destsPrevious, int curId, boolean curGroupIsPresent, long hash) {
       if (all.isEmpty()) return;
       
       ArrayList<Group> destinations = new ArrayList<Group>(destsPrevious);
@@ -386,6 +386,7 @@ public class URPMcastAgent implements MulticastAgent {
             URPRingData ringData = new URPRingData(ring_id);
             URPRingWatcher ringWatcher = new URPRingWatcher(ring_id, zoo_host);
             ringData.setWatcher(ringWatcher);
+            if (hasLocalGroup == false) ringWatcher.waitForInitialLearnersInfo();
             
             JSONArray destGroupsArray = (JSONArray) jsring.get("destination_groups");
             Iterator<Object> it_destGroup = destGroupsArray.iterator();

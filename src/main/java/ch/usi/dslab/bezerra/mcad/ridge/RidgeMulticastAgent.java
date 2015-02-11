@@ -117,7 +117,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
    static void mapGroupsToEnsembles() {
       mappingGroupsToEnsembles = new ConcurrentHashMap<Long, RidgeEnsembleData>();
 
-      ArrayList<Group> groups = Group.getAllGroups();
+      List<Group> groups = Group.getAllGroups();
 
       // sort the groups list by group_id
       Collections.sort(groups, new Comparator<Group>() {
@@ -133,7 +133,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
 
    }
 
-   static void recursivelyMapAllGroupCombinations(ArrayList<Group> all, ArrayList<Group> destsPrevious, int curId, boolean curGroupIsPresent, long hash) {
+   static void recursivelyMapAllGroupCombinations(List<Group> all, ArrayList<Group> destsPrevious, int curId, boolean curGroupIsPresent, long hash) {
       if (all.isEmpty())
          return;
 

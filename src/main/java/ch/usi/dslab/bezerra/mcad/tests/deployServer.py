@@ -25,9 +25,9 @@ receiver_id = sys.argv[1] + " "
 alg = sys.argv[2]
 if len(sys.argv) == 3 :
     if alg == "urp" :
-        config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_server_only.json "
+        config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_server_" + str(int(receiver_id)) + ".json "
     elif alg == "ridge" :
-        config_file = script_dir() + "/ridge_2g3e.json "
+        config_file = script_dir() + "/ridge_1g1e.json "
 else :
     config_file = sys.argv[3]
 

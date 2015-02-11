@@ -28,4 +28,10 @@ public class MinimalMulticastClient implements MulticastClient {
       // TODO Auto-generated method stub
    }
 
+   @Override
+   public void connectToOneServerPerPartition() {
+      // TODO Auto-generated method stub
+      
+   }
+
 }

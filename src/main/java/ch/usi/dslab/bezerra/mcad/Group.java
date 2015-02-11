@@ -25,7 +25,7 @@ public abstract class Group {
       Group.groupImplementationClass = groupImplementation;
    }
    
-   public static ArrayList<Group> getAllGroups() {
+   public static List<Group> getAllGroups() {
       ArrayList<Group> allGroups = new ArrayList<Group>();
       
       for (Entry<Integer, Group> entry : groupMap.entrySet())

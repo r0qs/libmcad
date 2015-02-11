@@ -125,7 +125,7 @@ public class URPMulticastServer implements MulticastServer {
    @Override
    public void sendReply(int clientId, Message reply) {
       TCPConnection clientConnection = connectedClients.get(clientId);
-      serverTcpSender.send(reply, clientConnection);
+      if (clientConnection != null) serverTcpSender.send(reply, clientConnection);
    }
 
    @Override

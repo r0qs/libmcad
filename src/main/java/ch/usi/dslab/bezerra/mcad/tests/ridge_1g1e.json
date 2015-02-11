@@ -1,0 +1,72 @@
+{
+  "agent_class" : "RidgeMulticastAgent" ,
+  
+  "batch_size_threshold_bytes" : 65536 ,
+  "batch_time_threshold_ms"    : 50 ,
+  "delta_null_messages_ms"     : 100 ,
+  
+  "deliver_conservative"       : true ,
+  "deliver_optimistic_uniform" : false ,
+  "deliver_optimistic_fast"    : true ,
+  "direct_fast"                : true ,
+  
+  "latency_estimation_sample"  : 5 ,
+  "latency_estimation_devs"    : 0 ,
+
+  "storage_type"               : "bdb" ,
+  
+  "groups" :
+  [
+    {
+      "group_id" : 1
+    }
+  ] ,
+  
+  "ensembles" :
+  [
+    {
+      "ensemble_id" : 0 ,
+      "learner_broadcast_mode" : "DYNAMIC",
+      "destination_groups" : [1]
+    }
+  ] ,
+  
+  "ensemble_processes" :  
+  [
+    {
+      "role" : "coordinator",
+      "pid"  : 0,
+      "ensemble" : 0,
+      "host" : "localhost",
+      "port" : 50000
+    },
+    {
+      "role" : "acceptor",
+      "pid"  : 1,
+      "ensemble" : 0,
+      "host" : "localhost",
+      "port" : 50001
+    }
+  ],
+  
+  "acceptor_sequences" :
+  [
+    {
+      "id" : 0,
+      "ensemble_id" : 0,
+      "coordinator_writes" : true,
+      "acceptors" : [0, 1]
+    }
+  ],
+  
+  "group_members" :
+  [
+    {
+      "pid"   : 2,
+      "group" : 1,
+      "host"  : "localhost",
+      "port"  : 50002
+    }
+  ]
+  
+}

@@ -11,15 +11,20 @@ import org.apache.log4j.Logger;
 import ch.usi.da.paxos.ring.RingManager;
 
 public class URPRingData {
-   static ArrayList<URPRingData> ringsList;
+   static List<URPRingData> ringsList;
 
-   private final static Logger log = Logger.getLogger(URPRingData.class);
+   private final static Logger log;
    
    static {
       ringsList = new ArrayList<URPRingData>();
+      log = Logger.getLogger(URPRingData.class);
    }
    
-   static URPRingData getById(int id) {
+   public static List<URPRingData>getRingsList() {
+      return new ArrayList<URPRingData>(ringsList);
+   }
+   
+   public static URPRingData getById(int id) {
       for (URPRingData urd : ringsList)
          if (urd.getId() == id)
             return urd;

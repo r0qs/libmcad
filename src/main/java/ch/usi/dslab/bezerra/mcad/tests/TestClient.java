@@ -126,11 +126,12 @@ public class TestClient {
    ReplyDeliverer verifier;
    boolean printPending = true;
    
-   public TestClient (int clientId, List<Integer> contactServerIds, String configFile) {
+   public TestClient (int clientId, String configFile) {
       this.clientId = clientId;
       mcclient = MulticastClientServerFactory.getClient(clientId, configFile);
-      for (int contactServerId : contactServerIds)
-         mcclient.connectToServer(contactServerId);
+//      for (int contactServerId : contactServerIds)
+//         mcclient.connectToServer(contactServerId);
+      mcclient.connectToOneServerPerPartition();
       verifier = new ReplyDeliverer(this);
       verifier.start();
    }
@@ -149,8 +150,8 @@ public class TestClient {
       String destinationString = "";
       for (int i = 0 ; i < destinations.size() ; i++) {
          destinationString += String.format(" %d", destinations.get(i).getId());
-         for (int j = 0 ; j < destinations.get(i).getMembers().size() ; j++)
-            verifier.addPendingMessage(mid);            
+//         for (int j = 0 ; j < destinations.get(i).getMembers().size() ; j++)
+         verifier.addPendingMessage(mid);
       }
       Message multicastMessage = new Message(clientId, mid, System.currentTimeMillis(), destinationString);
       
@@ -222,11 +223,12 @@ public class TestClient {
       
       String configFile = args[0];
       int    clientId   = Integer.parseInt(args[1]);
-      List<Integer> contactServers = new ArrayList<Integer>();
-      for (int i = 2 ; i < args.length ; i++)
-         contactServers.add(Integer.parseInt(args[i]));
+//      List<Integer> contactServers = new ArrayList<Integer>();
+//      for (int i = 2 ; i < args.length ; i++)
+//         contactServers.add(Integer.parseInt(args[i]));
       
-      TestClient client = new TestClient(clientId, contactServers, configFile);
+//      TestClient client = new TestClient(clientId, contactServers, configFile);
+      TestClient client = new TestClient(clientId, configFile);
       
       String input = client.askForInput();
       
