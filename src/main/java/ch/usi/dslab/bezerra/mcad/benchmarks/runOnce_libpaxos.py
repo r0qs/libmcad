@@ -59,6 +59,7 @@ create_libpaxos_configfile(lpexecdir + "/paxos.conf", acceptors, proposers, writ
 
 ''' cleanup : kill processes, erase acceptors' database and erase experiment's logdir
 ''' 
+localcmd(cleaner)
 
 # start acceptors
 for accid in range(NUM_ACCEPTORS) :
