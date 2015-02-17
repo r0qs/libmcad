@@ -57,8 +57,6 @@ clients   = nodespool.nextn(NUM_CLIENTS)
 # create paxos.conf file
 create_libpaxos_configfile(lpexecdir + "/paxos.conf", acceptors, proposers, writeToDisk)
 
-
-sys.exit(0)
 ''' cleanup : kill processes, erase acceptors' database and erase experiment's logdir
 ''' 
 
