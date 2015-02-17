@@ -16,19 +16,44 @@ HOME = expanduser("~")
 
 benchCommonPath = os.path.dirname(os.path.realpath(__file__)) + "/benchCommon.py"
 
+# ============================
 # available machines
 def noderange(first,last) :
     return ["node" + str(val) for val in range(first, last + 1)]
 
-server1="node7"
-server2="node8"
-fixedNodes = noderange(1,8)
-#availableNodes = noderange(41,42) + noderange(44,70)
-#availableNodes = noderange(1,10) + noderange(21,40)
 availableNodes = noderange(1,40)
 
+class NodePool:
+    nodePointer = -1
+    nodes = availableNodes
+    def last(self):
+        assert self.nodePointer in range(len(self.nodes))
+        return self.nodes[self.nodePointer]
+    def next(self) :
+        self.nodePointer += 1
+        return self.last()
+    def checkSize(self, num) :
+        assert num <= len(self.nodes)
+    def all(self) :
+        return list(self.nodes)
+    def nextn(self, n):
+        ret = []
+        while n > 0 :
+            ret.append(self.next())
+            n -= 1
+        return ret
+# ============================
+
+def get_logdir(algorithm, numClients, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk):
+    dirpath = lplogdir + "/%s_%s_clients_%s_learners_%s_groups_%s_pxpergroup_%s_bytes_diskwrite_%s" % \
+                (algorithm, numClients, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+    localcmd("mkdir -p " + dirpath)
+    return dirpath
+
 # single experiment
-onceRunner = HOME + "/libmcad/benchLink/runAllOnce.py"
+onceRunner = {"libpaxos" : HOME + "/libmcad/benchLink/runOnce_libpaxos.py",
+              "mrp"      : HOME + "/libmcad/benchLink/runOnce_mrp.py",
+              "ridge"    : HOME + "/libmcad/benchLink/runOnce_ridge.py" }
 cleaner = HOME + "/libmcad/benchLink/cleanUp.py"
 clockSynchronizer = HOME + "/libmcad/benchLink/clockSynchronizer.py"
 continousClockSynchronizer = HOME + "/libmcad/benchLink/continuousClockSynchronizer.py"
@@ -40,6 +65,15 @@ sysConfigFile = HOME + "libmcad/benchLink/ridge_config.json"
 javabin = "java -XX:+UseG1GC -Xmx8g"
 javacp = "-cp " + HOME + "/libmcad/target/libmcad-git.jar"
 duration = "60"
+
+# libpaxos
+lpexecdir  = HOME + "/paxosudp/build/sample"
+lpacceptor = lpexecdir + "/acceptor"
+lpproposer = lpexecdir + "/proposer"
+lplearner  = lpexecdir + "/learner"
+lpclient   = lpexecdir + "/client"
+lplogdir   = HOME + "/logsmcast/libpaxos"
+
 
 # CLIENTS
 numPermits = 1
@@ -97,14 +131,17 @@ def localcmdbg(cmdstring) :
     print "localcmdbg: " + cmdstring
     os.system(cmdstring + " &")
 
-def sarg(i):
+def sarg(i) :
     return sys.argv[i]
 
-def iarg(i):
+def iarg(i) :
     return int(sarg(i))
 
-def farg(i):
+def farg(i) :
     return float(sarg(i))
+
+def barg(i) :
+    return sarg(i) in ["True", "true", "T", "t", 1]
 
 def get_index(lst, key, value):
     for i, dic in enumerate(lst):
