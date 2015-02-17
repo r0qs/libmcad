@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+from time import sleep
 from benchCommon import *
 
 for arg in sys.argv:
@@ -60,6 +61,7 @@ create_libpaxos_configfile(lpexecdir + "/paxos.conf", acceptors, proposers, writ
 ''' cleanup : kill processes, erase acceptors' database and erase experiment's logdir
 ''' 
 localcmd(cleaner)
+sleep(3)
 
 # start acceptors
 for accid in range(NUM_ACCEPTORS) :
