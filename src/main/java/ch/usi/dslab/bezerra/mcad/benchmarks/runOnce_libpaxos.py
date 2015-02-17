@@ -79,9 +79,9 @@ for propid in range(NUM_PROPOSERS) :
 # start learners
 for learnerid in range(NUM_LEARNERS) :
     # launch proposer propid
-    sshcmdbg(learners[learnerid], "%s %s  %s/paxos.conf  > %s/learner_%s.log 2>&1" % (lplearner,learnerid,lpexecdir,logdir,learnerid))
+    sshcmdbg(learners[learnerid], "%s     %s/paxos.conf  > %s/learner_%s.log 2>&1" % (lplearner,lpexecdir,logdir,learnerid))
     # bw monitor for proposer propid
-    sshcmdbg(learners[learnerid], "bwm-ng %s/bwm-ng.conf > %s/learner_%s.csv 2>&1" % (                    lpexecdir,logdir,learnerid))
+    sshcmdbg(learners[learnerid], "bwm-ng %s/bwm-ng.conf > %s/learner_%s.csv 2>&1" % (          lpexecdir,logdir,learnerid))
 
 # client
 clinode = clients[0]
