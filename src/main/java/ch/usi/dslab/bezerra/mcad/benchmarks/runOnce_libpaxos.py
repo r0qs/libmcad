@@ -17,15 +17,22 @@ def create_libpaxos_configfile(filepath, acceptors, proposers, usedisk) :
     for propid in range(len(proposers)) :
         cf.write("proposer %s 192.168.3.%s %s\n" % (propid, getNid(proposers[propid]), 5500 + propid) )
     cf.write("learner-catch-up no\n")
+
+    storage = "bdb"
+    #storage = "lmdb"
+
     if usedisk :
-        #cf.write("storage-backend bdb\n")
-        #cf.write("bdb-sync yes\n")
-        #cf.write("bdb-env-path /tmp/acceptor\n")
-        #cf.write("bdb-db-filename acc.bdb\n")
-        cf.write("storage-backend lmdb\n")
-        cf.write("lmdb-sync yes\n")
-        cf.write("lmdb-env-path /tmp/acceptor\n")
-        cf.write("lmdb-mapsize 1gb")
+        cf.write("acceptor-trash-files yes\n")
+        if storage == "bdb" :
+            cf.write("storage-backend bdb\n")
+            cf.write("bdb-sync yes\n")
+            cf.write("bdb-env-path /tmp/acceptor\n")
+            cf.write("bdb-db-filename acc.bdb\n")
+        elif storage == "lmdb" :
+            cf.write("storage-backend lmdb\n")
+            cf.write("lmdb-sync yes\n")
+            cf.write("lmdb-env-path /tmp/acceptor\n")
+            cf.write("lmdb-mapsize 1gb")
     else :
         cf.write("storage-backend memory\n")
 
