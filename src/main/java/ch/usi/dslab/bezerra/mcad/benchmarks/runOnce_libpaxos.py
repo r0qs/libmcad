@@ -26,7 +26,8 @@ def create_libpaxos_configfile(filepath, acceptors, proposers, usedisk) :
         cf.write("storage-backend memory\n")
 
 def clean_libpaxos_files(logdir, accnodes) :
-    localcmd("rm -rf " + logdir)
+    assert logdir.strip() != " "
+    localcmd("rm -rf " + logdir + "/*")
     for node in accnodes :
         sshcmd(node, "rm -rf /tmp/acceptor")
 ################################################################################
