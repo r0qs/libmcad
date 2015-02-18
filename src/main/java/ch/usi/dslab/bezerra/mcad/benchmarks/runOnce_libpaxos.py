@@ -24,6 +24,11 @@ def create_libpaxos_configfile(filepath, acceptors, proposers, usedisk) :
         cf.write("bdb-db-filename acc.bdb\n")
     else :
         cf.write("storage-backend memory\n")
+
+def clean_libpaxos_files(logdir, accnodes) :
+    localcmd("rm -rf " + logdir)
+    for node in accnodes :
+        sshcmd(node, "rm -rf /tmp/acceptor")
 ################################################################################
 
 
@@ -61,6 +66,7 @@ create_libpaxos_configfile(lpexecdir + "/paxos.conf", acceptors, proposers, writ
 ''' cleanup : kill processes, erase acceptors' database and erase experiment's logdir
 ''' 
 localcmd(cleaner)
+clean_libpaxos_files(logdir, acceptors)
 sleep(3)
 
 # start acceptors
