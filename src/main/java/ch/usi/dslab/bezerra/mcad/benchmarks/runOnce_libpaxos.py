@@ -97,3 +97,9 @@ clinode = clients[0]
 sshcmdbg(clinode, "bwm-ng %s/bwm-ng.conf > %s/client_%s.csv 2>&1" % (lpexecdir,logdir,1))
 # start the client
 sshcmd(clinode, "%s %s/paxos.conf %s %s %s %s" % (lpclient,lpexecdir,0,NUM_OUTSTADINGS,messageSize,1))
+
+# copy client's throughput and latency log
+localcmd("mv %s/client1-%s-%sB.csv %s" % (HOME,NUM_OUTSTADINGS,messageSize,logdir))
+
+# clean up (for other people)
+localcmd(cleaner)
