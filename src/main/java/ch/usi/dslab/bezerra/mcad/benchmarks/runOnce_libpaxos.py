@@ -16,7 +16,7 @@ def create_libpaxos_configfile(filepath, acceptors, proposers, usedisk) :
         cf.write("acceptor %s 192.168.3.%s %s\n" % (accid , getNid(acceptors[accid ]), 8800 + accid ) )
     for propid in range(len(proposers)) :
         cf.write("proposer %s 192.168.3.%s %s\n" % (propid, getNid(proposers[propid]), 5500 + propid) )
-    cf.write("learner-catch-up yes\n")
+    cf.write("learner-catch-up no\n")
     if usedisk :
         cf.write("storage-backend bdb\n")
         cf.write("bdb-sync yes\n")
