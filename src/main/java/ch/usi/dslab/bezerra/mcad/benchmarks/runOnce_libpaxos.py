@@ -119,4 +119,4 @@ localcmd("mv %s/client1-%s-%sB.csv %s/client_tp_lat.csv" % (HOME,NUM_OUTSTADINGS
 localcmd(cleaner)
 
 # return experiment (in this case, client's) exit code
-return exitcode
+sys.exit(exitcode)
