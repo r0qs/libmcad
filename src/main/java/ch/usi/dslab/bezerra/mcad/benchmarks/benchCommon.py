@@ -1,9 +1,6 @@
 #!/usr/bin/python
 
-import math
-import os
-import re
-import sys
+import math, os, re, sys, shlex, threading, subprocess
 from os.path import expanduser
 HOME = expanduser("~")
 
@@ -99,8 +96,31 @@ gathererPort = "60000"
 
 # ===================================================
 # ===================================================
-# functions
+# useful classes and functions
 
+class Command(object):
+    def __init__(self, cmd):
+        self.cmd = cmd
+        self.process = None
+
+    def run(self, timeout):
+        def target():
+            print 'Thread started'
+            run_args = shlex.split(self.cmd)
+            self.process = subprocess.Popen(run_args)
+            self.process.communicate()
+            print 'Thread finished'
+
+        thread = threading.Thread(target=target)
+        thread.start()
+
+        thread.join(timeout)
+        if thread.is_alive():
+            print 'Terminating process'
+            self.process.terminate()
+            thread.join()
+        return self.process.returncode
+    
 def getNumLoads(min_cli, max_cli, inc_factor, inc_parcel) :
     numloads = 0
     load = min_cli
@@ -115,17 +135,20 @@ def freePort(node, port) :
 def getNid(node) :
     return int(re.findall(r'\d+', node)[0])
 
-def sshcmd(node, cmdstring) :
-    print "ssh " + node + " \"" + cmdstring + "\""
-    os.system("ssh " + node + " \"" + cmdstring + "\"")
+def sshcmd(node, cmdstring, timeout=None) :
+    finalstring = "ssh " + node + " \"" + cmdstring + "\""
+    print finalstring
+    cmd = Command(finalstring)
+    return cmd.run(timeout)
     
 def sshcmdbg(node, cmdstring) :
     print "ssh " + node + " \"" + cmdstring + "\" &"
     os.system("ssh " + node + " \"" + cmdstring + "\" &")
 
-def localcmd(cmdstring) :
+def localcmd(cmdstring, timeout=None) :
     print "localcmd: " + cmdstring
-    os.system(cmdstring)
+    cmd = Command(cmdstring)
+    return cmd.run(timeout)
 
 def localcmdbg(cmdstring) :
     print "localcmdbg: " + cmdstring

@@ -80,7 +80,13 @@ for writeToDisk in diskConfigs :
                                   (algorithm, numClients, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
                             skips -= 1
                         else:
-                            print("Running %s with %s clients, with %s multicast groups (%s Paxos groups each), message size %s bytes, useDisk is %s" % \
-                                  (algorithm, numClients, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
-                            localcmd(onceRunner[algorithm] + " %s %s %s %s %s %s" % (numClients, numLearners, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
+                            tries = 3
+                            exitcode = -1
+                            while tries > 0 and exitcode != 0 :
+                                tries -= 1
+                                print("Running %s with %s clients, with %s multicast groups (%s Paxos groups each), message size %s bytes, useDisk is %s" % \
+                                     (algorithm, numClients, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
+                                exitcode = localcmd(onceRunner[algorithm] + " %s %s %s %s %s %s" % (numClients, numLearners, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
+                                if exitcode != 0 :
+                                    print("Failed last experiment try")
                         numClients = int(ceil(numClients * incFactor + incParcel))
