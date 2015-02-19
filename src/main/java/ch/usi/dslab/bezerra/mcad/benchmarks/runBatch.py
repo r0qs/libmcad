@@ -3,8 +3,7 @@
 ################################################################################
 ''' imports '''
 
-from benchCommon import localcmd, availableNodes, clockSynchronizer, systemParamSetter,\
-    sshcmdbg, sshcmd, cleaner, onceRunner
+from benchCommon import *
 import sys
 import time
 import benchCommon
@@ -31,27 +30,28 @@ gathererClass="ch.usi.dslab.bezerra.sense.DataGatherer "
     
 '''
 ##########################################
-minClients = 1
-maxClients = 100
+minClients = 2
+maxClients = 50
 incFactor = 1.2
 incParcel = 0
-numPermits = 10
+#numPermits = 1
 ##########################################
 numsLearners = [1, 2, 4, 8, 16, 32]
 ##########################################
 algorithms = ["libpaxos"]#, "mrp", "ridge"]
 ##########################################
-messageSizes = [200, 8000]
+messageSizes = [140, 8192]
 ##########################################
 groups = 0
 pxpergroup = 1
 groupConfigs = [{groups : 1, pxpergroup : 1},
-                {groups : 1, pxpergroup : 2},
-                {groups : 1, pxpergroup : 4},
-                {groups : 1, pxpergroup : 8},
-                {groups : 2, pxpergroup : 1},
-                {groups : 4, pxpergroup : 1},
-                {groups : 8, pxpergroup : 1},]
+               # {groups : 1, pxpergroup : 2},
+               # {groups : 1, pxpergroup : 4},
+               # {groups : 1, pxpergroup : 8},
+               # {groups : 2, pxpergroup : 1},
+               # {groups : 4, pxpergroup : 1},
+               # {groups : 8, pxpergroup : 1},
+               ]
 ##########################################
 diskConfigs = [False, True]
 
@@ -64,6 +64,10 @@ diskConfigs = [False, True]
 # localcmd(clockSynchronizer)
 ################################################################################
 
+skips = 0
+if len(sys.argv) > 1 :
+    skips = iarg(1)
+
 for writeToDisk in diskConfigs :
     for messageSize in messageSizes :
         for algorithm in algorithms :
@@ -71,8 +75,12 @@ for writeToDisk in diskConfigs :
                 for numLearners in numsLearners :
                     numClients = minClients
                     while numClients <= maxClients :
-                        print("Running %s with %s clients, with %s multicast groups (%s Paxos groups each), message size %s bytes, useDisk is %s" % \
-                              (algorithm, numClients, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
-                        localcmd(onceRunner[algorithm] + " %s %s %s %s %s %s" % (numClients, numLearners, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
-                    
+                        if skips > 0 :
+                            print("SKIPPING run %s with %s clients, with %s multicast groups (%s Paxos groups each), message size %s bytes, useDisk is %s" % \
+                                  (algorithm, numClients, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
+                            skips -= 1
+                        else:
+                            print("Running %s with %s clients, with %s multicast groups (%s Paxos groups each), message size %s bytes, useDisk is %s" % \
+                                  (algorithm, numClients, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
+                            localcmd(onceRunner[algorithm] + " %s %s %s %s %s %s" % (numClients, numLearners, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
                         numClients = int(ceil(numClients * incFactor + incParcel))

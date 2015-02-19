@@ -16,7 +16,7 @@ def create_libpaxos_configfile(filepath, acceptors, proposers, usedisk) :
         cf.write("acceptor %s 192.168.3.%s %s\n" % (accid , getNid(acceptors[accid ]), 8800 + accid ) )
     for propid in range(len(proposers)) :
         cf.write("proposer %s 192.168.3.%s %s\n" % (propid, getNid(proposers[propid]), 5500 + propid) )
-    cf.write("learner-catch-up no\n")
+    cf.write("learner-catch-up yes\n")
 
     storage = "bdb"
     #storage = "lmdb"
@@ -80,7 +80,7 @@ create_libpaxos_configfile(lpexecdir + "/paxos.conf", acceptors, proposers, writ
 localcmd(cleaner)
 clean_libpaxos_files(logdir, acceptors)
 
-sleep(3)
+sleep(5)
 # start acceptors
 for accid in range(NUM_ACCEPTORS) :
     # launch acceptor process accid
@@ -88,7 +88,7 @@ for accid in range(NUM_ACCEPTORS) :
     # launch bw monitor at its node
     sshcmdbg(acceptors[accid], "bwm-ng %s/bwm-ng.conf > %s/acceptor_%s.csv 2>&1" % (                 lpexecdir,logdir,accid))
 
-sleep(3)
+sleep(5)
 # start proposers
 for propid in range(NUM_PROPOSERS) :
     # launch proposer propid
@@ -96,7 +96,7 @@ for propid in range(NUM_PROPOSERS) :
     # bw monitor for proposer propid
     sshcmdbg(proposers[propid], "bwm-ng %s/bwm-ng.conf > %s/proposer_%s.csv 2>&1" % (                  lpexecdir,logdir,propid))
 
-sleep(3)
+sleep(5)
 # start learners
 for learnerid in range(NUM_LEARNERS) :
     # launch proposer propid
@@ -104,7 +104,7 @@ for learnerid in range(NUM_LEARNERS) :
     # bw monitor for proposer propid
     sshcmdbg(learners[learnerid], "bwm-ng %s/bwm-ng.conf > %s/learner_%s.csv 2>&1" % (          lpexecdir,logdir,learnerid))
 
-sleep(3)
+sleep(5)
 # client
 clinode = clients[0]
 # start the bw monitor at the client node

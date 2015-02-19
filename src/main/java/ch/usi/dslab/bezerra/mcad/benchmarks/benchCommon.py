@@ -21,7 +21,7 @@ benchCommonPath = os.path.dirname(os.path.realpath(__file__)) + "/benchCommon.py
 def noderange(first,last) :
     return ["node" + str(val) for val in range(first, last + 1)]
 
-availableNodes = noderange(1,40)
+availableNodes = noderange(1,34) + noderange(41,43)
 
 class NodePool:
     nodePointer = -1
