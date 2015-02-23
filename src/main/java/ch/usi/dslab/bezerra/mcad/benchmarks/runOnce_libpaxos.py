@@ -17,6 +17,7 @@ def create_libpaxos_configfile(filepath, acceptors, proposers, usedisk) :
     for propid in range(len(proposers)) :
         cf.write("proposer %s 192.168.3.%s %s\n" % (propid, getNid(proposers[propid]), 5500 + propid) )
     cf.write("learner-catch-up yes\n")
+    cf.write("tcp-nodelay yes\n")
 
     storage = "bdb"
     #storage = "lmdb"

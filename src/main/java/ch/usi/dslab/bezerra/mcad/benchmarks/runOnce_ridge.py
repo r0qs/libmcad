@@ -1,15 +1,48 @@
 #!/usr/bin/python
 
 import sys
-from benchCommon import farg, sarg, iarg
+from benchCommon import *
+from systemConfigurer_ridge import *
+from runOnce_libpaxos import numGroups, numPxPerGroup
 
 for arg in sys.argv:
     print arg
 
-#    localcmd(clockSynchronizer)
-#     for node in availableNodes :
-#         sshcmdbg(node, benchCommon.continousClockSynchronizer)
-# 
+################################################################################
+# experiment variables
+numClients    = iarg(1)
+numLearners   = iarg(2)
+numGroups     = iarg(3)
+numPxPerGroup = iarg(4)
+messageSize   = iarg(5)
+writeToDisk   = barg(6)
+################################################################################
+
+logdir = get_logdir("ridge", numClients, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+print logdir
+
+# creating nodepool
+nodespool = NodePool()
+
+# create config files
+ensemblesConfigPath  = logdir + "/ensembles_config.json"
+partitionsConfigPath = logdir + "/partitions_config.json"
+sysConfig = generateSystemConfiguration(nodespool.all(), numGroups, numPxPerGroup, numLearners, 3, writeToDisk, ensemblesConfigPath, partitionsConfigPath, saveToFile = True)
+if sysConfig == None :
+    sys.exit(1)
+
+# clock synchronizer (necessary for efficient merging from multiple ensembles)
+for node in nodespool.all() :
+    sshcmdbg(node, continousClockSynchronizer)
+
+# start ensembles
+#localcmd(ridgeDeployer + " " + ensemblesConfigPath)
+
+# start servers
+for serverNode in sysConfig.server_list :
+    print serverNode
+    # server = {"id": sid, "partition": gid, "host" : nodes[sid], "pid" : sid, "role" : "server"}
+
 #     deployer = HOME + "/libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/ridge/RidgeEnsembleNodesDeployer.py"
 #     config = HOME + "/libmcad/benchLink/ridge_config.json"
 #     localcmd(deployer + " " + config)

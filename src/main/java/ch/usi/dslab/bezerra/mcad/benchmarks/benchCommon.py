@@ -42,8 +42,8 @@ class NodePool:
 # ============================
 
 def get_logdir(algorithm, numClients, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk):
-    dirpath = lplogdir + "/%s_%s_clients_%s_learners_%s_groups_%s_pxpergroup_%s_bytes_diskwrite_%s" % \
-                (algorithm, numClients, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+    dirpath = logdir + "/%s/%s_%s_clients_%s_learners_%s_groups_%s_pxpergroup_%s_bytes_diskwrite_%s" % \
+                (algorithm, algorithm, numClients, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
     localcmd("mkdir -p " + dirpath)
     return dirpath
 
@@ -69,8 +69,17 @@ lpacceptor = lpexecdir + "/acceptor"
 lpproposer = lpexecdir + "/proposer"
 lplearner  = lpexecdir + "/learner"
 lpclient   = lpexecdir + "/client"
-lplogdir   = HOME + "/logsmcast/libpaxos"
+logdir   = HOME + "/logsmcast/"
 
+# ridge
+batch_size_threshold_bytes = 0
+batch_time_threshold_ms = 0
+delta_null_messages_ms_disk = 30
+delta_null_messages_ms_memory = 5
+latency_estimation_sample = 10
+latency_estimation_devs = 0
+latency_estimation_max = 10
+ridgeDeployer = HOME + "/libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/ridge/RidgeEnsembleNodesDeployer.py"
 
 # CLIENTS
 numPermits = 1
