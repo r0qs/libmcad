@@ -2,6 +2,7 @@ package ch.usi.dslab.bezerra.mcad.minimal;
 
 import java.util.List;
 
+import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastClient;
 import ch.usi.dslab.bezerra.netwrapper.Message;
@@ -24,7 +25,7 @@ public class MinimalMulticastClient implements MulticastClient {
    }
 
    @Override
-   public void multicast(List<Group> destinations, Message message) {
+   public void multicast(List<Group> destinations, ClientMessage message) {
       // TODO Auto-generated method stub
    }
 

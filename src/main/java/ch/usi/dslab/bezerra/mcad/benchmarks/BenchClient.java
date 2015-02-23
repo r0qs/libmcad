@@ -8,6 +8,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastClient;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
@@ -17,20 +18,6 @@ import ch.usi.dslab.bezerra.sense.monitors.LatencyPassiveMonitor;
 import ch.usi.dslab.bezerra.sense.monitors.ThroughputPassiveMonitor;
 
 public class BenchClient implements Runnable {
-   
-   public static class BenchMessage extends Message {
-      private static final long serialVersionUID = 1L;
-      public static int globalCliId;
-      private static AtomicLong nextMsgSeq = new AtomicLong();
-      int cliId;
-      long seq;
-      public BenchMessage() {super();}
-      public BenchMessage(Object... objs) {
-         super(objs);
-         cliId = globalCliId;
-         seq = nextMsgSeq.incrementAndGet();
-      }
-   }
    
    MulticastClient mcclient;
    AtomicInteger nextGroup = new AtomicInteger();
@@ -43,7 +30,7 @@ public class BenchClient implements Runnable {
    Semaphore permits;
    
    public  BenchClient (int clientId, String configFile, int msgSize, int numPermits) {
-      BenchMessage.globalCliId = clientId;
+      ClientMessage.setGlobalClientId(clientId);
       this.msgSize = msgSize;
       mcclient = MulticastClientServerFactory.getClient(clientId, configFile);
       mcclient.connectToOneServerPerPartition();
@@ -75,7 +62,7 @@ public class BenchClient implements Runnable {
    void sendMessage() {
       /* int num = */ getSendPermit();
 //      System.out.println("permits: " + num);
-      BenchMessage msg = new BenchMessage(new byte[msgSize]);
+      ClientMessage msg = new ClientMessage(new byte[msgSize]);
       
       List<Group> allGroups = Group.getAllGroups();
       int gid = nextGroup.incrementAndGet() % allGroups.size();
@@ -85,8 +72,8 @@ public class BenchClient implements Runnable {
       
       long startTime = System.nanoTime();
       
-      optimisticStarts  .put(msg.seq, startTime);
-      conservativeStarts.put(msg.seq, startTime);
+      optimisticStarts  .put(msg.getMessageSequence(), startTime);
+      conservativeStarts.put(msg.getMessageSequence(), startTime);
       
       mcclient.multicast(dests, msg);
    }

@@ -3,7 +3,6 @@
 import sys
 from benchCommon import *
 from systemConfigurer_ridge import *
-from runOnce_libpaxos import numGroups, numPxPerGroup
 
 for arg in sys.argv:
     print arg
@@ -27,7 +26,7 @@ nodespool = NodePool()
 # create config files
 ensemblesConfigPath  = logdir + "/ensembles_config.json"
 partitionsConfigPath = logdir + "/partitions_config.json"
-sysConfig = generateSystemConfiguration(nodespool.all(), numGroups, numPxPerGroup, numLearners, 3, writeToDisk, ensemblesConfigPath, partitionsConfigPath, saveToFile = True)
+sysConfig = generateRidgeSystemConfiguration(nodespool.all(), numGroups, numPxPerGroup, numLearners, 3, writeToDisk, ensemblesConfigPath, partitionsConfigPath, saveToFile = True)
 if sysConfig == None :
     sys.exit(1)
 

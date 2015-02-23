@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastClient;
@@ -107,7 +108,7 @@ public class URPMulticastClient implements MulticastClient, Runnable {
    }
 
    @Override
-   public void multicast(List<Group> destinations, Message msg) {
+   public void multicast(List<Group> destinations, ClientMessage msg) {
       mcagent.multicast(destinations, msg);
    }
 

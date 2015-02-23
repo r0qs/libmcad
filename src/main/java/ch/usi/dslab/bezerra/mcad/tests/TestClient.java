@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 
+import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastClient;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
@@ -128,6 +129,7 @@ public class TestClient {
    
    public TestClient (int clientId, String configFile) {
       this.clientId = clientId;
+      ClientMessage.setGlobalClientId(clientId);
       mcclient = MulticastClientServerFactory.getClient(clientId, configFile);
 //      for (int contactServerId : contactServerIds)
 //         mcclient.connectToServer(contactServerId);
@@ -153,13 +155,13 @@ public class TestClient {
 //         for (int j = 0 ; j < destinations.get(i).getMembers().size() ; j++)
          verifier.addPendingMessage(mid);
       }
-      Message multicastMessage = new Message(clientId, mid, System.currentTimeMillis(), destinationString);
+      ClientMessage clientMessage = new ClientMessage(System.currentTimeMillis(), destinationString);
       
       // DEBUG
 //      multicastMessage.t_client_send = System.currentTimeMillis();
       //======
       
-      mcclient.multicast(destinations, multicastMessage);
+      mcclient.multicast(destinations, clientMessage);
    }
    
    public void sendBurst(int numMessages, boolean random, boolean g1, boolean g2) {

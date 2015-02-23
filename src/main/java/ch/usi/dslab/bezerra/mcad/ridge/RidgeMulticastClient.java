@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastClient;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPGroup;
@@ -59,7 +60,7 @@ public class RidgeMulticastClient extends Client implements MulticastClient {
    }
 
    @Override
-   public void multicast(List<Group> destinations, Message message) {
+   public void multicast(List<Group> destinations, ClientMessage message) {
       ridgeMulticastAgent.multicast(destinations, message);
    }
 

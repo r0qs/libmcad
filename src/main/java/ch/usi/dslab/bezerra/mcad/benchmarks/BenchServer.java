@@ -5,11 +5,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.math3.util.Pair;
 
+import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
-import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
-import ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient.BenchMessage;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.sense.DataGatherer;
 import ch.usi.dslab.bezerra.sense.monitors.MistakeRatePassiveMonitor;
@@ -58,11 +57,10 @@ public class BenchServer {
          long now, start, end;
          now = start = System.currentTimeMillis();
          end = start + DataGatherer.getDuration();
-         MulticastAgent cmca = mcserver.getMulticastAgent();
          while (now < end) {
-            BenchMessage consmsg = (BenchMessage) cmca.deliverMessage();
-            int  clientId = consmsg.cliId;
-            long msgSeq   = consmsg.seq;
+            ClientMessage consmsg = mcserver.deliverClientMessage();
+            int  clientId = consmsg.getSourceClientId();
+            long msgSeq   = consmsg.getMessageSequence();
             boolean optimistic = false;
             Message reply = new Message(msgSeq, optimistic);
             mcserver.sendReply(clientId, reply);
@@ -84,9 +82,9 @@ public class BenchServer {
          end = start + DataGatherer.getDuration();
          FastMulticastAgent omca = (FastMulticastAgent) mcserver.getMulticastAgent();
          while (now < end) {
-            BenchMessage optmsg = (BenchMessage) omca.deliverMessageFast();
-            int  clientId = optmsg.cliId;
-            long msgSeq   = optmsg.seq;
+            ClientMessage optmsg = (ClientMessage) omca.deliverMessageFast();
+            int  clientId = optmsg.getSourceClientId();
+            long msgSeq   = optmsg.getMessageSequence();
             boolean optimistic = true;
             Message reply = new Message(msgSeq, optimistic);
             mcserver.sendReply(clientId, reply);

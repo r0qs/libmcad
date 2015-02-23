@@ -3,6 +3,7 @@ package ch.usi.dslab.bezerra.mcad.uringpaxos;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
 import ch.usi.dslab.bezerra.netwrapper.Message;
@@ -131,6 +132,18 @@ public class URPMulticastServer implements MulticastServer {
    @Override
    public MulticastAgent getMulticastAgent() {
       return associatedMulticastAgent;
+   }
+
+   @Override
+   public ClientMessage deliverClientMessage() {
+      Message msg = associatedMulticastAgent.deliverMessage();
+      if (msg instanceof ClientMessage)
+         return (ClientMessage) msg;
+      else {
+         System.err.println("msg not instance of ClientMessage");
+         System.exit(1);
+         return null;
+      }
    }
 
 }

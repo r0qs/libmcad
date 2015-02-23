@@ -7,9 +7,9 @@ import simplejson as json
 
 import benchCommon
 from benchCommon import *
-from runOnce_ridge import numLearners
 
 class RidgeConfiguration :
+    config             = None
     configFilePath     = None
     coordinator_list   = None
     acceptor_list      = None
@@ -46,8 +46,10 @@ def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGr
     config["batch_time_threshold_ms"]    = benchCommon.batch_time_threshold_ms
     if writeToDisk == True :
         config["delta_null_messages_ms"] = benchCommon.delta_null_messages_ms_disk
+        config["storage_type"]           = benchCommon.ridge_disk_storage_type
     else :
         config["delta_null_messages_ms"] = benchCommon.delta_null_messages_ms_memory
+        config["storage_type"]           = benchCommon.ridge_memory_storage_type
     config["deliver_conservative"]       = True
     config["deliver_optimistic_uniform"] = False
     config["deliver_optimistic_fast"]    = False
@@ -155,6 +157,7 @@ def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGr
     
     ridgeConfiguration = RidgeConfiguration()
     
+    ridgeConfiguration.config             = config
     ridgeConfiguration.configFilePath     = configFilePath
     ridgeConfiguration.coordinator_list   = helperList["coordinator"]
     ridgeConfiguration.acceptor_list      = helperList["acceptor"]
@@ -192,7 +195,7 @@ def generatePartitioningFile(serverList, partitionsFile, saveToFile) :
     return pconf
         
 
-def generateSystemConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, partitionsFilePath, saveToFile = True) :
+def generateRidgeSystemConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, partitionsFilePath, saveToFile = True) :
     gathererNode = nodes[0]
     remainingNodes = availableNodes[1:]
     

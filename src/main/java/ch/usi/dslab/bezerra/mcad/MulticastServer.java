@@ -4,10 +4,8 @@ import ch.usi.dslab.bezerra.netwrapper.Message;
 
 public interface MulticastServer {
    int getId();
-   
    boolean isConnectedToClient(int clientId);
-   
+   ClientMessage deliverClientMessage();
    void sendReply(int clientId, Message reply);
-   
    MulticastAgent getMulticastAgent();
 }

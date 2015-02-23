@@ -1,5 +1,6 @@
 package ch.usi.dslab.bezerra.mcad.ridge;
 
+import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
 import ch.usi.dslab.bezerra.netwrapper.Message;
@@ -33,6 +34,18 @@ public class RidgeMulticastServer implements MulticastServer {
    @Override
    public MulticastAgent getMulticastAgent() {
       return associatedMulticastAgent;
+   }
+
+   @Override
+   public ClientMessage deliverClientMessage() {
+      Message msg = associatedMulticastAgent.deliverMessage();
+      if (msg instanceof ClientMessage)
+         return (ClientMessage) msg;
+      else {
+         System.err.println("msg is not a ClientMessage");
+         System.exit(1);
+         return null;
+      }
    }
 
 }
