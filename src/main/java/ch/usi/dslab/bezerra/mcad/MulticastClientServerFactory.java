@@ -84,7 +84,7 @@ public class MulticastClientServerFactory {
             return rcmagent.getServer();
          }
          else {
-            logger.error("agent_type field in " + configFile + " didn't match any known MulticastAgentOld type");
+            logger.error("agent_type field in " + configFile + " didn't match any known MulticastAgent type");
          }
       }
       catch(ParseException | IOException e) {

@@ -55,8 +55,10 @@ cleaner = HOME + "/libmcad/benchLink/cleanUp.py"
 clockSynchronizer = HOME + "/libmcad/benchLink/clockSynchronizer.py"
 continousClockSynchronizer = HOME + "/libmcad/benchLink/continuousClockSynchronizer.py"
 systemParamSetter = HOME + "/libmcad/benchLink/systemParamSetter.py"
-clockSyncInterval = 3
-sysConfigFile = HOME + "libmcad/benchLink/ridge_config.json"
+libmcadjar = HOME + "/libmcad/target/libmcad-git.jar"
+javaCommand = "java -XX:+UseG1GC -Xmx8g"
+benchServerClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer"
+benchClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient"
 
 # parameters
 javabin = "java -XX:+UseG1GC -Xmx8g"

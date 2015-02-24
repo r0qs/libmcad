@@ -11,11 +11,7 @@ from math import ceil
 from os.path import expanduser
 ################################################################################
 ''' constants '''
-
 HOME = expanduser("~")
-clientNodes = ["node"+str(nid) for nid in range(9, 40 + 1)]
-serverClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer "
-clientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient "
 gathererClass="ch.usi.dslab.bezerra.sense.DataGatherer "
 ################################################################################
 ''' experiment variables

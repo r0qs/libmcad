@@ -88,6 +88,12 @@ def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGr
     quorumSize = int(ensembleSize / 2) + 1
     # numDeployedPerEnsemble = ensembleSize
     numDeployedPerEnsemble = quorumSize # in practice, only the quorum nodes need to be deployed
+    
+    numRequiredNodes = numDeployedPerEnsemble * numEnsembles + numLearnersPerGroup * numGroups
+    if  numRequiredNodes < len(nodes) :
+        print "Not enough nodes: have %s, need %s" % (len(nodes), numRequiredNodes)
+        return None
+    
     for pid in range(0, len(nodes), numDeployedPerEnsemble) :
         if pid >= numDeployedPerEnsemble * numEnsembles : 
             firstServerPid = pid
