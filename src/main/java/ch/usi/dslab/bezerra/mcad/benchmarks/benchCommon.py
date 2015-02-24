@@ -54,6 +54,7 @@ onceRunner = {"libpaxos" : HOME + "/libmcad/benchLink/runOnce_libpaxos.py",
 cleaner = HOME + "/libmcad/benchLink/cleanUp.py"
 clockSynchronizer = HOME + "/libmcad/benchLink/clockSynchronizer.py"
 continousClockSynchronizer = HOME + "/libmcad/benchLink/continuousClockSynchronizer.py"
+clockSyncInterval = 5
 systemParamSetter = HOME + "/libmcad/benchLink/systemParamSetter.py"
 libmcadjar = HOME + "/libmcad/target/libmcad-git.jar"
 javaCommand = "java -XX:+UseG1GC -Xmx8g"

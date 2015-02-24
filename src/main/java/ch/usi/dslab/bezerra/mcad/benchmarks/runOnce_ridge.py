@@ -17,7 +17,7 @@ def clean_ridge_log(logdir) :
         
 def clean_ridge_storage(accnodes) :
     for node in accnodes :
-        sshcmd(node, "rm -rf /tmp/ridge-bdb")
+        sshcmd(node["host"], "rm -rf /tmp/ridge-bdb")
 ################################################################################
 
 
@@ -62,7 +62,7 @@ localcmd(ridgeDeployer + " " + ensemblesConfigPath)
 for serverProcess in sysConfig.server_list :
     print serverProcess
     # server = {"id": sid, "partition": gid, "host" : nodes[sid], "pid" : sid, "role" : "server"}
-    javaservercmd = "%s -cp %s %s %s %s" % (javaCommand, libmcadjar, benchServerClass, serverProcess["sid"], partitionsConfigPath)
+    javaservercmd = "%s -cp %s %s %s %s" % (javaCommand, libmcadjar, benchServerClass, serverProcess["id"], ensemblesConfigPath)
     sshcmdbg(serverProcess["host"], javaservercmd)
 sleep(5)
 
@@ -85,10 +85,13 @@ while remainingClients > 0 :
 # <command> <port> <directory> {<resource> <nodetype> <count>}+
 
 # numClients * numPermits as "load"/as "numClients"?
-javagatherercmd = "%s -cp %s " % (javaCommand, libmcadjar, javaGathererClass, gathererPort, logdir)
-javagatherercmd += " latency "    + str(numClients)
-javagatherercmd += " throughput " + str(numClients)
-     
+javagatherercmd = "%s -cp %s %s %s %s" % (javaCommand, libmcadjar, javaGathererClass, gathererPort, logdir)
+javagatherercmd += " latency    conservative " + str(numClients)
+javagatherercmd += " latency    optimistic   " + str(numClients)
+javagatherercmd += " throughput conservative " + str(numClients)
+javagatherercmd += " throughput optimistic   " + str(numClients)
+javagatherercmd += " mistakes   server       " + str(numLearners)
+    
 exitcode = sshcmd(sysConfig.gathererNode, javagatherercmd, 120)
      
 localcmd(benchCommon.cleaner)

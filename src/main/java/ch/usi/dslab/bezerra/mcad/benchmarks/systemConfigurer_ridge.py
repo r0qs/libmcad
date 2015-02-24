@@ -90,7 +90,7 @@ def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGr
     numDeployedPerEnsemble = quorumSize # in practice, only the quorum nodes need to be deployed
     
     numRequiredNodes = numDeployedPerEnsemble * numEnsembles + numLearnersPerGroup * numGroups
-    if  numRequiredNodes < len(nodes) :
+    if  numRequiredNodes > len(nodes) :
         print "Not enough nodes: have %s, need %s" % (len(nodes), numRequiredNodes)
         return None
     
@@ -206,6 +206,8 @@ def generateRidgeSystemConfiguration(nodes, numGroups, numPxPerGroup, numLearner
     remainingNodes = availableNodes[1:]
     
     systemConfiguration = generateRidgeConfiguration(remainingNodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, saveToFile)
+    if systemConfiguration == None :
+        return None
     generatePartitioningFile(systemConfiguration.server_list, partitionsFilePath, saveToFile)
     
     systemConfiguration.gathererNode       = gathererNode
