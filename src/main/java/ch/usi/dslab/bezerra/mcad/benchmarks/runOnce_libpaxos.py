@@ -36,6 +36,8 @@ def create_libpaxos_configfile(filepath, acceptors, proposers, usedisk) :
             cf.write("lmdb-mapsize 1gb")
     else :
         cf.write("storage-backend memory\n")
+    
+    cf.close()
 
 def clean_libpaxos_files(logdir, accnodes) :
     assert logdir.strip() != " "
