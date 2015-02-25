@@ -33,7 +33,7 @@ writeToDisk   = barg(6)
 
 
 ################################################################################
-logdir = get_logdir("ridge", numClients, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+logdir = get_logdir("ridge", numClients, numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
 print logdir
 clean_ridge_log(logdir)
 

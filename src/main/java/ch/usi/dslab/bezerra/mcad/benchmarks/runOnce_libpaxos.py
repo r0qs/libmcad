@@ -47,16 +47,13 @@ def clean_libpaxos_files(logdir, accnodes) :
 
 ################################################################################
 # experiment variables
-numClients    = sarg(1)
-numLearners   = sarg(2)
-numGroups     = sarg(3)
-numPxPerGroup = sarg(4)
-messageSize   = sarg(5)
-writeToDisk   = barg(6)
+numOutstandings = sarg(1)
+numLearners     = sarg(2)
+numGroups       = sarg(3)
+numPxPerGroup   = sarg(4)
+messageSize     = sarg(5)
+writeToDisk     = barg(6)
 ################################################################################
-
-logdir = get_logdir("libpaxos", numClients, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
-print logdir
 
 # creating nodepool
 nodespool = NodePool()
@@ -66,12 +63,16 @@ NUM_ACCEPTORS = 3
 NUM_PROPOSERS = 1
 NUM_LEARNERS = int(numLearners)
 NUM_CLIENTS = 1
-NUM_OUTSTADINGS = int(numClients)
+NUM_OUTSTADINGS = int(numOutstandings)
 nodespool.checkSize(NUM_ACCEPTORS + NUM_PROPOSERS + NUM_LEARNERS + NUM_CLIENTS)
 acceptors = nodespool.nextn(NUM_ACCEPTORS)
 proposers = nodespool.nextn(NUM_PROPOSERS)
 learners  = nodespool.nextn(NUM_LEARNERS)
 clients   = nodespool.nextn(NUM_CLIENTS)
+
+# create log directory
+logdir = get_logdir("libpaxos", 1, NUM_OUTSTADINGS, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+print logdir
 
 # create paxos.conf file
 create_libpaxos_configfile(lpexecdir + "/paxos.conf", acceptors, proposers, writeToDisk)

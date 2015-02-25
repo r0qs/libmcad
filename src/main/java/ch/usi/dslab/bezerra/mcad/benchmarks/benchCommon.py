@@ -40,9 +40,9 @@ class NodePool:
         return ret
 # ============================
 
-def get_logdir(algorithm, numClients, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk):
+def get_logdir(algorithm, numClients, numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk):
     dirpath = logdir + "/%s/%s_%s_clients_%s_learners_%s_groups_%s_pxpergroup_%s_bytes_diskwrite_%s" % \
-                (algorithm, algorithm, numClients, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+                (algorithm, algorithm, int(numClients) * int(numPermits), numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
     localcmd("mkdir -p " + dirpath)
     return dirpath
 
