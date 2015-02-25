@@ -100,7 +100,7 @@ javagatherercmd += " mistakes   server       " + str(numLearners)
     
 exitcode = sshcmd(sysConfig.gathererNode, javagatherercmd, benchDuration + 60)
      
-localcmd(benchCommon.cleaner)
+localcmd(cleaner)
 sleep(10)
 
 sys.exit(exitcode)
