@@ -98,7 +98,7 @@ javagatherercmd += " throughput conservative " + str(numClients)
 javagatherercmd += " throughput optimistic   " + str(numClients)
 javagatherercmd += " mistakes   server       " + str(numLearners)
     
-exitcode = sshcmd(sysConfig.gathererNode, javagatherercmd, 120)
+exitcode = sshcmd(sysConfig.gathererNode, javagatherercmd, benchDuration + 60)
      
 localcmd(benchCommon.cleaner)
 sleep(10)

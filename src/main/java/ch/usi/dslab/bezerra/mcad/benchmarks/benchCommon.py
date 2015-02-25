@@ -18,7 +18,12 @@ benchCommonPath = os.path.dirname(os.path.realpath(__file__)) + "/benchCommon.py
 def noderange(first,last) :
     return ["node" + str(val) for val in range(first, last + 1)]
 
-availableNodes = noderange(1,34) + noderange(41,43)
+availableNodes = noderange(1,34) + noderange(41,50)
+
+def testNodes() :
+    for n in availableNodes :
+        exitcode = localcmd("ssh %s uname -a" % (n))
+        assert exitcode == 0
 
 class NodePool:
     nodePointer = -1

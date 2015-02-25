@@ -34,7 +34,8 @@ incParcel = 0
 ##########################################
 numsLearners = [1, 2, 4, 8, 16, 32]
 ##########################################
-algorithms = ["libpaxos"]#, "mrp", "ridge"]
+#algorithms = ["libpaxos", "mrp", "ridge"]
+algorithms = ["ridge"]
 ##########################################
 messageSizes = [140, 8192]
 ##########################################
@@ -44,20 +45,19 @@ groupConfigs = [{groups : 1, pxpergroup : 1},
                # {groups : 1, pxpergroup : 2},
                # {groups : 1, pxpergroup : 4},
                # {groups : 1, pxpergroup : 8},
-               # {groups : 2, pxpergroup : 1},
-               # {groups : 4, pxpergroup : 1},
-               # {groups : 8, pxpergroup : 1},
+                {groups : 2, pxpergroup : 1},
+                {groups : 4, pxpergroup : 1},
+                {groups : 8, pxpergroup : 1},
                ]
 ##########################################
 diskConfigs = [False, True]
-
 ################################################################################
 ''' clean up environment before running batch
 '''
-# localcmd(cleaner)
-# time.sleep(5)
-# localcmd(systemParamSetter)
-# localcmd(clockSynchronizer)
+localcmd(cleaner)
+time.sleep(5)
+localcmd(systemParamSetter)
+localcmd(clockSynchronizer)
 ################################################################################
 
 skips = 0
