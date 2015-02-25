@@ -60,11 +60,14 @@ public class BenchServer {
             ClientMessage consmsg = mcserver.deliverClientMessage();
             int  clientId = consmsg.getSourceClientId();
             long msgSeq   = consmsg.getMessageSequence();
+            
             boolean optimistic = false;
             Message reply = new Message(msgSeq, optimistic);
-            mcserver.sendReply(clientId, reply);
+            if (mcserver.isConnectedToClient(clientId))
+               mcserver.sendReply(clientId, reply);
             OrderVerifier.instance.addConsDelivery(clientId, msgSeq);
-//            System.out.println("cons-delivered message " + clientId + "." + msgSeq);
+            // System.out.println("cons-delivered message " + clientId + "." +
+            // msgSeq);
             now = System.currentTimeMillis();
          }
       }
@@ -84,9 +87,11 @@ public class BenchServer {
             ClientMessage optmsg = (ClientMessage) omca.deliverMessageFast();
             int  clientId = optmsg.getSourceClientId();
             long msgSeq   = optmsg.getMessageSequence();
+            
             boolean optimistic = true;
             Message reply = new Message(msgSeq, optimistic);
-            mcserver.sendReply(clientId, reply);
+            if (mcserver.isConnectedToClient(clientId))
+               mcserver.sendReply(clientId, reply);
             OrderVerifier.instance.addOptDelivery(clientId, msgSeq);
 //            System.out.println("opt-delivered message " + clientId + "." + msgSeq);
             now = System.currentTimeMillis();
