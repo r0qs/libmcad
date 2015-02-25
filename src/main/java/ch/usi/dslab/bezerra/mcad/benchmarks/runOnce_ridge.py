@@ -62,7 +62,10 @@ localcmd(ridgeDeployer + " " + ensemblesConfigPath)
 for serverProcess in sysConfig.server_list :
     print serverProcess
     # server = {"id": sid, "partition": gid, "host" : nodes[sid], "pid" : sid, "role" : "server"}
-    javaservercmd = "%s -cp %s %s %s %s" % (javaCommand, libmcadjar, benchServerClass, serverProcess["id"], ensemblesConfigPath)
+    javaservercmd = "%s -cp %s %s %s %s %s %s %s %s" % (javaCommand,      \
+         libmcadjar,           benchServerClass,        serverProcess["id"], \
+         ensemblesConfigPath,  sysConfig.gathererNode,  gathererPort,        \
+         logdir,               benchDuration)
     sshcmdbg(serverProcess["host"], javaservercmd)
 sleep(5)
 
@@ -72,10 +75,10 @@ remainingClients = numClients
 clientNodes = sysConfig.remaining_nodes
 while remainingClients > 0 :
     for clinode in clientNodes :
-        javaclientcmd = "%s -cp %s %s %s %s %s %s %s %s %s" %    \
-            (javaCommand, libmcadjar, benchClientClass, clientId,\
-             ensemblesConfigPath, messageSize, numPermits,       \
-             sysConfig.gathererNode, gathererPort, benchDuration)
+        javaclientcmd = "%s -cp %s %s %s %s %s %s %s %s %s" % (javaCommand,
+             libmcadjar,             benchClientClass,   clientId,    \
+             ensemblesConfigPath,    messageSize,        numPermits,  \
+             sysConfig.gathererNode, gathererPort,       benchDuration)
         sshcmdbg(clinode, javaclientcmd)
         clientId += 1
         remainingClients -= 1

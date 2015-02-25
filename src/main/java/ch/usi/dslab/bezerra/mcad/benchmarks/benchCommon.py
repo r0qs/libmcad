@@ -35,9 +35,8 @@ class NodePool:
         return list(self.nodes)
     def nextn(self, n):
         ret = []
-        while n > 0 :
+        for _ in range (n) :
             ret.append(self.next())
-            n -= 1
         return ret
 # ============================
 

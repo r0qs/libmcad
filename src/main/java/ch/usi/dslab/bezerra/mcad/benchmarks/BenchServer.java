@@ -108,8 +108,15 @@ public class BenchServer {
    }
 
    public static void main(String[] args) {
-      int sid = Integer.parseInt(args[0]);
-      String configFile = args[1];
+      int    sid          = Integer.parseInt(args[0]);
+      String configFile   = args[1];
+      String gathererHost = args[2];
+      int    gathererPort = Integer.parseInt(args[3]);
+      String logdir       = args[4];
+      int    duration     = Integer.parseInt(args[5]);
+      
+      DataGatherer.configure(duration, logdir, gathererHost, gathererPort);
+      
       BenchServer bs = new BenchServer(sid, configFile);
       bs.startRunning();
    }
