@@ -110,16 +110,27 @@ public class BenchClient implements Runnable {
       }
    }
    
+   public static void printUsageAndExit() {
+      System.err.println("usage: BenchClient clientId mcastConfigFile msgSize numPermits gathererHost gathererPort duration");
+      System.exit(1);
+   }
+   
    public static void main(String[] args) {
 
+      if (args.length != 7)
+         printUsageAndExit();
+      
       // ======================== parameters
-      int cid = Integer.parseInt(args[0]);
-      String configFile = args[1];
-      int msgSize = Integer.parseInt(args[2]);
-      int numPermits = Integer.parseInt(args[3]);
+      int    cid          = Integer.parseInt(args[0]);
+      String configFile   = args[1];
+      int    msgSize      = Integer.parseInt(args[2]);
+      int    numPermits   = Integer.parseInt(args[3]);
+      String gathererHost = args[4];
+      int    gathererPort = Integer.parseInt(args[5]);
+      int    duration     = Integer.parseInt(args[6]);
       // ===================================      
 
-      DataGatherer.configure(60, null, "node40", 60000);
+      DataGatherer.configure(duration, null, gathererHost, gathererPort);
       
       BenchClient cli = new BenchClient(cid, configFile, msgSize, numPermits);
       

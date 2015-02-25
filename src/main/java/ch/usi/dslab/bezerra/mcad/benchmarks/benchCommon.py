@@ -60,11 +60,7 @@ libmcadjar = HOME + "/libmcad/target/libmcad-git.jar"
 javaCommand = "java -XX:+UseG1GC -Xmx8g"
 benchServerClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer"
 benchClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient"
-
-# parameters
-javabin = "java -XX:+UseG1GC -Xmx8g"
-javacp = "-cp " + HOME + "/libmcad/target/libmcad-git.jar"
-duration = "60"
+benchDuration = 60
 
 # libpaxos
 lpexecdir  = HOME + "/paxosudp/build/sample"
