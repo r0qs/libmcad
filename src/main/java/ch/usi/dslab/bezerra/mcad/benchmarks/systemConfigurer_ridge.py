@@ -5,7 +5,6 @@
 
 import simplejson as json
 
-import benchCommon
 from benchCommon import *
 
 class RidgeConfiguration :
@@ -39,24 +38,26 @@ serverList = [{"id": 0, "partition": 0}]
 
 # ridgeConfiguration = generateRidgeConfiguration(availableNodes, numPartitions, replicasPerPartition, ensembleSize, configFilePath)
 
-def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, configFilePath, saveToFile) :
+def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearners, ensembleSize, writeToDisk, configFilePath, saveToFile) :
     config = dict()
     config["agent_class"] = "RidgeMulticastAgent"
-    config["batch_size_threshold_bytes"] = benchCommon.batch_size_threshold_bytes
-    config["batch_time_threshold_ms"]    = benchCommon.batch_time_threshold_ms
     if writeToDisk == True :
-        config["delta_null_messages_ms"] = benchCommon.delta_null_messages_ms_disk
-        config["storage_type"]           = benchCommon.ridge_disk_storage_type
+        config["delta_null_messages_ms"] = delta_null_messages_ms_disk
+        config["storage_type"]           = ridge_disk_storage_type
+        config["batch_size_threshold_bytes"] = batch_size_threshold_bytes_disk
+        config["batch_time_threshold_ms"]    = batch_time_threshold_ms_disk
     else :
-        config["delta_null_messages_ms"] = benchCommon.delta_null_messages_ms_memory
-        config["storage_type"]           = benchCommon.ridge_memory_storage_type
+        config["delta_null_messages_ms"] = delta_null_messages_ms_memory
+        config["storage_type"]           = ridge_memory_storage_type
+        config["batch_size_threshold_bytes"] = batch_size_threshold_bytes_memory
+        config["batch_time_threshold_ms"]    = batch_time_threshold_ms_memory
     config["deliver_conservative"]       = True
     config["deliver_optimistic_uniform"] = False
     config["deliver_optimistic_fast"]    = False
     config["direct_fast"]                = True
-    config["latency_estimation_sample"]  = benchCommon.latency_estimation_sample
-    config["latency_estimation_devs"]    = benchCommon.latency_estimation_devs
-    config["latency_estimation_max"]     = benchCommon.latency_estimation_max
+    config["latency_estimation_sample"]  = latency_estimation_sample
+    config["latency_estimation_devs"]    = latency_estimation_devs
+    config["latency_estimation_max"]     = latency_estimation_max
     
     # OKAY
     # groups (1:1 with partitions)
@@ -89,10 +90,12 @@ def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGr
     # numDeployedPerEnsemble = ensembleSize
     numDeployedPerEnsemble = quorumSize # in practice, only the quorum nodes need to be deployed
     
-    numRequiredNodes = numDeployedPerEnsemble * numEnsembles + numLearnersPerGroup * numGroups
+    numRequiredNodes = numDeployedPerEnsemble * numEnsembles + numLearners
     if  numRequiredNodes > len(nodes) :
         print "Not enough nodes: have %s, need %s" % (len(nodes), numRequiredNodes)
         return None
+    
+    numLearnersPerGroup = numLearners // numGroups
     
     for pid in range(0, len(nodes), numDeployedPerEnsemble) :
         if pid >= numDeployedPerEnsemble * numEnsembles : 
