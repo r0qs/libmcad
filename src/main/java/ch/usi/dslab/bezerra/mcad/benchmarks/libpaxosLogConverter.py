@@ -6,7 +6,7 @@
 # average: 0 1841031.305085]
 
 def convertLogs(path) :
-    with open(path = "/client_tp_lat.csv", "r") as tplatfile:
+    with open(path + "/client_tp_lat.csv", "r") as tplatfile:
         latOneLines = []
         
         aggregatedLatency = 0.0
@@ -24,9 +24,9 @@ def convertLogs(path) :
             
             duration      = timestamp if timestamp > duration else duration
             fakeTimestamp = 1424873060000 + 1000 * timestamp
-            latency_ns    = latency_ms * 1e6
+            latency_ns    = latency_ms * 1e3
             
-            latOneLines.append("% %s\n", fakeTimestamp, latency_ms)
+            latOneLines.append("%s %s\n" % (fakeTimestamp, latency_ns))
             
             aggregatedLatency += latency_ns
             
@@ -49,5 +49,5 @@ def convertLogs(path) :
         tpAggFile = open(path + "/throughput_conservative_aggregate.log", "w")
         tpAggFile.write("# throughput conservative\n")
         tpAggFile.write("# throughput (cps)\n")
-        tpAggFile.write("0 0 %s" % (numItems / duration))
+        tpAggFile.write("0 0 %s\n" % (numItems / duration))
         tpAggFile.close()
