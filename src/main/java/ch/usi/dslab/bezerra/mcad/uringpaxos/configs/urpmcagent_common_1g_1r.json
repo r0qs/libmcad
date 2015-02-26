@@ -1,5 +1,6 @@
 {
   "agent_class" : "URPMcastAgent" ,
+  "fast_ring"   : true ,
   
   "groups" :
   [

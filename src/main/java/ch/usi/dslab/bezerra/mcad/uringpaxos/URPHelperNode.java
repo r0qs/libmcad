@@ -23,6 +23,7 @@ import org.apache.zookeeper.KeeperException;
 
 import ch.usi.da.paxos.Util;
 import ch.usi.da.paxos.api.PaxosNode;
+import ch.usi.da.paxos.ring.FastNode;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.netwrapper.Message;
@@ -289,11 +290,12 @@ public class URPHelperNode {
    public static void main (String args[]) {
       String zoo_host = args[0];
       String urpx_str = args[1];
+      boolean fastRing = args.length > 2 && args[2].equalsIgnoreCase("fastring");
       boolean isProposer = urpx_str.contains("P");
       
       List<RingDescription> ringdesc = Util.parseRingsArgument(urpx_str);
       
-      final Node ringNode = new Node(zoo_host, ringdesc);
+      final Node ringNode = fastRing ? new FastNode(zoo_host, ringdesc) : new Node(zoo_host, ringdesc);
       HelperProposer hp = null;
       try {
          

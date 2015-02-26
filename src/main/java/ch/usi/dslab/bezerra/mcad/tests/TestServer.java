@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
@@ -20,7 +21,6 @@ import ch.usi.dslab.bezerra.mcad.OptimisticMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastAgent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.ridge.Merger;
-import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 
 public class TestServer {
    
@@ -134,8 +134,8 @@ public class TestServer {
    }
    
    public static class SpeculativeDeliveryVerifier extends Thread {
-      public List<MessageIdentifier> speculativeSequence  = new LinkedList<MessageIdentifier>();
-      public List<MessageIdentifier> conservativeSequence = new LinkedList<MessageIdentifier>();
+      public List<Long> speculativeSequence  = new LinkedList<Long>();
+      public List<Long> conservativeSequence = new LinkedList<Long>();
       private StatusPrinter printer;
       private String name;
       private AtomicLong numDeliveries = new AtomicLong(0);
@@ -148,22 +148,22 @@ public class TestServer {
          this.name    = name;
       }
       
-      synchronized public void addSpeculativeDelivery(MessageIdentifier mid) {
-         speculativeSequence.add(mid);
+      synchronized public void addSpeculativeDelivery(long mseq) {
+         speculativeSequence.add(mseq);
          checkMatch();
       }
       
-      synchronized public void addConservativeDelivery(MessageIdentifier mid) {
-         conservativeSequence.add(mid);
+      synchronized public void addConservativeDelivery(long mseq) {
+         conservativeSequence.add(mseq);
          numDeliveries.incrementAndGet();
          checkMatch();
       }
       
       synchronized private void checkMatch() {
          while (speculativeSequence.isEmpty() == false && conservativeSequence.isEmpty() == false) {
-            MessageIdentifier smid = speculativeSequence.remove(0);
-            MessageIdentifier cmid = conservativeSequence.remove(0);
-            if (smid.equals(cmid) == false) {
+            long smid = speculativeSequence.remove(0);
+            long cmid = conservativeSequence.remove(0);
+            if (smid != cmid) {
                mistakes.incrementAndGet();
                recentMistakes.addValue(1);
             }
@@ -272,9 +272,9 @@ public class TestServer {
    
    public static class ConservativeDeliverer extends Thread {
       MulticastServer mcServer;
-      List<MessageIdentifier> allDeliveries = new ArrayList<MessageIdentifier>();
+      List<Long> allDeliveries = new ArrayList<Long>();
       ListHashCalculator         allDeliveriesHashPrinter = new ListHashCalculator(StatusPrinter.getInstance(), "all", allDeliveries);
-      Map<String, List<MessageIdentifier>> receivedMessages = new ConcurrentHashMap<String, List<MessageIdentifier>>();
+      Map<String, List<Long>> receivedMessages = new ConcurrentHashMap<String, List<Long>>();
       Map<String, ListHashCalculator> printers = new ConcurrentHashMap<String, ListHashCalculator>();
       SpeculativeDeliveryVerifier optVerifier;
       SpeculativeDeliveryVerifier fastVerifier;
@@ -289,42 +289,42 @@ public class TestServer {
          allDeliveriesHashPrinter.start();
       }
       
-      void addDelivery(String destsStr, MessageIdentifier mid) {
-         List<MessageIdentifier> destMsgs = receivedMessages.get(destsStr);
+      void addDelivery(String destsStr, long mseq) {
+         List<Long> destMsgs = receivedMessages.get(destsStr);
          if (destMsgs == null) {
-            destMsgs = new ArrayList<MessageIdentifier>();
+            destMsgs = new ArrayList<Long>();
             receivedMessages.put(destsStr, destMsgs);
             ListHashCalculator lhp = new ListHashCalculator(StatusPrinter.getInstance(), destsStr, destMsgs);
             lhp.start();
          }
          synchronized (destMsgs) {
-            destMsgs.add(mid);
+            destMsgs.add(mseq);
          }
          synchronized (allDeliveries) {
-            allDeliveries.add(mid);
+            allDeliveries.add(mseq);
          }
       }
       
       public void run() {
          while (true) {
-            Message msg = mcServer.getMulticastAgent().deliverMessage();
+            ClientMessage msg = mcServer.deliverClientMessage();
             long now = System.currentTimeMillis();
             
-            int clientId = (Integer) msg.getNext();
-            MessageIdentifier mid = (MessageIdentifier) msg.getNext();
-            long timestamp = (Long) msg.getNext();
-            String destinationString = (String) msg.getNext();
+            int  clientId  = msg.getSourceClientId();
+            long seq       = msg.getMessageSequence();
+            long timestamp = (Long)   msg.getNext();
+            String destStr = (String) msg.getNext();
             
-            addDelivery(destinationString, mid);
+            addDelivery(destStr, seq);
             
-            Message reply = new Message(mid, DeliveryType.CONS);
+            Message reply = new Message(seq, DeliveryType.CONS);
             mcServer.sendReply(clientId, reply);
 
             long latency = now - timestamp;  
             latencyCalculator.addConsLatency(latency);
 //            System.out.println(String.format("cons-delivered message %s within %d ms", mid, now - timestamp));
-            optVerifier.addConservativeDelivery(mid);
-            fastVerifier.addConservativeDelivery(mid);
+            optVerifier.addConservativeDelivery(seq);
+            fastVerifier.addConservativeDelivery(seq);
             
             ConsTimelineCollector.sample = msg;
          }
@@ -352,21 +352,21 @@ public class TestServer {
             
             OptimisticMulticastAgent omcagent = (OptimisticMulticastAgent) mcServer.getMulticastAgent();
             
-            Message msg = omcagent.deliverMessageOptimistically();
+            ClientMessage msg = (ClientMessage) omcagent.deliverMessageOptimistically();
             
             long now = System.currentTimeMillis();
             
-            int clientId = (Integer) msg.getNext();
-            MessageIdentifier mid = (MessageIdentifier) msg.getNext();
+            int  clientId  = msg.getSourceClientId();
+            long mseq      = msg.getMessageSequence();
             long timestamp = (Long) msg.getNext();
             
-            Message reply = new Message(mid, DeliveryType.OPT);
+            Message reply = new Message(mseq, DeliveryType.OPT);
             mcServer.sendReply(clientId, reply);
 
             long latency = now - timestamp;  
             latencyCalculator.addOptLatency(latency);
 //            System.out.println(String.format("opt-delivered message %s within %d ms", mid, now - timestamp));
-            optVerifier.addSpeculativeDelivery(mid);
+            optVerifier.addSpeculativeDelivery(mseq);
          }
       }
    }
@@ -392,21 +392,21 @@ public class TestServer {
             
             FastMulticastAgent fmcagent = (FastMulticastAgent) mcServer.getMulticastAgent();
             
-            Message msg = fmcagent.deliverMessageFast();
+            ClientMessage msg = (ClientMessage) fmcagent.deliverMessageFast();
             
             long now = System.currentTimeMillis();
             
-            int clientId = (Integer) msg.getNext();
-            MessageIdentifier mid = (MessageIdentifier) msg.getNext();
+            int  clientId  = msg.getSourceClientId();
+            long mseq      = msg.getMessageSequence();
             long timestamp = (Long) msg.getNext();
             
-            Message reply = new Message(mid, DeliveryType.FAST);
+            Message reply = new Message(mseq, DeliveryType.FAST);
             mcServer.sendReply(clientId, reply);
 
             long latency = now - timestamp;  
             latencyCalculator.addFastLatency(latency);
 //            System.out.println(String.format("fast-delivered message %s within %d ms", mid, now - timestamp));
-            fastVerifier.addSpeculativeDelivery(mid);
+            fastVerifier.addSpeculativeDelivery(mseq);
          }
       }
    }   

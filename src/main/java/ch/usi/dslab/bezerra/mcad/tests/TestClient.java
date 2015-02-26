@@ -13,16 +13,15 @@ import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastClient;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
 import ch.usi.dslab.bezerra.netwrapper.Message;
-import ch.usi.dslab.bezerra.ridge.RidgeMessage.MessageIdentifier;
 
 public class TestClient {
    
    public static class ReplyDeliverer extends Thread {
       private TestClient parent;
       private Semaphore  wakeUpSignals = new Semaphore(0);;
-      List<MessageIdentifier> pendingConsMessages = new ArrayList<MessageIdentifier>();
-      List<MessageIdentifier> pendingOptMessages  = new ArrayList<MessageIdentifier>();
-      List<MessageIdentifier> pendingFastMessages = new ArrayList<MessageIdentifier>();
+      List<Long> pendingConsMessages = new ArrayList<Long>();
+      List<Long> pendingOptMessages  = new ArrayList<Long>();
+      List<Long> pendingFastMessages = new ArrayList<Long>();
       private Semaphore outstandingPermits;
       
       public ReplyDeliverer(TestClient parent) {
@@ -47,20 +46,20 @@ public class TestClient {
          if (outstandingPermits != null) outstandingPermits.release();
       }
       
-      public void addPendingMessage(MessageIdentifier id) {
-         addPendingMessage(id, pendingConsMessages);
-         addPendingMessage(id, pendingOptMessages);
-         addPendingMessage(id, pendingFastMessages);
+      public void addPendingMessage(long seq) {
+         addPendingMessage(seq, pendingConsMessages);
+         addPendingMessage(seq, pendingOptMessages);
+         addPendingMessage(seq, pendingFastMessages);
       }
       
-      private void addPendingMessage(MessageIdentifier id, List<MessageIdentifier> pendingList) {
+      private void addPendingMessage(long seq, List<Long> pendingList) {
          synchronized (pendingList) {
-            pendingList.add(id);         
+            pendingList.add(seq);         
          }
          wakeUp();
       }
       
-      private void removePendingMessage(MessageIdentifier id, List<MessageIdentifier> pendingList) {
+      private void removePendingMessage(long id, List<Long> pendingList) {
          boolean contained;
          synchronized (pendingList) {
             contained = pendingList.remove(id);
@@ -71,7 +70,7 @@ public class TestClient {
          }
       }
       
-      private boolean containsPendingMessage(MessageIdentifier id, List<MessageIdentifier> pendingList) {
+      private boolean containsPendingMessage(long id, List<Long> pendingList) {
          synchronized (pendingList) {
             return pendingList.contains(id);
          }
@@ -95,22 +94,22 @@ public class TestClient {
             if (pendingConsMessages.isEmpty() && pendingOptMessages.isEmpty() && pendingFastMessages.isEmpty())
                sleep();
             Message reply = parent.mcclient.deliverReply();
-            MessageIdentifier mid = (MessageIdentifier) reply.getNext();
+            long mseq = (Long) reply.getNext();
             int deliveryType = (Integer) reply.getNext();
             switch (deliveryType) {
                case DeliveryType.CONS : {
-                  removePendingMessage(mid, pendingConsMessages);
-                  if (containsPendingMessage(mid, pendingConsMessages) == false) {
+                  removePendingMessage(mseq, pendingConsMessages);
+                  if (containsPendingMessage(mseq, pendingConsMessages) == false) {
                      addPermit();
                   }
                   break;
                }
                case DeliveryType.OPT : {
-                  removePendingMessage(mid, pendingOptMessages);
+                  removePendingMessage(mseq, pendingOptMessages);
                   break;
                }
                case DeliveryType.FAST : {
-                  removePendingMessage(mid, pendingFastMessages);
+                  removePendingMessage(mseq, pendingFastMessages);
                   break;
                }
                default : {
@@ -148,14 +147,13 @@ public class TestClient {
    
    
    public void sendMessage(List<Group> destinations) {
-      MessageIdentifier mid = MessageIdentifier.getNextMessageId(clientId);
       String destinationString = "";
-      for (int i = 0 ; i < destinations.size() ; i++) {
+      for (int i = 0 ; i < destinations.size() ; i++)
          destinationString += String.format(" %d", destinations.get(i).getId());
-//         for (int j = 0 ; j < destinations.get(i).getMembers().size() ; j++)
-         verifier.addPendingMessage(mid);
-      }
       ClientMessage clientMessage = new ClientMessage(System.currentTimeMillis(), destinationString);
+      for (int i = 0 ; i < destinations.size() ; i++)
+         verifier.addPendingMessage(clientMessage.getMessageSequence());
+      
       
       // DEBUG
 //      multicastMessage.t_client_send = System.currentTimeMillis();

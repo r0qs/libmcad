@@ -8,8 +8,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ch.usi.da.paxos.ring.RingManager;
-
 public class URPRingData {
    static List<URPRingData> ringsList;
 
@@ -37,7 +35,6 @@ public class URPRingData {
    int    ringId;
    String coordinatorAddress;
    int    coordinatorPort;
-   RingManager ringManager;
    
    SocketChannel coordinatorConnection;
    

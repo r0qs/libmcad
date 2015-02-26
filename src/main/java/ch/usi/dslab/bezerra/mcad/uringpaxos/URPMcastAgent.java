@@ -25,6 +25,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import ch.usi.da.paxos.api.PaxosRole;
+import ch.usi.da.paxos.ring.FastNode;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.mcad.Group;
@@ -343,6 +344,11 @@ public class URPMcastAgent implements MulticastAgent {
          
          Group.changeGroupImplementationClass(URPGroup.class);
          
+         boolean fastRing = false;
+         if (config.containsKey("fast_ring")) {
+            fastRing = (Boolean) config.get("fast_ring");
+         }
+         
          Boolean deserializeToMessageField = (Boolean) config.get("deserialize_to_Message");
          if (deserializeToMessageField != null)
             deserializeToMessage = deserializeToMessageField;
@@ -500,7 +506,7 @@ public class URPMcastAgent implements MulticastAgent {
 
             // ----------------------------------------------
             // Creating Paxos node from list of ring descriptors
-            URPaxosNode = new Node(zoo_host, localURPaxosRings);
+            URPaxosNode = fastRing ? new FastNode(zoo_host, localURPaxosRings) : new Node(zoo_host, localURPaxosRings);
             URPaxosNode.start();
             Runtime.getRuntime().addShutdownHook(new Thread() {
                @Override
