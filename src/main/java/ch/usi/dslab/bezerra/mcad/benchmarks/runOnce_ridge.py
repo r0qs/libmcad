@@ -92,10 +92,12 @@ while remainingClients > 0 :
 
 # numClients * numPermits as "load"/as "numClients"?
 javagatherercmd = "%s -cp %s %s %s %s" % (javaCommand, libmcadjar, javaGathererClass, gathererPort, logdir)
-javagatherercmd += " latency    conservative " + str(numClients)
-javagatherercmd += " latency    optimistic   " + str(numClients)
 javagatherercmd += " throughput conservative " + str(numClients)
 javagatherercmd += " throughput optimistic   " + str(numClients)
+javagatherercmd += " latency    conservative " + str(numClients)
+javagatherercmd += " latency    optimistic   " + str(numClients)
+javagatherercmd += " latency_distribution conservative " + str(numClients)
+javagatherercmd += " latency_distribution optimistic   " + str(numClients)
 javagatherercmd += " mistakes   server       " + str(numLearners)
 
 timetowait = benchDuration + (numClients + numGroups * numPxPerGroup * 2 + numLearners) * 5
