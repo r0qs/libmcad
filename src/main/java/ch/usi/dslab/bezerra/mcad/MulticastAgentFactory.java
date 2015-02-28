@@ -9,8 +9,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import spread.SpreadException;
+
 import ch.usi.dslab.bezerra.mcad.minimal.MinimalMcastAgent;
 import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastAgent;
+import ch.usi.dslab.bezerra.mcad.spread.SpreadMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMcastAgent;
 
 public class MulticastAgentFactory {
@@ -54,6 +57,10 @@ public class MulticastAgentFactory {
             log.info("Creating RidgeMulticastAgent");
             return new RidgeMulticastAgent(configFile, ids[1], isInGroup);
          }
+         else if (agent_type.equals("SpreadMulticastAgent")) {
+             log.info("Creating SpreadMulticastAgent");
+             return new SpreadMulticastAgent(configFile, isInGroup, ids[1]);
+         }
          else {
             log.error("agent_type field in " + configFile + " didn't match any known MulticastAgent type");
          }
@@ -62,7 +69,9 @@ public class MulticastAgentFactory {
          e.printStackTrace();
       } catch (ParseException e) {
          e.printStackTrace();
-      }
+      } catch (SpreadException e) {
+		e.printStackTrace();
+	}
       
       
       return null;

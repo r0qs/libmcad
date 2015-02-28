@@ -9,8 +9,13 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import spread.SpreadException;
+
 import ch.usi.dslab.bezerra.mcad.minimal.MinimalMulticastClient;
 import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastAgent;
+import ch.usi.dslab.bezerra.mcad.spread.SpreadMulticastClient;
+import ch.usi.dslab.bezerra.mcad.spread.SpreadMulticastAgent;
+import ch.usi.dslab.bezerra.mcad.spread.SpreadMulticastServer;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMcastAgent;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMulticastClient;
 
@@ -44,11 +49,17 @@ public class MulticastClientServerFactory {
             RidgeMulticastAgent rcmagent = new RidgeMulticastAgent(configFile, clientId, false);
             return rcmagent.getClient();
          }
+         else if (agent_type.equals("SpreadMulticastAgent")) {
+             logger.info("Creating SpreadMulticastAgent");
+             SpreadMulticastAgent spreadAgent = new SpreadMulticastAgent(configFile, false, clientId);
+             System.out.println("SpreadMulticastAgent created!");
+             return new SpreadMulticastClient(spreadAgent, clientId);
+         }
          else {
             logger.error("agent_type field in " + configFile + " didn't match any known MulticastAgentOld type");
          }
       }
-      catch(ParseException | IOException e) {
+      catch(ParseException | IOException | SpreadException e) {
          e.printStackTrace();
          System.exit(1);
       }
@@ -83,11 +94,17 @@ public class MulticastClientServerFactory {
             RidgeMulticastAgent rcmagent = new RidgeMulticastAgent(configFile, serverId, true);
             return rcmagent.getServer();
          }
+         else if (agent_type.equals("SpreadMulticastAgent")) {
+             logger.info("Creating SpreadMulticastAgent");
+             SpreadMulticastAgent spreadAgent = new SpreadMulticastAgent(configFile, true, serverId);
+             System.out.println("SpreadMulticastAgent created!");
+             return new SpreadMulticastServer(spreadAgent, serverId);
+         }
          else {
             logger.error("agent_type field in " + configFile + " didn't match any known MulticastAgent type");
          }
       }
-      catch(ParseException | IOException e) {
+      catch(ParseException | IOException | SpreadException e) {
          e.printStackTrace();
          System.exit(1);
       }
