@@ -98,11 +98,11 @@ javagatherercmd += " throughput conservative " + str(numClients)
 javagatherercmd += " throughput optimistic   " + str(numClients)
 javagatherercmd += " mistakes   server       " + str(numLearners)
 
-timetowait = benchDuration + (numClients + numGroups * numPxPerGroup * 2 + numLearners) * 5
+timetowait = benchDuration + (numClients + numGroups * numPxPerGroup * 2 + numLearners) * 10
  
 exitcode = sshcmd(sysConfig.gathererNode, javagatherercmd, timetowait)
 if exitcode != 0 :
-    localcmd("touch %s/FAILED.txt", logdir)
+    localcmd("touch %s/FAILED.txt" % (logdir))
      
 localcmd(cleaner)
 sleep(10)
