@@ -12,7 +12,6 @@ import sys
 import json
 import inspect
 import threading
-from pprint import pprint
 from time import sleep
 
 #====================================
@@ -62,8 +61,10 @@ config = json.load(config_json)
 zookeeper_server_location = config["zookeeper"]["location"]
 zookeeper_server_port = str(config["zookeeper"]["port"])
 zookeeper_path = config["zookeeper"]["path"]
-zookeeper_server_address  = zookeeper_server_location + ":" + zookeeper_server_port
+zookeeper_server_address = zookeeper_server_location + ":" + zookeeper_server_port
 zookeeper_client_path = os.path.dirname(zookeeper_path) + "/zkCli.sh"
+
+ringtype = "fastring" if (config.has_key("fast_ring") and config["fast_ring"] == True) else "standardring"
 
 # kill the ring(s) (non-learner nodes)
 for node in config["ring_nodes"] :
@@ -111,7 +112,7 @@ for node in config["ring_nodes"] :
     if (xterm == True) :
         command_string = "xterm -geometry 120x20+0+0 -e "
         
-    command_string += "ssh " + node_location + " " + java_string + " " + zookeeper_server_address  + " " + nodestring
+    command_string += "ssh " + node_location + " " + java_string + " " + zookeeper_server_address  + " " + nodestring + " " + ringtype
 
     if "proposer" in ring["roles"] :
         enable_batching="true"

@@ -288,10 +288,11 @@ public class URPHelperNode {
    
 
    public static void main (String args[]) {
+      log.info("URPHelperNodearguments: " + args);
       String zoo_host = args[0];
       String urpx_str = args[1];
-      boolean fastRing = args.length > 2 && args[2].equalsIgnoreCase("fastring");
       boolean isProposer = urpx_str.contains("P");
+      boolean fastRing = args[2].equalsIgnoreCase("fastring");
       
       List<RingDescription> ringdesc = Util.parseRingsArgument(urpx_str);
       
@@ -300,11 +301,10 @@ public class URPHelperNode {
       try {
          
          if (isProposer) {
-            log.info("arguments: " + args[0] + " " + args[1] + " " + args[2]);
-            int proposer_port = Integer.parseInt(args[2]);
-            boolean enable_batching = Boolean.parseBoolean(args[3]);
-            int batch_size = Integer.parseInt(args[4]);
-            int batch_time = Integer.parseInt(args[5]);
+            int proposer_port = Integer.parseInt(args[3]);
+            boolean enable_batching = Boolean.parseBoolean(args[4]);
+            int batch_size = Integer.parseInt(args[5]);
+            int batch_time = Integer.parseInt(args[6]);
             hp = new HelperProposer(ringNode, proposer_port, enable_batching, batch_size, batch_time);
          }
          
