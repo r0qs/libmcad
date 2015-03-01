@@ -32,7 +32,7 @@ public class SpreadMulticastServer implements MulticastServer {
 
 		ProcessInfo processInfo = spreadAgent.getProcessInfo(serverId);
 	    serverTcpReceiver = new TCPReceiver(processInfo.getServerPort());
-	    System.out.println("Server: listening at port " + processInfo.getServerPort());
+	    // System.out.println("Server: listening at port " + processInfo.getServerPort());
 
 		Thread listener = new Thread(new ConnectionListener(), "Connection Listener");
 		listener.setDaemon(true);
@@ -81,7 +81,7 @@ public class SpreadMulticastServer implements MulticastServer {
 			while (true) {
 				TCPMessage request = serverTcpReceiver.receive(1000);
 				if (request != null) {
-					System.out.println("Listener: new connection received");
+					// System.out.println("Listener: new connection received");
 					TCPConnection connection = request.getConnection();
 					Message contents = request.getContents();
 					contents.rewind();
@@ -89,13 +89,12 @@ public class SpreadMulticastServer implements MulticastServer {
 
 					if (msgType == MessageType.CLIENT_CREDENTIALS) {
 						int clientId = (Integer) contents.getNext();
-						System.out.println("Listener: client credentials: " + clientId);
+						// System.out.println("Listener: client credentials: " +
+						// clientId);
 						connectedClients.put(clientId, connection);
 						Message connectedAck = new Message("CONNECTED");
 		                sendReply(clientId, connectedAck);
-		                break;
-					}
-	
+					}	
 				}
 			}
 		}

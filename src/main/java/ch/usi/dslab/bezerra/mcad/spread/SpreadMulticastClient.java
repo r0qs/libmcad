@@ -47,8 +47,8 @@ public class SpreadMulticastClient implements MulticastClient, Runnable {
 
 			// Open connection to the daemon
 			spreadAgent.connectToDaemonAsMulticaster(server);
-			System.out.println("Client: trying to connecto to server at " +
-					server.getHostName() + ":" + server.getServerPort());
+			//System.out.println("Client: trying to connecto to server at " +
+			//		server.getHostName() + ":" + server.getServerPort());
 
 			// Open connection with the server to receive responses
 			TCPConnection serverConnection =
@@ -62,7 +62,7 @@ public class SpreadMulticastClient implements MulticastClient, Runnable {
 
 			Message ack = deliverReply();
 			System.out.println("Client [" + clientId + "]: " + ack.getItem(0) +
-					" from " + server.getHostName() + "(pid: " + serverId + ")");
+					" to " + server.getHostName() + " (sid: " + serverId + ")");
 		} catch (SpreadException | IOException e) {
 			e.printStackTrace();
 		}

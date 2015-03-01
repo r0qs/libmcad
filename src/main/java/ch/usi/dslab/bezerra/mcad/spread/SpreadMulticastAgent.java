@@ -73,17 +73,17 @@ public class SpreadMulticastAgent implements MulticastAgent {
 		receiverConnection.connect(InetAddress.getByName(process.getHostName()),
 				process.getDaemonPort(), "R" + processId, false, true);
 
-		System.out.println("Agent: connected to " + process.getHostName() +
-				":" + process.getDaemonPort() + ", private group = " +
-				receiverConnection.getPrivateGroup().toString());
+		//System.out.println("Agent: connected to " + process.getHostName() +
+		//		":" + process.getDaemonPort() + ", private group = " +
+		//		receiverConnection.getPrivateGroup().toString());
 
 		SpreadGroup spreadGroup = new SpreadGroup();
 		localGroup = (SpreadMGroup) Group.getGroup(groupId);
 		String spreadGroupName = SpreadMGroup.getSpreadName(localGroup);
 		spreadGroup.join(receiverConnection, spreadGroupName);
 
-		System.out.println("Agent: joined to group " + localGroup.getId() +
-				" (" + spreadGroupName + ", " + spreadGroup.toString() + ")");
+		System.out.println("Agent [" + processId + "]: joined to group " +
+				localGroup.getId() + " (" + spreadGroup.toString() + ")");
 	}
 
 	@Override
@@ -133,15 +133,15 @@ public class SpreadMulticastAgent implements MulticastAgent {
 				process.getDaemonPort(), privateName, false, false);
 		process.setSpreadConnection(connection);
 
-		System.out.println("Agent: connected to " + process.getHostName()
-				+ ":" + process.getDaemonPort() + " as a multicaster.");
+		//System.out.println("Agent [" + processId + "]: connected to " +
+		//		process.getHostName() + ":" + process.getDaemonPort());
 	}
 
 	public void setServerForGroup(int groupId, int serverId) {
 		ProcessInfo server = getProcessInfo(serverId);
 		serversPerGroup.put(groupId, server);
-		System.out.println("Agent: primary server for group " + groupId +
-				" set to process " + serverId + " (" + server.getHostName() + ")");
+		//System.out.println("Agent [" + processId + "]: primary server for"
+		//		+" group " + groupId + " set to process " + serverId);
 	}
 
 	@Override
@@ -188,6 +188,9 @@ public class SpreadMulticastAgent implements MulticastAgent {
 			JSONParser parser = new JSONParser();
 			Object nodeObj = parser.parse(new FileReader(filename));
 			JSONObject config = (JSONObject) nodeObj;
+		
+			// Only first process prints the configuration
+			boolean verbose = (processId == 0);
 
 			if (config.containsKey("number_of_groups")) {
 				nGroups = ((Long) config.get("number_of_groups")).intValue();
@@ -198,7 +201,8 @@ public class SpreadMulticastAgent implements MulticastAgent {
 			for (int groupId = 1; groupId <= nGroups; groupId++) {
 				groups.add(groupId, new SpreadMGroup(groupId));
 			}
-			System.out.println("Config:\tcreated " + nGroups + " groups.");
+			if (verbose)
+				System.out.println("Config:\tcreated " + nGroups + " groups.");
 
 			ArrayList<Integer> processesWithoutGroup = new ArrayList<Integer>();
 
@@ -217,8 +221,9 @@ public class SpreadMulticastAgent implements MulticastAgent {
 					daemonPort = ((Long) process.get("dport")).intValue();
 				}
 
-				System.out.println("Config:\tfound process " + processId +
-						" at " + hostName + ":" + serverPort);
+				if (verbose)
+					System.out.println("Config:\tfound process " + processId +
+							" at " + hostName + ":" + serverPort);
 
 				ProcessInfo processInfo = getProcessInfo(processId);
 				if (processInfo != null) {
@@ -236,8 +241,9 @@ public class SpreadMulticastAgent implements MulticastAgent {
 					int groupId = ((Long) process.get("group")).intValue();
 					SpreadMGroup group = groups.get(groupId);
 					group.addProcess(processId);
-					System.out.println("Config:\tprocess " + processId +
-							" manually assigned to group " + groupId);
+					if (verbose)
+						System.out.println("Config:\tprocess " + processId +
+								" manually assigned to group " + groupId);
 
 					// Primary server: First process assigned to a group
 					if (! serversPerGroup.containsKey(groupId)) {
@@ -253,8 +259,9 @@ public class SpreadMulticastAgent implements MulticastAgent {
 				int groupId = groupIdForProcess(processId);
 				SpreadMGroup group = groups.get(groupId);
 				group.addProcess(processId);
-				System.out.println("Config:\tprocess " + processId +
-						" assigned to group " + groupId);
+				if (verbose)
+					System.out.println("Config:\tprocess " + processId +
+							" assigned to group " + groupId);
 
 				// Primary server: First process assigned to a group
 				if (! serversPerGroup.containsKey(group.getId())) {
@@ -262,7 +269,8 @@ public class SpreadMulticastAgent implements MulticastAgent {
 				}
 			}
 
-			System.out.println("Init: loaded " + nProcesses + " processes.");
+			if (verbose)
+				System.out.println("Init: loaded " + nProcesses + " processes.");
 		} catch (IOException | ParseException e) {
 			e.printStackTrace();
 			System.exit(1);
