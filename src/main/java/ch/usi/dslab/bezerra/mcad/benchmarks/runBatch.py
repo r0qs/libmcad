@@ -26,7 +26,7 @@ gathererClass="ch.usi.dslab.bezerra.sense.DataGatherer "
     
 '''
 ##########################################
-minClients = 2
+minClients = 1
 maxClients = 50
 incFactor = 1.2
 incParcel = 0
