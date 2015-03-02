@@ -31,7 +31,7 @@ def convertLogs(path) :
             
             # latency
             latency_ns    = latency_ms * 1e3
-            latOneLines.append("%s %s\n" % (fakeTimestamp, latency_ns))
+            latOneLines.append("%s 1 %s\n" % (fakeTimestamp, latency_ns))
             aggregatedLatency += latency_ns
             
             # latency distribution
@@ -53,7 +53,7 @@ def convertLogs(path) :
         latOneFile = open(path + "/latency_conservative_0.log", "w")
         latOneFile.write("# latency conservative 0\n")
         latOneFile.write("# latency (ns)\n")
-        latOneFile.write("# average: 0 %s\n" % (averageLatency))
+        latOneFile.write("# average: 0 0 %s\n" % (averageLatency))
         for line in latOneLines :
             latOneFile.write(line)
         latOneFile.close()
@@ -61,7 +61,7 @@ def convertLogs(path) :
         latAvgFile = open(path + "/latency_conservative_average.log", "w")
         latAvgFile.write("# latency conservative\n")
         latAvgFile.write("# latency (ns)\n")
-        latAvgFile.write("0 %s\n" % (averageLatency))
+        latAvgFile.write("0 0 %s\n" % (averageLatency))
         latAvgFile.close()
         
         sortedBucketRanges = sorted(bucketSet.keys())
