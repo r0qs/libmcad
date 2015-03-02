@@ -35,7 +35,7 @@ def convertLogs(path) :
             aggregatedLatency += latency_ns
             
             # latency distribution
-            bucketRange = int(latency_ns / BUCKET_RANGE_NANO)
+            bucketRange = BUCKET_RANGE_NANO * int(latency_ns / BUCKET_RANGE_NANO)
             if not bucketSet.has_key(bucketRange) :
                 bucketSet[bucketRange] = 0
             bucketSet[bucketRange] += 1
