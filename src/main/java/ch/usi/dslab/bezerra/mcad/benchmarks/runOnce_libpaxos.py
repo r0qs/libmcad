@@ -26,7 +26,7 @@ def create_libpaxos_configfile(filepath, acceptors, proposers, usedisk) :
         cf.write("acceptor-trash-files yes\n")
         if storage == "bdb" :
             cf.write("storage-backend bdb\n")
-            cf.write("bdb-sync yes\n")
+            cf.write("bdb-sync no\n")
             cf.write("bdb-env-path /tmp/acceptor\n")
             cf.write("bdb-db-filename acc.bdb\n")
         elif storage == "lmdb" :
