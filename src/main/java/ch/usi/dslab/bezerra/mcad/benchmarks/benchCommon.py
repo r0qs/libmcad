@@ -87,7 +87,7 @@ latency_estimation_sample = 10
 latency_estimation_devs = 0
 latency_estimation_max = 10
 ridgeDeployer = HOME + "/libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/ridge/RidgeEnsembleNodesDeployer.py"
-ridge_disk_storage_type = "bdb"
+ridge_disk_storage_type = "bdbasync"
 ridge_memory_storage_type = "memory"
 
 # CLIENTS
