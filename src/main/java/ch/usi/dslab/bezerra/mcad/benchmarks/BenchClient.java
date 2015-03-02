@@ -123,6 +123,10 @@ public class BenchClient implements Runnable {
       }
    }
    
+   public boolean experimentTimeHasPassed(long start_ms) {
+      return System.currentTimeMillis() > start_ms + DataGatherer.getDuration();
+   }
+
    public static void main(String[] args) {
 
       checkParameters(args);
@@ -144,12 +148,8 @@ public class BenchClient implements Runnable {
       Thread benchClientThread = new Thread(cli, "BenchClient");
       benchClientThread.start();
       
-      long start = System.currentTimeMillis();
-      long now = start;
-      long end = start + DataGatherer.getDuration();
-      while (now < end) {
+      while (true) {
          cli.sendMessage();
-         now = System.currentTimeMillis();
       }
    }
    

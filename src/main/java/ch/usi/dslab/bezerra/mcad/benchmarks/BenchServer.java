@@ -53,10 +53,7 @@ public class BenchServer {
          this.mcserver = parent;
       }
       public void run() {
-         long now, start, end;
-         now = start = System.currentTimeMillis();
-         end = start + DataGatherer.getDuration();
-         while (now < end) {
+         while (true) {
             ClientMessage consmsg = mcserver.deliverClientMessage();
             int  clientId = consmsg.getSourceClientId();
             long msgSeq   = consmsg.getMessageSequence();
@@ -68,7 +65,6 @@ public class BenchServer {
             OrderVerifier.instance.addConsDelivery(clientId, msgSeq);
             // System.out.println("cons-delivered message " + clientId + "." +
             // msgSeq);
-            now = System.currentTimeMillis();
          }
       }
    }
@@ -79,11 +75,8 @@ public class BenchServer {
          this.mcserver = parent;
       }
       public void run() {
-         long now, start, end;
-         now = start = System.currentTimeMillis();
-         end = start + DataGatherer.getDuration();
          FastMulticastAgent omca = (FastMulticastAgent) mcserver.getMulticastAgent();
-         while (now < end) {
+         while (true) {
             ClientMessage optmsg = (ClientMessage) omca.deliverMessageFast();
             int  clientId = optmsg.getSourceClientId();
             long msgSeq   = optmsg.getMessageSequence();
@@ -94,7 +87,6 @@ public class BenchServer {
                mcserver.sendReply(clientId, reply);
             OrderVerifier.instance.addOptDelivery(clientId, msgSeq);
 //            System.out.println("opt-delivered message " + clientId + "." + msgSeq);
-            now = System.currentTimeMillis();
          }
       }
    }
@@ -105,6 +97,11 @@ public class BenchServer {
       new OrderVerifier(mcserver.getId());
       consDeliverer.start();
       optDeliverer.start();
+   }
+
+   
+   public boolean experimentTimeHasPassed(long start_ms) {
+      return System.currentTimeMillis() > start_ms + DataGatherer.getDuration();
    }
    
    public BenchServer(int serverId, String config) {

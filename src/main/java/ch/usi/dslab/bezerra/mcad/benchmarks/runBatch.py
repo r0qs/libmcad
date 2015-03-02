@@ -22,7 +22,7 @@ gathererClass="ch.usi.dslab.bezerra.sense.DataGatherer "
     - (dic)  configuration
     - (bool) writeToDisk
     
-    order: numClients, config, algorithm, msgSize, writeToDisk
+    order given to alg scrip: numClients, numLearners, numGroups, numPxPerGroup, msgSize, writeToDisk
     
 '''
 ##########################################
