@@ -5,6 +5,6 @@ target/
 .DS_Store
 .pydevproject
 .settings
-
+*pyc
 zookeeper.out
 dependency-reduced-pom.xml
