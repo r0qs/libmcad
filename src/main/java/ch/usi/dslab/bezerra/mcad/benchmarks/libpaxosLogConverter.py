@@ -102,8 +102,8 @@ def convertLogs(path) :
         tpAggFile.close()
 
 # in case this script receives a parameter (a path), run the function for that path
-if len(sys.argv == 1) :
-    print "file %s can be either imported or run with one parameter (path of libpaxos experiment)"
+if len(sys.argv) == 1 :
+    print "file %s can be either imported or run with one parameter (path of libpaxos experiment)" % (sys.argv[0])
 else :
     path = sys.argv[1]
     convertLogs(path)
