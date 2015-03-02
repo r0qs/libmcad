@@ -41,11 +41,11 @@ def convertLogs(path) :
             bucketSet[bucketRange] += 1
             
             # throughput
-            if lastTimestamp == None or timestamp == lastTimestamp :
-                lastTimestamp = timestamp
-                timestampDeliveries += 1
             if lastTimestamp != None and timestamp != lastTimestamp :
                 tpOneLines.append("%s %s %s\n" % (fakeTimestamp, 1000, timestampDeliveries))
+                timestampDeliveries = 0
+            lastTimestamp = timestamp
+            timestampDeliveries += 1
             
         averageLatency = aggregatedLatency / numItems
         averageThroughput = numItems / duration
