@@ -20,6 +20,7 @@ import ch.usi.dslab.bezerra.sense.monitors.ThroughputPassiveMonitor;
 
 public class BenchClient implements Runnable {
    
+   int clientId;
    MulticastClient mcclient;
    AtomicInteger nextGroup = new AtomicInteger();
    AtomicLong nextMsgId = new AtomicLong();
@@ -31,7 +32,10 @@ public class BenchClient implements Runnable {
    int msgSize;
    Semaphore permits;
    
-   public  BenchClient (int clientId, String configFile, int msgSize, int numPermits) {
+   public BenchClient(){}
+   
+   public BenchClient (int clientId, String configFile, int msgSize, int numPermits) {
+      this.clientId = clientId;
       ClientMessage.setGlobalClientId(clientId);
       this.msgSize = msgSize;
       mcclient = MulticastClientServerFactory.getClient(clientId, configFile);
@@ -59,8 +63,16 @@ public class BenchClient implements Runnable {
       return permits.availablePermits();
    }
    
-   void addSendPermit() {      
-      permits.release();
+   void addSendPermit() {
+      addSendPermit(1);
+   }
+   
+   void addSendPermit(int n) {
+      permits.release(n);
+   }
+   
+   int getNumSendPermits() {
+      return permits.availablePermits();
    }
    
    void sendMessage() {
@@ -85,10 +97,7 @@ public class BenchClient implements Runnable {
    
    @Override
    public void run() {
-      long start = System.currentTimeMillis();
-      long now = start;
-      long end = start + DataGatherer.getDuration();
-      while (now < end) {
+      while (true) {
          Message reply      = mcclient.deliverReply();
          long    reqId      = (Long) reply.getItem(0);
          boolean optimistic = (Boolean) reply.getItem(1);
@@ -100,7 +109,6 @@ public class BenchClient implements Runnable {
             optTPMonitor.incrementCount();
             optLatMonitor.logLatency(sendTime, recvTime);
             optLatDistMonitor.logLatencyForDistribution(sendTime, recvTime);
-//            System.out.println("opt-reply for message " + reqId);
          }
          else {
             addSendPermit();
@@ -109,10 +117,7 @@ public class BenchClient implements Runnable {
             consTPMonitor.incrementCount();
             consLatMonitor.logLatency(sendTime, recvTime);
             consLatDistMonitor.logLatencyForDistribution(sendTime, recvTime);
-//            System.out.println("cons-reply for message " + reqId);
          }
-         
-         now = System.currentTimeMillis();
       }
    }
    

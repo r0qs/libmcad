@@ -64,6 +64,7 @@ libmcadjar = HOME + "/libmcad/target/libmcad-git.jar"
 javaCommand = "java -XX:+UseParallelGC"
 benchServerClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer"
 benchClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient"
+dynamicClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.DynamicBenchClient"
 benchDuration = 60
 
 # batching parameters
@@ -99,6 +100,7 @@ clientDeployer = HOME + "/libmcad/benchLink/deployTestRunners.py"
 # MONITORING
 gathererDeployer = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/deployGatherer.py"
 javaGathererClass = "ch.usi.dslab.bezerra.sense.DataGatherer"
+javaDynamicGathererClass = "ch.usi.dslab.bezerra.mcad.benchmarks.DynamicGathererClass"
 javaBWMonitorClass = "ch.usi.dslab.bezerra.sense.monitors.BWMonitor"
 javaCPUMonitorClass = "ch.usi.dslab.bezerra.sense.monitors.CPUMonitor"
 clilogdirRidge = "/tmp/client_log_ridge"
