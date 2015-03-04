@@ -109,7 +109,7 @@ public class DynamicBenchGatherer {
    }
    
    public void saveThroughputPlot() {
-      final long INTERVAL_MS = 100; // milliseconds
+      final long INTERVAL_MS = 1000; // milliseconds
       try {
          BenchmarkEventList toPlot = new BenchmarkEventList(merged);
          Path dataPath = Paths.get(logDirectory, "dynamicThroughputData.log");
@@ -122,7 +122,7 @@ public class DynamicBenchGatherer {
             if (lastTS == 0l) lastTS = ev.getTimestamp();
             if (ev.getType() == EventInfo.GLOBAL_PERMIT_EVENT) {
                GlobalPermitEvent gpev = (GlobalPermitEvent) ev;
-               label = String.format(" %d", gpev.allPermits);
+               label = String.format("%d", gpev.allPermits);
             }
             else {
                MessageCountEvent mcev = (MessageCountEvent) ev;
