@@ -109,7 +109,7 @@ public class DynamicBenchGatherer {
    }
    
    public void saveThroughputPlot() {
-      final long INTERVAL_MS = 1000; // milliseconds
+      final long INTERVAL_MS = 5000; // milliseconds
       long start = 0;
       try {
          BenchmarkEventList toPlot = new BenchmarkEventList(merged);
