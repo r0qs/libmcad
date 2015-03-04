@@ -7,7 +7,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.EventInfo;
 import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.GlobalPermitEvent;
@@ -19,6 +22,26 @@ import ch.usi.dslab.bezerra.netwrapper.tcp.TCPMessage;
 import ch.usi.dslab.bezerra.netwrapper.tcp.TCPReceiver;
 
 public class DynamicBenchGatherer {
+   
+   public static class CliPermits {
+      Map<Integer, AtomicInteger> cliPermits = new HashMap<Integer, AtomicInteger>();
+      public void setPermits(int cid, int num) {
+         AtomicInteger cliPerms = cliPermits.get(cid);
+         if (cliPerms == null) {
+            cliPerms = new AtomicInteger(0);
+            cliPermits.put (cid, cliPerms);
+         }
+         cliPerms.set(num);
+      }
+      public int getGlobalPermits() {
+         int total = 0;
+         for (AtomicInteger cp : cliPermits.values()) {
+            total += cp.get();
+         }
+         return total;
+      }
+   }
+   
    int expectedLogs;
    int port;
    TCPReceiver receiver;
@@ -49,17 +72,18 @@ public class DynamicBenchGatherer {
    }
    
    public void merge() {
+      CliPermits cp = new CliPermits();
       BenchmarkEventList aggregated = new BenchmarkEventList();
       merged = new BenchmarkEventList();
-      int globalNumPermits = 0;
       for (BenchmarkEventList individualList : allLists)
          aggregated.Merge(individualList);
       while(aggregated.isEmpty() == false) {
          EventInfo ev = aggregated.takeNextEvent();
          if (ev.getType() == EventInfo.PERMIT_EVENT) {
             PermitEvent pev = (PermitEvent) ev;
-            globalNumPermits += pev.newNumberOfPermits;
-            GlobalPermitEvent gpev = new GlobalPermitEvent(pev.timestamp, pev.clientId, pev.newNumberOfPermits, globalNumPermits);
+            int id = pev.clientId;
+            cp.setPermits(id, pev.newNumberOfPermits);
+            GlobalPermitEvent gpev = new GlobalPermitEvent(pev.timestamp, pev.clientId, pev.newNumberOfPermits, cp.getGlobalPermits());
             merged.addEvent(gpev);
          }
          else {
