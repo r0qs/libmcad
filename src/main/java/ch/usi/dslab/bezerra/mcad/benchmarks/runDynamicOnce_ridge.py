@@ -89,9 +89,9 @@ while remainingClients > 0 :
 
  
 # DynamicBenchGatherer:
-# int numDynamicClients = Integer.parseInt(args[0]);
-# int port = Integer.parseInt(args[1]);
-# String directory = args[2];
+# args[0] : numDynamicClients
+# args[1] : port
+# args[2] : directory
 
 # numClients * numPermits as "load"/as "numClients"?
 javagatherercmd = "%s -cp %s %s %s %s %s" % (javaCommand, libmcadjar, javaDynamicGathererClass, numGroups, gathererPort, logdir)
