@@ -35,7 +35,9 @@ public class DynamicBenchGatherer {
       Codec gzip = new CodecGzip();
       while (expectedLogs > 0) {
          TCPMessage tcpmsg = receiver.receive();
-         byte[] bytes = (byte[]) tcpmsg.getContents().getItem(0);
+         Object v0 = tcpmsg.getContents().getItem(0);
+         if (v0 instanceof Boolean) continue;
+         byte[] bytes = (byte[]) v0;
          BenchmarkEventList bel = (BenchmarkEventList) (gzip.createObjectFromBytes(bytes));
          allLists.add(bel);
          expectedLogs--;
