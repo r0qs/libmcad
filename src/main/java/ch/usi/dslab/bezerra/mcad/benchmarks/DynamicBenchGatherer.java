@@ -125,9 +125,13 @@ public class DynamicBenchGatherer {
       DynamicBenchGatherer dbg = new DynamicBenchGatherer(numDynamicClients, port, directory);
       
       dbg.receive();
+      System.out.println("DynamicBenchGatherer received all logs. Merging...");
       dbg.merge();
+      System.out.println("DynamicBenchGatherer merged all logs. Saving to file...");
       dbg.saveMergedEventLog();
+      System.out.println("DynamicBenchGatherer saved merged log to file. Creating throughput file...");
       dbg.saveThroughputPlot();
+      System.out.println("DynamicBenchGatherer done.");
    }
 
 }
