@@ -110,6 +110,7 @@ public class DynamicBenchGatherer {
    
    public void saveThroughputPlot() {
       final long INTERVAL_MS = 1000; // milliseconds
+      long start = 0;
       try {
          BenchmarkEventList toPlot = new BenchmarkEventList(merged);
          Path dataPath = Paths.get(logDirectory, "dynamicThroughputData.log");
@@ -119,7 +120,10 @@ public class DynamicBenchGatherer {
          double currentIntervalDeliveries = 0;
          while (toPlot.isEmpty() == false) {
             EventInfo ev = toPlot.takeNextEvent();
-            if (lastTS == 0l) lastTS = ev.getTimestamp();
+            if (lastTS == 0l) {
+               lastTS = ev.getTimestamp();
+               start = ev.getTimestamp();
+            }
             if (ev.getType() == EventInfo.GLOBAL_PERMIT_EVENT) {
                GlobalPermitEvent gpev = (GlobalPermitEvent) ev;
                label = String.format("%d", gpev.allPermits);
@@ -129,7 +133,7 @@ public class DynamicBenchGatherer {
                currentIntervalDeliveries += mcev.getMessageCount();
                if (ev.getTimestamp() > lastTS + INTERVAL_MS) {
                   double throughput = currentIntervalDeliveries / (ev.getTimestamp() - lastTS);
-                  String fileLine = String.format("%d %f \"%s\"\n", ev.getTimestamp(), throughput, label);
+                  String fileLine = String.format("%f %f \"%s\"\n", (ev.getTimestamp() - start)/(1000d), throughput, label);
                   writer.write(fileLine);
                   label = "";
                   currentIntervalDeliveries = 0;
