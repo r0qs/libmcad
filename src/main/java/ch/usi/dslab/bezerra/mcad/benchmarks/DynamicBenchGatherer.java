@@ -91,8 +91,8 @@ public class DynamicBenchGatherer {
          Path dataPath = Paths.get(logDirectory, "dynamicThroughputData.log");
          BufferedWriter writer = Files.newBufferedWriter(dataPath, StandardCharsets.UTF_8);
          String label = "";
-         long lastTS = 0l;
-         double currentIntervalDeliveries = 0d;
+         long lastTS = 0;
+         double currentIntervalDeliveries = 0;
          while (toPlot.isEmpty() == false) {
             EventInfo ev = toPlot.takeNextEvent();
             if (lastTS == 0l) lastTS = ev.getTimestamp();
@@ -103,7 +103,7 @@ public class DynamicBenchGatherer {
             else {
                MessageCountEvent mcev = (MessageCountEvent) ev;
                currentIntervalDeliveries += mcev.getMessageCount();
-               if (ev.getTimestamp() - lastTS > INTERVAL_MS) {
+               if (ev.getTimestamp() > lastTS + INTERVAL_MS) {
                   double throughput = currentIntervalDeliveries / (ev.getTimestamp() - lastTS);
                   String fileLine = String.format("%d %f %s\n", ev.getTimestamp(), throughput, label);
                   writer.write(fileLine);
@@ -113,6 +113,7 @@ public class DynamicBenchGatherer {
                }
             }
          }
+         writer.close();
       }
       catch (IOException e) {
          e.printStackTrace();
