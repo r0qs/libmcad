@@ -85,6 +85,7 @@ public class DynamicBenchClient extends BenchClient {
    }
    
    public DynamicBenchClient(int clientId, String configFile, int msgSize, long durationMS, int initialLoad, int finalLoad, String gathererHost, int gathererPort) {
+      this.clientId = clientId;
       ClientMessage.setGlobalClientId(clientId);
       this.msgSize = msgSize;
       mcclient = MulticastClientServerFactory.getClient(clientId, configFile);
