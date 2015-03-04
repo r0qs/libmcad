@@ -102,7 +102,7 @@ public class DynamicBenchGatherer {
                currentIntervalDeliveries += mcev.getMessageCount();
                if (ev.getTimestamp() - lastTS > INTERVAL_MS) {
                   double throughput = currentIntervalDeliveries / (ev.getTimestamp() - lastTS);
-                  String fileLine = String.format("%d %d %s\n", ev.getTimestamp(), throughput, label);
+                  String fileLine = String.format("%d %f %s\n", ev.getTimestamp(), throughput, label);
                   writer.write(fileLine);
                   label = "";
                   currentIntervalDeliveries = 0;
