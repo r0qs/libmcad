@@ -34,7 +34,7 @@ finalLoadPerClient   = 100
 
 
 ################################################################################
-logdir = get_logdir("ridge", "dynamic", numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+logdir = get_logdir_load("ridge", "dynamic", numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
 print logdir
 clean_ridge_log(logdir)
 
@@ -76,7 +76,7 @@ remainingClients = numGroups
 clientNodes = sysConfig.remaining_nodes
 while remainingClients > 0 :
     for clinode in clientNodes :
-        javaclientcmd = "%s -cp %s %s %s %s %s %s %s %s %s" % (javaCommand,       \
+        javaclientcmd = "%s -cp %s %s %s %s %s %s %s %s %s %s" % (javaCommand,       \
              libmcadjar,            dynamicClientClass,   clientId,               \
              ensemblesConfigPath,   messageSize,          sysConfig.gathererNode, \
              gathererPort,          benchDuration,        initialLoadPerClient,   \

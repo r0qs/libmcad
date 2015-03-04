@@ -46,8 +46,11 @@ class NodePool:
 # ============================
 
 def get_logdir(algorithm, numClients, numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk):
+    return get_logdir_load(algorithm, algorithm, int(numClients) * int(numPermits), numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+
+def get_logdir_load(algorithm, load, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk):
     dirpath = logdir + "/%s/%s_%s_clients_%s_learners_%s_groups_%s_pxpergroup_%s_bytes_diskwrite_%s" % \
-                (algorithm, algorithm, int(numClients) * int(numPermits), numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+                (algorithm, algorithm, load, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
     localcmd("mkdir -p " + dirpath)
     return dirpath
 
@@ -100,7 +103,7 @@ clientDeployer = HOME + "/libmcad/benchLink/deployTestRunners.py"
 # MONITORING
 gathererDeployer = HOME + "/chirper/src/main/java/ch/usi/dslab/bezerra/chirper/benchmarks/deployGatherer.py"
 javaGathererClass = "ch.usi.dslab.bezerra.sense.DataGatherer"
-javaDynamicGathererClass = "ch.usi.dslab.bezerra.mcad.benchmarks.DynamicGathererClass"
+javaDynamicGathererClass = "ch.usi.dslab.bezerra.mcad.benchmarks.DynamicBenchGatherer"
 javaBWMonitorClass = "ch.usi.dslab.bezerra.sense.monitors.BWMonitor"
 javaCPUMonitorClass = "ch.usi.dslab.bezerra.sense.monitors.CPUMonitor"
 clilogdirRidge = "/tmp/client_log_ridge"
