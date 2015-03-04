@@ -20,6 +20,7 @@ import ch.usi.dslab.bezerra.netwrapper.tcp.TCPReceiver;
 
 public class DynamicBenchGatherer {
    int expectedLogs;
+   int port;
    TCPReceiver receiver;
    List<BenchmarkEventList> allLists;
    BenchmarkEventList merged;
@@ -27,13 +28,14 @@ public class DynamicBenchGatherer {
    
    public DynamicBenchGatherer(int numClients, int port, String logDir) {
       expectedLogs = numClients;
-      receiver = new TCPReceiver(port);
+      this.port = port;
       logDirectory = logDir;
       allLists = new ArrayList<BenchmarkEventList>();
    }
    
    public void receive() {
       Codec gzip = new CodecGzip();
+      receiver = new TCPReceiver(port);
       while (expectedLogs > 0) {
          TCPMessage tcpmsg = receiver.receive();
          Object v0 = tcpmsg.getContents().getItem(0);
@@ -43,6 +45,7 @@ public class DynamicBenchGatherer {
          allLists.add(bel);
          expectedLogs--;
       }
+      receiver.stop();
    }
    
    public void merge() {
