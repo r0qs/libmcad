@@ -48,7 +48,9 @@ public class DynamicBenchClient extends BenchClient {
             }
             long now = System.currentTimeMillis();
             long elapsedTime = now - startTime;
-            int expectedPermits = (int) (Math.round(((double) elapsedTime / (double) client.durationMS)) * (double) client.finalLoad);
+            double elapsedFraction = elapsedTime / (double) client.durationMS;
+            int expectedPermits = (int) (Math.round(elapsedFraction * (client.finalLoad - client.initialLoad)) + client.initialLoad);
+            
             if (expectedPermits > currentPermits) {
                client.addSendPermit(expectedPermits - currentPermits);
                currentPermits = expectedPermits;
