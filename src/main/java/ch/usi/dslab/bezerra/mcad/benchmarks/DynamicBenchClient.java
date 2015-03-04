@@ -61,7 +61,8 @@ public class DynamicBenchClient extends BenchClient {
    public static class LogSender implements Runnable {
       DynamicBenchClient client;
       long duration;
-      public LogSender(long duration) {
+      public LogSender(DynamicBenchClient client, long duration) {
+         this.client   = client;
          this.duration = duration;
       }
       public void run() {
@@ -137,7 +138,7 @@ public class DynamicBenchClient extends BenchClient {
    public void execute() {
       clientThread        = new Thread(this, "DynamicBenchClient");
       loadIncreaserThread = new Thread(new LoadIncreaser(this), "LoadIncreaser");
-      logSenderThread     = new Thread(new LogSender(durationMS));
+      logSenderThread     = new Thread(new LogSender(this, durationMS), "LogSender");
       clientThread       .start();
       loadIncreaserThread.start();
       logSenderThread    .start();
