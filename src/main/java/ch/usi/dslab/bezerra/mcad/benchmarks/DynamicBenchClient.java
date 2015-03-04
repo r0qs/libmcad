@@ -87,7 +87,7 @@ public class DynamicBenchClient extends BenchClient {
       mcclient = MulticastClientServerFactory.getClient(clientId, configFile);
       mcclient.connectToOneServerPerPartition();
 
-      System.out.println(String.format("Creating dynamic client %d with function (%d s, p0 %d, pf %d)", clientId, durationMS, initialLoad, finalLoad));
+      System.out.println(String.format("Creating dynamic client %d with function (%d s, p0 %d, pf %d)", clientId, durationMS/1000, initialLoad, finalLoad));
       permits = new Semaphore(initialLoad);
       this.durationMS  = durationMS;
       this.initialLoad = initialLoad;
