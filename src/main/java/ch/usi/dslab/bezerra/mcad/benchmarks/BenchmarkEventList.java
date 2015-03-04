@@ -6,27 +6,32 @@ import java.util.PriorityQueue;
 public class BenchmarkEventList implements Serializable {
    
    public static interface EventInfo extends Serializable, Comparable<EventInfo> {
-      public static final byte       MESSAGE_EVENT = 0;
+      public static final byte       MESSAGES_EVENT = 0;
       public static final byte        PERMIT_EVENT = 1;
       public static final byte GLOBAL_PERMIT_EVENT = 2;
       byte getType();
       long getTimestamp();
    }
    
-   public static class MessageEvent implements EventInfo {
+   public static class MessageCountEvent implements EventInfo {
       private static final long serialVersionUID = 1L;
       long timestamp;
-      long latency;
-      public MessageEvent(long ts, long lat) {
+      double averageLatency;
+      long messageCount;
+      public MessageCountEvent(long ts, double latAvg, long mc) {
          timestamp = ts;
-         latency = lat;
+         averageLatency = latAvg;
+         messageCount = mc;
       }
       public byte getType() {
-         return MESSAGE_EVENT;
+         return MESSAGES_EVENT;
       }
       @Override
       public long getTimestamp() {
          return timestamp;
+      }
+      public long getMessageCount() {
+         return messageCount;
       }
       @Override
       public int compareTo(EventInfo o) {
@@ -39,7 +44,7 @@ public class BenchmarkEventList implements Serializable {
       }
       @Override
       public String toString() {
-         return String.format("%d M %d", timestamp, latency);
+         return String.format("%d M %f %d", timestamp, averageLatency, messageCount);
       }
    }
    

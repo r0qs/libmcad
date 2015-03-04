@@ -12,6 +12,7 @@ import java.util.List;
 import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.EventInfo;
 import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.GlobalPermitEvent;
 import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.PermitEvent;
+import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.MessageCountEvent;
 import ch.usi.dslab.bezerra.netwrapper.codecs.Codec;
 import ch.usi.dslab.bezerra.netwrapper.codecs.CodecGzip;
 import ch.usi.dslab.bezerra.netwrapper.tcp.TCPMessage;
@@ -81,7 +82,7 @@ public class DynamicBenchGatherer {
    }
    
    public void saveThroughputPlot() {
-      final long INTERVAL = 100000L; // nanoseconds
+      final long INTERVAL_MS = 100; // milliseconds
       try {
          BenchmarkEventList toPlot = new BenchmarkEventList(merged);
          Path dataPath = Paths.get(logDirectory, "dynamicThroughputData.log");
@@ -97,9 +98,9 @@ public class DynamicBenchGatherer {
                label = String.format(" %d", gpev.allPermits);
             }
             else {
-               // update throughput
-               currentIntervalDeliveries += 1;
-               if (ev.getTimestamp() - lastTS > INTERVAL) {
+               MessageCountEvent mcev = (MessageCountEvent) ev;
+               currentIntervalDeliveries += mcev.getMessageCount();
+               if (ev.getTimestamp() - lastTS > INTERVAL_MS) {
                   double throughput = currentIntervalDeliveries / (ev.getTimestamp() - lastTS);
                   String fileLine = String.format("%d %d %s\n", ev.getTimestamp(), throughput, label);
                   writer.write(fileLine);

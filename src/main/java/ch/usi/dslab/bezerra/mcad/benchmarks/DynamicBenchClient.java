@@ -10,8 +10,8 @@ import java.util.concurrent.Semaphore;
 import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
-import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.MessageEvent;
 import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.PermitEvent;
+import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.MessageCountEvent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.netwrapper.codecs.Codec;
 import ch.usi.dslab.bezerra.netwrapper.codecs.CodecGzip;
@@ -99,6 +99,10 @@ public class DynamicBenchClient extends BenchClient {
    
    @Override
    public void run() {
+      long currentIntervalMessageCount = 0;
+      long lastEventTime = System.currentTimeMillis();
+      long INTERVAL_MS = 10;
+      double latencyAgg = 0;
       while (true) {
          Message reply      = mcclient.deliverReply();
          long    reqId      = (Long) reply.getItem(0);
@@ -110,10 +114,19 @@ public class DynamicBenchClient extends BenchClient {
          }
          else {
             addSendPermit();
+            long now = System.currentTimeMillis();
             long sendTime = sendTimes.remove(reqId);
             long recvTime = nowNano;
             long latencyNano = recvTime - sendTime;
-            eventList.addEvent(new MessageEvent(nowMilli, latencyNano));
+            latencyAgg += latencyNano;
+            currentIntervalMessageCount++;
+            if (now > lastEventTime + INTERVAL_MS) {
+               double latencyAvg = latencyAgg / currentIntervalMessageCount;
+               eventList.addEvent(new MessageCountEvent(nowMilli, latencyAvg, currentIntervalMessageCount));
+               latencyAgg = 0;
+               currentIntervalMessageCount = 0;
+               lastEventTime = now;
+            }
          }
       }
    }
