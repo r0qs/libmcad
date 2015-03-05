@@ -77,7 +77,7 @@ while remainingClients > 0 :
     for clinode in clientNodes :
         javaclientcmd = "%s -cp %s %s %s %s %s %s %s %s %s" % (javaCommand,
              libmcadjar,             benchClientClass,   clientId,    \
-             ensemblesConfigPath,    messageSize,        numPermits,  \
+             ensemblesConfigPath,    messageSize,        numGroups,  \
              sysConfig.gathererNode, gathererPort,       benchDuration)
         sshcmdbg(clinode, javaclientcmd)
         clientId += 1
