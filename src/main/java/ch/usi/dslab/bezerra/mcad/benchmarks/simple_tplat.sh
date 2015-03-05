@@ -23,6 +23,7 @@ set title "Throughput and latency" #offset 0,-0.5
 set xlabel "Load (clients)"
 set ylabel "Throughput (Mbps)"
 set y2label "Latency (ms)"
+set y2tics
 
 set output "$output"
 
