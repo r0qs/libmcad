@@ -54,6 +54,7 @@ def saveToFile(filepath, pointlist) :
     f.close()
 
 def plot(dirPath,msgSize) :
+    print "Plotting in directory %s" % dirPath
     os.system("%s %s %s"   % (gnuplot_script_sh_path,dirPath,msgSize))
 #     os.system("%s %s %s &" % (gnuplot_script_sh_path,dirPath,msgSize))
 ####################################################################################################
