@@ -127,7 +127,7 @@ public class DynamicBenchGatherer {
             }
             else {
                MessageCountEvent mcev = (MessageCountEvent) ev;
-               String throughputLine = String.format("%d %d %f\n", ev.getTimestamp(), mcev.getInterval(), mcev.getThroughput());
+               String throughputLine = String.format("%d %d %f\n", relativeTimestamp, mcev.getInterval(), mcev.getThroughput());
                lastThroughput = mcev.getThroughput();
                tpWriter.write(throughputLine);
             }
