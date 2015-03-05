@@ -26,8 +26,10 @@ set title "Throughput throughout execution" #offset 0,-0.5
 #set style fill solid border -1
 #set boxwidth 0.75
 
-set xlabel "Time (ms)"
+set xlabel "Time (s)"
 set ylabel "Throughput (mps)"
+
+unset xtics
 
 #set yrange [0:$latrange]
 
@@ -63,8 +65,9 @@ set output "$output"
 # "10kb, 4P"
 # "10kb, 8P"
 
-plot "$input" using 1:2 with labels 3
+plot "$input" using 1:2:3 with labels, "" using 1:2 with lines
 
 END_GNUPLOT
 
-pstopdf $output ; rm $output
+pstopdf $output
+#rm $output
