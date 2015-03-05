@@ -104,7 +104,7 @@ public class DynamicBenchClient extends BenchClient {
    public void run() {
       long currentIntervalMessageCount = 0;
       long lastEventTime = System.currentTimeMillis();
-      long INTERVAL_MS = 1000;
+      long INTERVAL_MS = 10000;
       double latencyAgg = 0;
       while (true) {
          Message reply      = mcclient.deliverReply();
