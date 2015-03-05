@@ -41,6 +41,9 @@ public class BenchmarkEventList implements Serializable {
       public double getThroughput() {
          return messageCount / (double) interval_ms;
       }
+      public double getAverageLatency() {
+         return averageLatency;
+      }
       @Override
       public int compareTo(EventInfo o) {
          if (this.timestamp < o.getTimestamp())

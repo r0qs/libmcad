@@ -29,6 +29,7 @@ set title "Throughput throughout execution" #offset 0,-0.5
 
 set xlabel "Time (s)"
 set ylabel "Throughput (mps)"
+set y2label "Latency (ms)"
 
 #set yrange [0:$latrange]
 
@@ -64,7 +65,9 @@ set output "$output"
 # "10kb, 4P"
 # "10kb, 8P"
 
-plot "$tpinput" using 1:3 with lines title "throughput", "$loadinput" using 1:2:3 with labels title "load"
+plot "$tpinput"   using 1:3   with lines  title "throughput", \
+     "$loadinput" using 1:2:3 with labels title "load"      , \
+     "$tpinput"   using 1:($4/1e6) with lines title "latency" axes x1y2
 
 END_GNUPLOT
 
