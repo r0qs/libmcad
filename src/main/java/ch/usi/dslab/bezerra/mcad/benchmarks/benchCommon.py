@@ -46,7 +46,7 @@ class NodePool:
 # ============================
 
 def get_logdir(algorithm, numClients, numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk):
-    return get_logdir_load(algorithm, algorithm, int(numClients) * int(numPermits), numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+    return get_logdir_load(algorithm, int(numClients) * int(numPermits), numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
 
 def get_logdir_load(algorithm, load, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk):
     dirpath = logdir + "/%s/%s_%s_clients_%s_learners_%s_groups_%s_pxpergroup_%s_bytes_diskwrite_%s" % \
