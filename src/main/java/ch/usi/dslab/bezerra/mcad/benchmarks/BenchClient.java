@@ -20,17 +20,17 @@ import ch.usi.dslab.bezerra.sense.monitors.ThroughputPassiveMonitor;
 
 public class BenchClient implements Runnable {
    
-   int clientId;
-   MulticastClient mcclient;
-   AtomicInteger nextGroup = new AtomicInteger();
+   protected int clientId;
+   protected MulticastClient mcclient;
+   protected AtomicInteger nextGroup = new AtomicInteger();
    AtomicLong nextMsgId = new AtomicLong();
    Map<Long, Long> optimisticStarts    = new ConcurrentHashMap<Long, Long>();
    Map<Long, Long> conservativeStarts  = new ConcurrentHashMap<Long, Long>();
    ThroughputPassiveMonitor optTPMonitor , consTPMonitor ;
    LatencyPassiveMonitor    optLatMonitor, consLatMonitor;
    LatencyDistributionPassiveMonitor  optLatDistMonitor, consLatDistMonitor;
-   int msgSize;
-   Semaphore permits;
+   protected int msgSize;
+   protected Semaphore permits;
    
    public BenchClient(){}
    
@@ -58,24 +58,24 @@ public class BenchClient implements Runnable {
       permits = new Semaphore(numPermits);
    }
 
-   int getSendPermit() {
+   protected int getSendPermit() {
       permits.acquireUninterruptibly();
       return permits.availablePermits();
    }
    
-   void addSendPermit() {
+   protected void addSendPermit() {
       addSendPermit(1);
    }
    
-   void addSendPermit(int n) {
+   public void addSendPermit(int n) {
       permits.release(n);
    }
    
-   int getNumSendPermits() {
+   public int getNumSendPermits() {
       return permits.availablePermits();
    }
    
-   void sendMessage() {
+   protected void sendMessage() {
       /* int num = */ getSendPermit();
 //      System.out.println("permits: " + num);
       ClientMessage msg = new ClientMessage(new byte[msgSize]);

@@ -1,4 +1,4 @@
-package ch.usi.dslab.bezerra.mcad.benchmarks;
+package ch.usi.dslab.bezerra.mcad.benchmarks.dynamicload;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,8 +10,9 @@ import java.util.concurrent.Semaphore;
 import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
-import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.PermitEvent;
-import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.MessageCountEvent;
+import ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient;
+import ch.usi.dslab.bezerra.mcad.benchmarks.dynamicload.BenchmarkEventList.MessageCountEvent;
+import ch.usi.dslab.bezerra.mcad.benchmarks.dynamicload.BenchmarkEventList.PermitEvent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.netwrapper.codecs.Codec;
 import ch.usi.dslab.bezerra.netwrapper.codecs.CodecGzip;
@@ -133,7 +134,7 @@ public class DynamicBenchClient extends BenchClient {
       }
    }
    
-   void sendMessage() {
+   protected void sendMessage() {
       getSendPermit();
       ClientMessage msg = new ClientMessage(new byte[msgSize]);
       

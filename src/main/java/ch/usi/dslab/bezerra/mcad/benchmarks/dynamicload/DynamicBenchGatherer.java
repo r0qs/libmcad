@@ -1,4 +1,4 @@
-package ch.usi.dslab.bezerra.mcad.benchmarks;
+package ch.usi.dslab.bezerra.mcad.benchmarks.dynamicload;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.EventInfo;
-import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.GlobalPermitEvent;
-import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.PermitEvent;
-import ch.usi.dslab.bezerra.mcad.benchmarks.BenchmarkEventList.MessageCountEvent;
+import ch.usi.dslab.bezerra.mcad.benchmarks.dynamicload.BenchmarkEventList.EventInfo;
+import ch.usi.dslab.bezerra.mcad.benchmarks.dynamicload.BenchmarkEventList.GlobalPermitEvent;
+import ch.usi.dslab.bezerra.mcad.benchmarks.dynamicload.BenchmarkEventList.MessageCountEvent;
+import ch.usi.dslab.bezerra.mcad.benchmarks.dynamicload.BenchmarkEventList.PermitEvent;
 import ch.usi.dslab.bezerra.netwrapper.codecs.Codec;
 import ch.usi.dslab.bezerra.netwrapper.codecs.CodecGzip;
 import ch.usi.dslab.bezerra.netwrapper.tcp.TCPMessage;

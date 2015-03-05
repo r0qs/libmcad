@@ -1,4 +1,4 @@
-package ch.usi.dslab.bezerra.mcad.benchmarks;
+package ch.usi.dslab.bezerra.mcad.benchmarks.dynamicload;
 
 import java.io.Serializable;
 import java.util.PriorityQueue;
