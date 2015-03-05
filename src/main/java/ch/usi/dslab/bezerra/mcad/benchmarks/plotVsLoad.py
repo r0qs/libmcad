@@ -1,6 +1,9 @@
 #!/usr/bin/python
 
-import glob, os, re
+import glob, os, re, sys
+from benchCommon import *
+
+gnuplot_script_sh_path=HOME + "/libmcad/benchLink/simple_tplat.sh"
 
 ####################################################################################################
 # functions
@@ -16,6 +19,7 @@ def getAllValsFromDirs(pattern, position) :
     allVals = []
     alldirs = glob.glob(pattern)
     for d in alldirs :
+        if "overall" in d : continue
         val = ds(d, position)
         add(allVals, val)
     return sorted(allVals)
@@ -48,6 +52,10 @@ def saveToFile(filepath, pointlist) :
     for p in pointlist :
         f.write("%s %s\n" % p)
     f.close()
+
+def plot(dirPath,msgSize) :
+    os.system("%s %s %s"   % (gnuplot_script_sh_path,dirPath,msgSize))
+#     os.system("%s %s %s &" % (gnuplot_script_sh_path,dirPath,msgSize))
 ####################################################################################################
 ####################################################################################################
 
@@ -56,6 +64,10 @@ def saveToFile(filepath, pointlist) :
 ####################################################################################################
 # main code
 ####################################################################################################
+doPlotting = False
+if len(sys.argv) > 1 :
+    doPlotting = sys.argv[1] in ["True","true","T","t","1"]
+
 # libpaxos_10_clients_16_learners_1_groups_1_pxpergroup_140_bytes_diskwrite_False
 alldirs = "*_clients_*learners*groups*pxpergroup*"
 
@@ -90,3 +102,5 @@ for alg in all_algs :
                             os.makedirs(overall_dir_name)
                         saveToFile(overall_latency_file,    allLatencies)
                         saveToFile(overall_throughput_file, allThroughputs)
+                        if doPlotting :
+                            plot(overall_dir_name, size)

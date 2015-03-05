@@ -71,7 +71,9 @@ for writeToDisk in diskConfigs :
                 for numLearners in numsLearners :
                     numClients = minClients
                     while numClients <= maxClients :
-                        if skips > 0 :
+                        if groupConfig[groups] > numLearners :
+                            print "Not running with less learners than groups"
+                        elif skips > 0 :
                             print("SKIPPING run %s with %s clients, with %s multicast groups (%s Paxos groups each), message size %s bytes, useDisk is %s" % \
                                   (algorithm, numClients, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
                             skips -= 1
