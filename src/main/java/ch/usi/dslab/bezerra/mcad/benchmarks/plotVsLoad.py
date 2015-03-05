@@ -88,6 +88,8 @@ for alg in all_algs :
                         overall_dir_name = "overall_" + getDirectoryPattern(alg, "all", learners, groups, pxpg, size, wdisk)
                         dirpattern = getDirectoryPattern(alg, "*", learners, groups, pxpg, size, wdisk)
                         clis = sorted([int(v) for v in getAllValsFromDirs(dirpattern, 1)])
+                        if len(clis) == 0 :
+                            continue
                         allLatencies   = []
                         allThroughputs = []
                         for cli in clis :
