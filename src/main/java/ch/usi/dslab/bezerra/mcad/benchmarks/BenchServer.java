@@ -75,6 +75,10 @@ public class BenchServer {
          this.mcserver = parent;
       }
       public void run() {
+         if ((mcserver.getMulticastAgent() instanceof FastMulticastAgent) == false) {
+            System.err.println("Provided MulticastAgent does not implement FastMulticastAgent");
+            return;
+         }
          FastMulticastAgent omca = (FastMulticastAgent) mcserver.getMulticastAgent();
          while (true) {
             ClientMessage optmsg = (ClientMessage) omca.deliverMessageFast();
