@@ -18,10 +18,12 @@ public class BenchmarkEventList implements Serializable {
       long timestamp;
       double averageLatency;
       long messageCount;
-      public MessageCountEvent(long ts, double latAvg, long mc) {
+      long interval_ms;
+      public MessageCountEvent(long ts, double latAvg, long interval_milli, long mc) {
          timestamp = ts;
          averageLatency = latAvg;
          messageCount = mc;
+         interval_ms = interval_milli;
       }
       public byte getType() {
          return MESSAGES_EVENT;
@@ -32,6 +34,12 @@ public class BenchmarkEventList implements Serializable {
       }
       public long getMessageCount() {
          return messageCount;
+      }
+      public long getInterval() {
+         return interval_ms;
+      }
+      public double getThroughput() {
+         return messageCount / (double) interval_ms;
       }
       @Override
       public int compareTo(EventInfo o) {
@@ -44,7 +52,7 @@ public class BenchmarkEventList implements Serializable {
       }
       @Override
       public String toString() {
-         return String.format("%d M %f %d", timestamp, averageLatency, messageCount);
+         return String.format("%d M %f %d %d", timestamp, averageLatency, interval_ms, messageCount);
       }
    }
    

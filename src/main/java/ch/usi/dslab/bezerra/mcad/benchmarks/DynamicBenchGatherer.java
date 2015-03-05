@@ -108,40 +108,32 @@ public class DynamicBenchGatherer {
       }
    }
    
-   public void saveThroughputPlot() {
-      final long INTERVAL_MS = 5000; // milliseconds
+   public void savePlotFiles() {
       long start = 0;
+      double lastThroughput = 0;
       try {
          BenchmarkEventList toPlot = new BenchmarkEventList(merged);
-         Path dataPath = Paths.get(logDirectory, "dynamicThroughputData.log");
-         BufferedWriter writer = Files.newBufferedWriter(dataPath, StandardCharsets.UTF_8);
-         String label = "";
-         long lastTS = 0;
-         double currentIntervalDeliveries = 0;
+         Path throughputPath = Paths.get(logDirectory, "dynamicThroughputData.log");
+         Path loadPath       = Paths.get(logDirectory, "dynamicLoadData.log");
+         BufferedWriter   tpWriter = Files.newBufferedWriter(throughputPath, StandardCharsets.UTF_8);
+         BufferedWriter loadWriter = Files.newBufferedWriter(loadPath,       StandardCharsets.UTF_8);
          while (toPlot.isEmpty() == false) {
             EventInfo ev = toPlot.takeNextEvent();
-            if (lastTS == 0l) {
-               lastTS = ev.getTimestamp();
-               start = ev.getTimestamp();
-            }
+            if (start == 0) start = ev.getTimestamp();
+            long relativeTimestamp = ev.getTimestamp() - start;
             if (ev.getType() == EventInfo.GLOBAL_PERMIT_EVENT) {
                GlobalPermitEvent gpev = (GlobalPermitEvent) ev;
-               label = String.format("%d", gpev.allPermits);
+               loadWriter.write(String.format("%d %f %d\n", relativeTimestamp, lastThroughput, gpev.allPermits));
             }
             else {
                MessageCountEvent mcev = (MessageCountEvent) ev;
-               currentIntervalDeliveries += mcev.getMessageCount();
-               if (ev.getTimestamp() > lastTS + INTERVAL_MS) {
-                  double throughput = currentIntervalDeliveries / (ev.getTimestamp() - lastTS);
-                  String fileLine = String.format("%f %f \"%s\"\n", (ev.getTimestamp() - start)/(1000d), throughput, label);
-                  writer.write(fileLine);
-                  label = "";
-                  currentIntervalDeliveries = 0;
-                  lastTS = ev.getTimestamp();
-               }
+               String throughputLine = String.format("%d %d %f\n", ev.getTimestamp(), mcev.getInterval(), mcev.getThroughput());
+               lastThroughput = mcev.getThroughput();
+               tpWriter.write(throughputLine);
             }
          }
-         writer.close();
+         tpWriter.close();
+         loadWriter.close();
       }
       catch (IOException e) {
          e.printStackTrace();
@@ -161,8 +153,8 @@ public class DynamicBenchGatherer {
       dbg.merge();
       System.out.println("DynamicBenchGatherer merged all logs. Saving to file...");
       dbg.saveMergedEventLog();
-      System.out.println("DynamicBenchGatherer saved merged log to file. Creating throughput file...");
-      dbg.saveThroughputPlot();
+      System.out.println("DynamicBenchGatherer saved merged log to file. Creating plot files...");
+      dbg.savePlotFiles();
       System.out.println("DynamicBenchGatherer done.");
    }
 

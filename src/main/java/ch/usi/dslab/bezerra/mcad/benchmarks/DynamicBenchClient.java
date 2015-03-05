@@ -104,28 +104,27 @@ public class DynamicBenchClient extends BenchClient {
    public void run() {
       long currentIntervalMessageCount = 0;
       long lastEventTime = System.currentTimeMillis();
-      long INTERVAL_MS = 10;
+      long INTERVAL_MS = 1000;
       double latencyAgg = 0;
       while (true) {
          Message reply      = mcclient.deliverReply();
          long    reqId      = (Long) reply.getItem(0);
          boolean optimistic = (Boolean) reply.getItem(1);
          
-         long nowMilli = System.currentTimeMillis();
-         long nowNano  = System.nanoTime();
+         long now = System.currentTimeMillis();
          if (optimistic) {
          }
          else {
             addSendPermit();
-            long now = System.currentTimeMillis();
             long sendTime = sendTimes.remove(reqId);
-            long recvTime = nowNano;
+            long recvTime = System.nanoTime();
             long latencyNano = recvTime - sendTime;
             latencyAgg += latencyNano;
             currentIntervalMessageCount++;
-            if (now > lastEventTime + INTERVAL_MS) {
+            long elapsedTime = now - lastEventTime;
+            if (elapsedTime > INTERVAL_MS) {
                double latencyAvg = latencyAgg / currentIntervalMessageCount;
-               eventList.addEvent(new MessageCountEvent(nowMilli, latencyAvg, currentIntervalMessageCount));
+               eventList.addEvent(new MessageCountEvent(now, latencyAvg, elapsedTime, currentIntervalMessageCount));
                latencyAgg = 0;
                currentIntervalMessageCount = 0;
                lastEventTime = now;
