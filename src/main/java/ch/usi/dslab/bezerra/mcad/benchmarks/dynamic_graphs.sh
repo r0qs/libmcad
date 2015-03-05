@@ -1,7 +1,7 @@
 #!/bin/bash
 
-output=dynamicThroughput.ps
 input=dynamicThroughputData.log
+output=dynamicThroughput.ps
 
 gnuplot << END_GNUPLOT
 set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18
@@ -65,7 +65,7 @@ set output "$output"
 # "10kb, 4P"
 # "10kb, 8P"
 
-plot "$input" using 1:2:3 with labels, "" using 1:2 with lines
+plot "$input" using 1:3 with lines
 
 END_GNUPLOT
 
