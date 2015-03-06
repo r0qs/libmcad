@@ -315,6 +315,8 @@ public class TestServer {
             long timestamp = (Long)   msg.getNext();
             String destStr = (String) msg.getNext();
             
+            System.out.println(String.format("Delivered message %d.%d", clientId, seq));
+            
             addDelivery(destStr, seq);
             
             Message reply = new Message(seq, DeliveryType.CONS);

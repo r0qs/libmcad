@@ -33,6 +33,8 @@ writeToDisk   = barg(6)
 
 
 ################################################################################
+numPermits = numClients
+numClients = numGroups * numPxPerGroup
 logdir = get_logdir("ridge", numClients, numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
 print logdir
 clean_ridge_log(logdir)
@@ -77,7 +79,7 @@ while remainingClients > 0 :
     for clinode in clientNodes :
         javaclientcmd = "%s -cp %s %s %s %s %s %s %s %s %s" % (javaCommand,
              libmcadjar,             benchClientClass,   clientId,    \
-             ensemblesConfigPath,    messageSize,        numGroups,  \
+             ensemblesConfigPath,    messageSize,        numPermits,  \
              sysConfig.gathererNode, gathererPort,       benchDuration)
         sshcmdbg(clinode, javaclientcmd)
         clientId += 1

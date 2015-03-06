@@ -30,7 +30,12 @@ def getDirectoryPattern(algorithm="*", clients="*", learners="*", groups="*", px
 
 def getfileline(name, linenum) :
     linenum -= 1
-    fp = open(name)
+    fp = None
+    try :
+        fp = open(name)
+    except IOError :
+        print "Error: couldn't find %s. Skipping. " % (name)
+        return None
     wantedline = ""
     for i, line in enumerate(fp):
         if i == linenum:
@@ -41,11 +46,11 @@ def getfileline(name, linenum) :
 
 def getAvgLatency(d) :
     l = getfileline(d + "/latency_conservative_average.log", 3)
-    return l.split()[2]
+    return l.split()[2] if l != None else None
 
 def getAggThroughput(d) :
     l = getfileline(d + "/throughput_conservative_aggregate.log", 3)
-    return l.split()[2]
+    return l.split()[2] if l != None else None
 
 def saveToFile(filepath, pointlist) :
     f = open(filepath, "w")
@@ -97,8 +102,13 @@ for alg in all_algs :
                             cliDir = getDirectoryPattern(alg, cli, learners, groups, pxpg, size, wdisk)
                             latency = getAvgLatency(cliDir)
                             throughput = getAggThroughput(cliDir)
+                            if latency == None or throughput == None:
+                                continue
                             allLatencies  .append((cli, latency))
                             allThroughputs.append((cli, throughput))
+                        if not allLatencies or not allThroughputs :
+                            print "No valid points for %s. Skipping." % (overall_dir_name)
+                            continue
                         overall_latency_file    = overall_dir_name + "/latency.log"
                         overall_throughput_file = overall_dir_name + "/throughput.log"
                         if not os.path.exists(overall_dir_name) :
