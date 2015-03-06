@@ -53,6 +53,7 @@ def getAggThroughput(d) :
     return l.split()[2] if l != None else None
 
 def saveToFile(filepath, pointlist) :
+    # p is a tuple (x,y)
     f = open(filepath, "w")
     for p in pointlist :
         f.write("%s %s\n" % p)
@@ -61,7 +62,11 @@ def saveToFile(filepath, pointlist) :
 def plot(dirPath,msgSize) :
     print "Plotting in directory %s" % dirPath
     os.system("%s %s %s"   % (gnuplot_script_sh_path,dirPath,msgSize))
-#     os.system("%s %s %s &" % (gnuplot_script_sh_path,dirPath,msgSize))
+
+def generate_max_and_75_tp_lat_files(allLatencies, allThroughputs, overall_dir_name) :
+    file_max = overall_dir_name + "/tp_lat_max.log"
+    file_75  = overall_dir_name + "/tp_lat_75.log"
+    load_max = tp_max = lat_max = None
 ####################################################################################################
 ####################################################################################################
 
@@ -109,11 +114,16 @@ for alg in all_algs :
                         if not allLatencies or not allThroughputs :
                             print "No valid points for %s. Skipping." % (overall_dir_name)
                             continue
+
                         overall_latency_file    = overall_dir_name + "/latency.log"
                         overall_throughput_file = overall_dir_name + "/throughput.log"
+                        overall_max_tp_file = overall_dir_name + "/tp_lat_max.log"
+                        overall_75_tp_file = overall_dir_name + "/tp_lat_75.log"
                         if not os.path.exists(overall_dir_name) :
                             os.makedirs(overall_dir_name)
                         saveToFile(overall_latency_file,    allLatencies)
                         saveToFile(overall_throughput_file, allThroughputs)
                         if doPlotting :
                             plot(overall_dir_name, size)
+                        
+                        generate_max_and_75_tp_lat_files(allLatencies, allThroughputs, overall_dir_name)
