@@ -18,7 +18,8 @@ benchCommonPath = os.path.dirname(os.path.realpath(__file__)) + "/benchCommon.py
 def noderange(first,last) :
     return ["node" + str(val) for val in range(first, last + 1)]
 
-availableNodes = noderange(1,34) + noderange(41,50)
+#availableNodes = noderange(1,34) + noderange(41,50)
+availableNodes = noderange(1,35) + noderange(41,52) + noderange(54,60)
 
 def testNodes() :
     for n in availableNodes :
@@ -61,7 +62,7 @@ onceRunner = {"libpaxos" : HOME + "/libmcad/benchLink/runOnce_libpaxos.py",
 cleaner = HOME + "/libmcad/benchLink/cleanUp.py"
 clockSynchronizer = HOME + "/libmcad/benchLink/clockSynchronizer.py"
 continousClockSynchronizer = HOME + "/libmcad/benchLink/continuousClockSynchronizer.py"
-clockSyncInterval = 5
+clockSyncInterval = 3
 systemParamSetter = HOME + "/libmcad/benchLink/systemParamSetter.py"
 libmcadjar = HOME + "/libmcad/target/libmcad-git.jar"
 javaCommand = "java -XX:+UseParallelGC -Xms3g -Xmx3g"
@@ -92,7 +93,7 @@ latency_estimation_devs = 0
 latency_estimation_max = 10
 ridgeDeployer = HOME + "/libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/ridge/RidgeEnsembleNodesDeployer.py"
 ridge_disk_storage_type = "bdbasync"
-ridge_memory_storage_type = "memory"
+ridge_memory_storage_type = "nostorage"#"memory"
 
 # CLIENTS
 numPermits = 1
