@@ -7,8 +7,10 @@ import org.apache.commons.math3.util.Pair;
 
 import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
+import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
+import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastServer;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.sense.DataGatherer;
 import ch.usi.dslab.bezerra.sense.monitors.MistakeRatePassiveMonitor;
@@ -53,6 +55,14 @@ public class BenchServer {
          this.mcserver = parent;
       }
       public void run() {
+         boolean isRidge = mcserver instanceof RidgeMulticastServer;
+         int numGroupServers = -1;
+         int serverIndex = -1;
+         if (isRidge) {
+            MulticastAgent mca = mcserver.getMulticastAgent();
+            numGroupServers = mca.getLocalGroup().getMembers().size();
+            serverIndex     = mca.getLocalGroup().getMembers().indexOf(mcserver.getId());
+         }
          while (true) {
             ClientMessage consmsg = mcserver.deliverClientMessage();
             int  clientId = consmsg.getSourceClientId();
@@ -60,11 +70,15 @@ public class BenchServer {
             
             boolean optimistic = false;
             Message reply = new Message(msgSeq, optimistic);
-            if (mcserver.isConnectedToClient(clientId))
+            if (isRidge) {
+               if (msgSeq % numGroupServers == serverIndex) {
+                  mcserver.sendReply(clientId, reply);
+               }
+            }
+            else if (mcserver.isConnectedToClient(clientId)) {
                mcserver.sendReply(clientId, reply);
+            }
             OrderVerifier.instance.addConsDelivery(clientId, msgSeq);
-            // System.out.println("cons-delivered message " + clientId + "." +
-            // msgSeq);
          }
       }
    }

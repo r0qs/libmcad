@@ -12,6 +12,7 @@ import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastClient;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
+import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastClient;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.sense.DataGatherer;
 import ch.usi.dslab.bezerra.sense.monitors.LatencyDistributionPassiveMonitor;
@@ -39,7 +40,12 @@ public class BenchClient implements Runnable {
       ClientMessage.setGlobalClientId(clientId);
       this.msgSize = msgSize;
       mcclient = MulticastClientServerFactory.getClient(clientId, configFile);
-      mcclient.connectToOneServerPerPartition();
+      if (mcclient instanceof RidgeMulticastClient) {
+         RidgeMulticastClient rmcclient = (RidgeMulticastClient) mcclient;
+         rmcclient.connectToAllServers();
+      } else {
+         mcclient.connectToOneServerPerPartition();
+      }
 //      for (Group g : Group.getAllGroups()) {
 //         List<Integer> sids = g.getMembers();
 //         int sindex = clientId % sids.size();

@@ -34,9 +34,18 @@ public class RidgeMulticastClient extends Client implements MulticastClient {
    public void connectToOneServerPerPartition() {
       final List<Group> groups = Group.getAllGroups();
       for (Group group : groups) {
-         List<Integer> groupMembers = group.getMembers();
+         final List<Integer> groupMembers = group.getMembers();
          int chosenServerId = groupMembers.get(getPid() % groupMembers.size());
          connectToServer(chosenServerId);
+      }
+   }
+   
+   public void connectToAllServers() {
+      final List<Group> groups = Group.getAllGroups();
+      for (Group group : groups) {
+         final List<Integer> groupMembers = group.getMembers();
+         for (int groupMemberId : groupMembers)
+            connectToServer(groupMemberId);            
       }
    }
    
