@@ -32,12 +32,14 @@ incFactor = 1.2
 incParcel = 0
 #numPermits = 1
 ##########################################
-numsLearners = [1, 2, 4, 8, 16, 32]
+#numsLearners = [1, 2, 4, 8, 16, 32]
+numsLearners = [1, 8, 32]
 ##########################################
 #algorithms = ["libpaxos", "mrp", "ridge"]
 algorithms = ["ridge"]
 ##########################################
-messageSizes = [140, 8192]
+#messageSizes = [140, 8192]
+messageSizes = [40000]
 ##########################################
 groups = 0
 pxpergroup = 1
@@ -45,12 +47,13 @@ groupConfigs = [{groups : 1, pxpergroup : 1},
                # {groups : 1, pxpergroup : 2},
                # {groups : 1, pxpergroup : 4},
                # {groups : 1, pxpergroup : 8},
-                {groups : 2, pxpergroup : 1},
-                {groups : 4, pxpergroup : 1},
-                {groups : 8, pxpergroup : 1},
+               # {groups : 2, pxpergroup : 1},
+               # {groups : 4, pxpergroup : 1},
+               # {groups : 8, pxpergroup : 1},
                ]
 ##########################################
-diskConfigs = [False, True]
+#diskConfigs = [False, True]
+diskConfigs = [False]
 ################################################################################
 ''' clean up environment before running batch
 '''
