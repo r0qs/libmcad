@@ -46,11 +46,11 @@ def getfileline(name, linenum) :
 
 def getAvgLatency(d) :
     l = getfileline(d + "/latency_conservative_average.log", 3)
-    return l.split()[2] if l != None else None
+    return float(l.split()[2]) if l != None else None
 
 def getAggThroughput(d) :
     l = getfileline(d + "/throughput_conservative_aggregate.log", 3)
-    return l.split()[2] if l != None else None
+    return float(l.split()[2]) if l != None else None
 
 def saveToFile(filepath, pointlist) :
     # p is a tuple (x,y)
@@ -59,14 +59,76 @@ def saveToFile(filepath, pointlist) :
         f.write("%s %s\n" % p)
     f.close()
 
-def plot(dirPath,msgSize) :
+def plot(dirPath, msgSize, lat_max_avg) :
     print "Plotting in directory %s" % dirPath
-    os.system("%s %s %s"   % (gnuplot_script_sh_path,dirPath,msgSize))
+    os.system("%s %s %s %s"   % (gnuplot_script_sh_path,dirPath,msgSize,lat_max_avg))
 
-def generate_max_and_75_tp_lat_files(allLatencies, allThroughputs, overall_dir_name) :
-    file_max = overall_dir_name + "/tp_lat_max.log"
-    file_75  = overall_dir_name + "/tp_lat_75.log"
-    load_max = tp_max = lat_max = None
+def create_cdf_plot(line_cdf_file, plot_file_name) :
+    lineCdf = getfileline(line_cdf_file, 3)
+    lineCdfElements = lineCdf.split()
+    properCdf = []
+    totalCount = 0
+    for i in range(1,len(lineCdfElements),2) :
+        x = int  (lineCdfElements[i  ]) # bucketRange
+        y = float(lineCdfElements[i+1]) # bucketCount
+        properCdf.append((x,y))
+        totalCount = y
+    properCdfFile = open(plot_file_name, "w")
+    for point in properCdf :
+        properCdfFile.write("%s %s\n" % (point[0], point[1]/totalCount))
+    properCdfFile.close()
+
+def generate_max_and_75_tp_lat_files(allThroughputsLatencies, msgSize, overall_dir_name, alg, learners, groups, pxpg, sizeStr, wdisk) :
+    load_max = tp_max = lat_max = 0
+    for point in allThroughputsLatencies :
+        load,tp,lat = point
+        if tp > tp_max :
+            load_max = load
+            tp_max   = tp
+            lat_max  = lat
+
+    tp_75_ideal = 0.75*tp_max
+    load_75_estimate = int(round(0.75*load_max))
+    tp_75_found = load_75_found = lat_75_found = 0
+    lowest_distance = float("inf")
+    for point in allThroughputsLatencies :
+        load,tp,lat = point
+        distance = abs(tp - tp_75_ideal)
+        if distance < lowest_distance : 
+            lowest_distance = distance
+            load_75_found   = load
+            tp_75_found     = tp
+            lat_75_found    = lat
+
+    # max
+    file_max = open(overall_dir_name + "/tp_lat_max.log", "w")
+    file_max.write("# maxtp = %s (load %s), ideal 0.75maxtp = %s (estimated load %s)\n" % (tp_max, load_max, tp_75_ideal, load_75_estimate))
+    file_max.write("# load throughput(msg/s) throughput(MBps) latency(ns):\n")
+    file_max.write("%s %s %s %s\n" % (load_max, tp_max, tp_max*msgSize*8/1e6, lat_max))
+    file_max.close()
+    
+    # 75 found
+    tp_distance_percent   = 100*abs(tp_75_found   - tp_75_ideal     )/tp_75_ideal
+    load_distance_percent = 100*abs(load_75_found - load_75_estimate)/load_75_estimate
+    file_75 = open(overall_dir_name + "/tp_lat_75.log",  "w")
+    file_75.write("# maxtp = %s (load %s), ideal 0.75maxtp = %s (estimated load %s), found 0.75maxtp = %s (load %s): distance %s%% (load distance %s%%)\n" \
+                  % (tp_max, load_max, tp_75_ideal, load_75_estimate, tp_75_found, load_75_found, tp_distance_percent, load_distance_percent))
+    file_75.write("# load throughput(msg/s) throughput(MBps) latency(ns):\n")
+    file_75.write("%s %s %s %s\n" % (load_75_found, tp_75_found, tp_75_found*msgSize*8/1e6, lat_75_found))
+    file_75.close()
+    
+    #latency cdf load_tp_max
+    load_max_directory = getDirectoryPattern(alg, load_max, learners, groups, pxpg, size, wdisk)
+    cdf_max_file = load_max_directory + "/latencydistribution_conservative_aggregate.log"
+    create_cdf_plot(cdf_max_file, overall_dir_name + "/cdf_max.log")
+    
+    # latency cdf load_tp_75
+    load_75_directory = getDirectoryPattern(alg, load_75_found, learners, groups, pxpg, size, wdisk)
+    cdf_75_file = load_75_directory + "/latencydistribution_conservative_aggregate.log"
+    create_cdf_plot(cdf_75_file, overall_dir_name + "/cdf_75.log")
+    
+    return lat_max
+    
 ####################################################################################################
 ####################################################################################################
 
@@ -103,6 +165,7 @@ for alg in all_algs :
                             continue
                         allLatencies   = []
                         allThroughputs = []
+                        allThroughputsLatencies = []
                         for cli in clis :
                             cliDir = getDirectoryPattern(alg, cli, learners, groups, pxpg, size, wdisk)
                             latency = getAvgLatency(cliDir)
@@ -111,6 +174,7 @@ for alg in all_algs :
                                 continue
                             allLatencies  .append((cli, latency))
                             allThroughputs.append((cli, throughput))
+                            allThroughputsLatencies.append((cli, throughput, latency))
                         if not allLatencies or not allThroughputs :
                             print "No valid points for %s. Skipping." % (overall_dir_name)
                             continue
@@ -123,7 +187,7 @@ for alg in all_algs :
                             os.makedirs(overall_dir_name)
                         saveToFile(overall_latency_file,    allLatencies)
                         saveToFile(overall_throughput_file, allThroughputs)
+                        lat_max_avg = generate_max_and_75_tp_lat_files(allThroughputsLatencies, int(size), overall_dir_name, alg, learners, groups, pxpg, size, wdisk)
                         if doPlotting :
-                            plot(overall_dir_name, size)
+                            plot(overall_dir_name, size, lat_max_avg)
                         
-                        generate_max_and_75_tp_lat_files(allLatencies, allThroughputs, overall_dir_name)

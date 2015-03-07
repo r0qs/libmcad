@@ -2,6 +2,7 @@
 
 path=$1
 msize=$2
+latmax=$3
 tpinput=${path}/throughput.log
 latinput=${path}/latency.log
 output=${path}/tplat.ps
@@ -33,4 +34,33 @@ plot "$tpinput"  using 1:(\$2*8*$msize)/1e6 with lines title "throughput", \
 END_GNUPLOT
 
 pstopdf $output
-#rm $output
+rm $output
+
+cdfmaxinput=${path}/cdf_max.log
+cdf75input=${path}/cdf_75.log
+output=${path}/cdfs.ps
+
+gnuplot << END_GNUPLOT
+set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18
+
+set title "Latency CDF" #offset 0,-0.5
+
+set xlabel "Latency (ms)"
+set xtics
+set yrange [0:1]
+set xrange [0:$latmax/1e6]
+set ylabel
+set ytics
+set ytics add (0.90)
+set ytics add (0.95)
+set ytics add (0.99)
+set grid xtics ytics
+set output "$output"
+
+plot "$cdfmaxinput" using ((\$1)/1e6):2 with lines title "max", \
+     "$cdf75input"  using ((\$1)/1e6):2 with lines title "75"
+
+END_GNUPLOT
+
+pstopdf $output
+rm $output

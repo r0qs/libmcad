@@ -7,7 +7,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastClient;
-import ch.usi.dslab.bezerra.mcad.uringpaxos.URPGroup;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.ridge.Client;
 
@@ -33,7 +32,7 @@ public class RidgeMulticastClient extends Client implements MulticastClient {
    
    @Override
    public void connectToOneServerPerPartition() {
-      final List<Group> groups = URPGroup.getAllGroups();
+      final List<Group> groups = Group.getAllGroups();
       for (Group group : groups) {
          List<Integer> groupMembers = group.getMembers();
          int chosenServerId = groupMembers.get(getPid() % groupMembers.size());
