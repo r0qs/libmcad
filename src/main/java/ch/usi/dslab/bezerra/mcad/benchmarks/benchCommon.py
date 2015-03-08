@@ -87,16 +87,16 @@ logdir   = HOME + "/logsmcast/"
 
 # ridge
 delta_null_messages_ms_disk = 30
-delta_null_messages_ms_memory = 5
+delta_null_messages_ms_memory = 1
 latency_estimation_sample = 10
 latency_estimation_devs = 0
 latency_estimation_max = 10
 ridgeDeployer = HOME + "/libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/ridge/RidgeEnsembleNodesDeployer.py"
 ridge_disk_storage_type = "bdbasync"
 #ridge_memory_storage_type = "memcache" #"nostorage" #"memory"
-#ridge_memory_storage_type = "fastarray"
+ridge_memory_storage_type = "fastarray"
 #ridge_memory_storage_type = "nullstorage"
-ridge_memory_storage_type = "listcache"
+#ridge_memory_storage_type = "listcache"
 
 # CLIENTS
 numPermits = 1
