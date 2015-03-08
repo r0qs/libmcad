@@ -27,6 +27,10 @@ set y2label "Latency (ms)"
 set y2tics
 set grid ytics
 
+set xrange[0:*]
+set yrange[0:*]
+set y2range[0:*]
+
 set output "$output"
 
 plot "$tpinput"  using 1:(\$2*8*$msize)/1e6 with lines title "throughput", \
