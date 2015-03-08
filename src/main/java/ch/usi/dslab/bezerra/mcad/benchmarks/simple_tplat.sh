@@ -25,6 +25,7 @@ set xlabel "Load (clients)"
 set ylabel "Throughput (Mbps)"
 set y2label "Latency (ms)"
 set y2tics
+set grid ytics
 
 set output "$output"
 
