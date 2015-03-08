@@ -19,7 +19,7 @@ def noderange(first,last) :
     return ["node" + str(val) for val in range(first, last + 1)]
 
 #availableNodes = noderange(1,34) + noderange(41,50)
-availableNodes = noderange(1,35) + noderange(41,52) + noderange(54,60)
+availableNodes = noderange(1,35) + noderange(41,52) + noderange(54,60) + noderange(62,64)
 
 def testNodes() :
     for n in availableNodes :
@@ -65,7 +65,7 @@ continousClockSynchronizer = HOME + "/libmcad/benchLink/continuousClockSynchroni
 clockSyncInterval = 3
 systemParamSetter = HOME + "/libmcad/benchLink/systemParamSetter.py"
 libmcadjar = HOME + "/libmcad/target/libmcad-git.jar"
-javaCommand = "java -XX:+UseParallelGC -Xms3g -Xmx3g"
+javaCommand = "java -XX:+UseG1GC -Xms3g -Xmx3g"
 benchServerClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer"
 benchClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient"
 dynamicClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.DynamicBenchClient"
@@ -93,7 +93,10 @@ latency_estimation_devs = 0
 latency_estimation_max = 10
 ridgeDeployer = HOME + "/libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/ridge/RidgeEnsembleNodesDeployer.py"
 ridge_disk_storage_type = "bdbasync"
-ridge_memory_storage_type = "memcache" #"nostorage" #"memory"
+#ridge_memory_storage_type = "memcache" #"nostorage" #"memory"
+#ridge_memory_storage_type = "fastarray"
+#ridge_memory_storage_type = "nullstorage"
+ridge_memory_storage_type = "listcache"
 
 # CLIENTS
 numPermits = 1

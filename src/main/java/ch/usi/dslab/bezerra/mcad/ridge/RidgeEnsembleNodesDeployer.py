@@ -75,7 +75,7 @@ for process in config["ensemble_processes"] :
     
     class_path   = "-cp " + script_dir() + "/../../../../../../../../../target/libmcad-git.jar" + extra_classpath
     node_path    = "ch.usi.dslab.bezerra.mcad.ridge.RidgeEnsembleNode"
-    java_string  = "java -XX:+UseParallelGC -Xms3g -Xmx3g " + class_path + " " + node_path
+    java_string  = "java -XX:+UseG1GC -Xms3g -Xmx3g " + class_path + " " + node_path
     arguments    = system_config_file + " " + str(pid)
         
     command_string = ""

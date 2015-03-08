@@ -38,7 +38,7 @@ numsLearners = [1, 2, 4, 8, 16, 32]
 #algorithms = ["libpaxos", "mrp", "ridge"]
 algorithms = ["ridge"]
 ##########################################
-messageSizes = [140, 8192, 32768]
+messageSizes = [140, 8192]#, 32768]
 #messageSizes = [40000]
 ##########################################
 groups = 0
