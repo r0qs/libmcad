@@ -323,9 +323,8 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
             ProcessLatencyEstimator.setGlobalMaxEstimatedLatency(maxLatency);
          }
          
-         String storageType = null;
          if (config.containsKey("storage_type")) {
-            storageType = (String) config.get("storage_type");
+            String storageType = (String) config.get("storage_type");
             Acceptor.setStorage(storageType);
          }
          
