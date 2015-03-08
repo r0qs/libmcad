@@ -112,7 +112,7 @@ def generate_max_and_75_tp_lat_files(allThroughputsLatencies, msgSize, overall_d
     load_distance_percent = 100*abs(load_75_found - load_75_estimate)/load_75_estimate
     file_75 = open(overall_dir_name + "/tp_lat_75.log",  "w")
     file_75.write("# maxtp = %s (load %s), ideal 0.75maxtp = %s (estimated load %s), found 0.75maxtp = %s (load %s): distance %s%% (load distance %s%%)\n" \
-                  % (tp_max, load_max, tp_75_ideal, load_75_estimate, tp_75_found, load_75_found, tp_distance_percent, load_distance_percent))
+                  % (tp_max, load_max, tp_75_ideal, load_75_estimate, tp_75_found, load_75_found, int(round(tp_distance_percent)), int(round(load_distance_percent))))
     file_75.write("# load throughput(msg/s) throughput(MBps) latency(ns):\n")
     file_75.write("%s %s %s %s\n" % (load_75_found, tp_75_found, tp_75_found*msgSize*8/1e6, lat_75_found))
     file_75.close()

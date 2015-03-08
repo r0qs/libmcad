@@ -10,9 +10,14 @@ import benchCommon
 from math import ceil
 from os.path import expanduser
 ################################################################################
-''' constants '''
-HOME = expanduser("~")
-gathererClass="ch.usi.dslab.bezerra.sense.DataGatherer "
+''' functions '''
+def getLoads(minClients, maxClients, incFactor, incParcel) :
+    clients = []
+    numClients = minClients
+    while numClients <= maxClients :
+        clients.append(numClients)
+        numClients = int(ceil(numClients * incFactor + incParcel))
+    return clients
 ################################################################################
 ''' experiment variables
     - (int)  numClients
@@ -30,6 +35,8 @@ minClients = 10
 maxClients = 70
 incFactor = 1
 incParcel = 10
+loads = getLoads(minClients, maxClients, incFactor, incParcel)
+#loads = [2, 4, 6, 8, 10, 15, 20, 30, 40, 60, 90]
 #numPermits = 1
 ##########################################
 numsLearners = [1, 2, 4, 8, 16, 32]
@@ -38,8 +45,8 @@ numsLearners = [1, 2, 4, 8, 16, 32]
 #algorithms = ["libpaxos", "mrp", "ridge"]
 algorithms = ["ridge"]
 ##########################################
-messageSizes = [140, 8192]#, 32768]
-#messageSizes = [40000]
+#messageSizes = [140, 8192]#, 65536]
+messageSizes = [65536]
 ##########################################
 groups = 0
 pxpergroup = 1
@@ -72,22 +79,20 @@ for writeToDisk in diskConfigs :
         for algorithm in algorithms :
             for groupConfig in groupConfigs :
                 for numLearners in numsLearners :
-                    numClients = minClients
-                    while numClients <= maxClients :
+                    for load in loads :
                         if groupConfig[groups] > numLearners :
                             print "Not running with less learners than groups"
                         elif skips > 0 :
                             print("SKIPPING run %s with %s clients, with %s multicast groups (%s Paxos groups each), message size %s bytes, useDisk is %s" % \
-                                  (algorithm, numClients, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
+                                  (algorithm, load, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
                             skips -= 1
                         else:
                             tries = 3
                             exitcode = -1
                             while tries > 0 and exitcode != 0 :
                                 tries -= 1
-                                print("Running %s with %s clients, with %s multicast groups (%s Paxos groups each), message size %s bytes, useDisk is %s" % \
-                                     (algorithm, numClients, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
-                                exitcode = localcmd(onceRunner[algorithm] + " %s %s %s %s %s %s" % (numClients, numLearners, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
+                                print("Running %s with load %, % learners, with %s multicast groups (%s Paxos groups each), message size %s bytes, useDisk is %s" % \
+                                     (algorithm, load, numLearners, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
+                                exitcode = localcmd(onceRunner[algorithm] + " %s %s %s %s %s %s" % (load, numLearners, groupConfig[groups], groupConfig[pxpergroup], messageSize, writeToDisk))
                                 if exitcode != 0 :
                                     print("Failed last experiment try")
-                        numClients = int(ceil(numClients * incFactor + incParcel))
