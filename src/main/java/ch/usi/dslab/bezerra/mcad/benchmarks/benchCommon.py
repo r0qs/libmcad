@@ -87,7 +87,7 @@ logdir   = HOME + "/logsmcast/"
 
 # ridge
 delta_null_messages_ms_disk = 30
-delta_null_messages_ms_memory = 5
+delta_null_messages_ms_memory = 1
 latency_estimation_sample = 10
 latency_estimation_devs = 0
 latency_estimation_max = 10
@@ -96,9 +96,9 @@ ridge_disk_storage_type = "bdbasync"
 #ridge_memory_storage_type = "memory"
 #ridge_memory_storage_type = "memcache"
 #ridge_memory_storage_type = "nostorage"
-#ridge_memory_storage_type = "fastarray"
 #ridge_memory_storage_type = "nullstorage"
-ridge_memory_storage_type = "listcache"
+#ridge_memory_storage_type = "listcache"
+ridge_memory_storage_type = "fastarray"
 
 # CLIENTS
 numPermits = 1
