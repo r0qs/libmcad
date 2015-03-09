@@ -153,7 +153,6 @@ public class BenchClient implements Runnable {
       // ===================================      
 
       DataGatherer.configure(duration, null, gathererHost, gathererPort);
-      LatencyDistributionPassiveMonitor.setBucketWidthNano(100000);
       
       BenchClient cli = new BenchClient(clientId, configFile, msgSize, numPermits);
       
