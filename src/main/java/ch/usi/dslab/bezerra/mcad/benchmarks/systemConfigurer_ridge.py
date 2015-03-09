@@ -38,7 +38,7 @@ serverList = [{"id": 0, "partition": 0}]
 
 # ridgeConfiguration = generateRidgeConfiguration(availableNodes, numPartitions, replicasPerPartition, ensembleSize, configFilePath)
 
-def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearners, ensembleSize, writeToDisk, configFilePath, saveToFile) :
+def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearners, ensembleSize, writeToDisk, configFilePath, saveToFile, mode="DYNAMIC") :
     config = dict()
     config["agent_class"] = "RidgeMulticastAgent"
     if writeToDisk == True :
@@ -77,7 +77,7 @@ def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearners, ens
     for e in ensembleRange :
         if (e < 10) : destination_groups = range(1, numGroups + 1)
         else        : destination_groups = [e//10]
-        ensemble = {"ensemble_id" : e, "learner_broadcast_mode" : "DYNAMIC", "destination_groups" : destination_groups}
+        ensemble = {"ensemble_id" : e, "learner_broadcast_mode" : mode, "destination_groups" : destination_groups}
         config["ensembles"].append(ensemble)
     
     # OKAY
@@ -204,11 +204,11 @@ def generatePartitioningFile(serverList, partitionsFile, saveToFile) :
     return pconf
         
 
-def generateRidgeSystemConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, partitionsFilePath, saveToFile = True) :
+def generateRidgeSystemConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, partitionsFilePath, saveToFile = True, mode = "DYNAMIC") :
     gathererNode = nodes[0]
     remainingNodes = availableNodes[1:]
     
-    systemConfiguration = generateRidgeConfiguration(remainingNodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, saveToFile)
+    systemConfiguration = generateRidgeConfiguration(remainingNodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, saveToFile, mode)
     if systemConfiguration == None :
         return None
     generatePartitioningFile(systemConfiguration.server_list, partitionsFilePath, saveToFile)

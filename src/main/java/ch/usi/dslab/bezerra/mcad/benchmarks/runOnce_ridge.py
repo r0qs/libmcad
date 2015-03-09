@@ -45,7 +45,7 @@ nodespool = NodePool()
 # create config files
 ensemblesConfigPath  = logdir + "/ensembles_config.json"
 partitionsConfigPath = logdir + "/partitions_config.json"
-sysConfig = generateRidgeSystemConfiguration(nodespool.all(), numGroups, numPxPerGroup, numLearners, 3, writeToDisk, ensemblesConfigPath, partitionsConfigPath, saveToFile = True)
+sysConfig = generateRidgeSystemConfiguration(nodespool.all(), numGroups, numPxPerGroup, numLearners, 3, writeToDisk, ensemblesConfigPath, partitionsConfigPath, writeToDisk, "DYNAMIC")
 if sysConfig == None :
     sys.exit(1)
 
