@@ -36,7 +36,7 @@ maxClients = 70
 incFactor = 1
 incParcel = 10
 #loads = getLoads(minClients, maxClients, incFactor, incParcel)
-loads = [1, 2, 4, 6, 9, 12, 16, 20, 25, 30, 40, 60, 90]
+loads = [1, 5, 10, 20, 30, 40, 50, 60, 80]
 #numPermits = 1
 ##########################################
 numsLearners = [1, 2, 4, 8, 16, 32]
@@ -45,8 +45,7 @@ numsLearners = [1, 2, 4, 8, 16, 32]
 #algorithms = ["libpaxos", "mrp", "ridge"]
 algorithms = ["ridge"]
 ##########################################
-messageSizes = [140, 200, 8192, 65536]
-#messageSizes = [65536]
+messageSizes = [200, 8192, 65536]
 ##########################################
 groups = 0
 pxpergroup = 1
