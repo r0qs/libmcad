@@ -61,7 +61,7 @@ def saveToFile(filepath, pointlist) :
 
 def plot(dirPath, msgSize, lat_max_avg) :
     print "Plotting in directory %s" % dirPath
-    os.system("%s %s %s %s"   % (gnuplot_script_sh_path,dirPath,msgSize,lat_max_avg))
+    os.system("%s %s %s %s" % (gnuplot_script_sh_path, dirPath, msgSize, lat_max_avg))
 
 def create_cdf_plot(line_cdf_file, plot_file_name) :
     lineCdf = getfileline(line_cdf_file, 3)
@@ -74,9 +74,18 @@ def create_cdf_plot(line_cdf_file, plot_file_name) :
         properCdf.append((x,y))
         totalCount = y
     properCdfFile = open(plot_file_name, "w")
+    latency_95th = None
+    latency_99th = None
     for point in properCdf :
-        properCdfFile.write("%s %s\n" % (point[0], point[1]/totalCount))
+        latency_bucket = point[0]
+        percentile = point[1]/totalCount
+        properCdfFile.write("%s %s\n" % (latency_bucket, percentile))
+        if latency_95th == None and percentile >= 0.95 :
+            latency_95th = latency_bucket
+        if latency_99th == None and percentile >= 0.99 :
+            latency_99th = latency_bucket
     properCdfFile.close()
+    return (latency_95th,latency_99th)
 
 def generate_max_and_75_tp_lat_files(allThroughputsLatencies, msgSize, overall_dir_name, alg, learners, groups, pxpg, sizeStr, wdisk) :
     load_max = tp_max = lat_max = 0
@@ -100,32 +109,32 @@ def generate_max_and_75_tp_lat_files(allThroughputsLatencies, msgSize, overall_d
             tp_75_found     = tp
             lat_75_found    = lat
 
-    # max
+    #latency cdf load_tp_max
+    load_max_directory = getDirectoryPattern(alg, load_max, learners, groups, pxpg, size, wdisk)
+    cdf_max_file = load_max_directory + "/latencydistribution_conservative_aggregate.log"
+    latency_95th_max,latency_99th_max = create_cdf_plot(cdf_max_file, overall_dir_name + "/cdf_max.log")
+    
+    # latency cdf load_tp_75
+    load_75_directory = getDirectoryPattern(alg, load_75_found, learners, groups, pxpg, size, wdisk)
+    cdf_75_file = load_75_directory + "/latencydistribution_conservative_aggregate.log"
+    latency_95th_75,latency_99th_75 = create_cdf_plot(cdf_75_file, overall_dir_name + "/cdf_75.log")
+    
+    # max file
     file_max = open(overall_dir_name + "/tp_lat_max.log", "w")
     file_max.write("# maxtp = %s (load %s), ideal 0.75maxtp = %s (estimated load %s)\n" % (tp_max, load_max, tp_75_ideal, load_75_estimate))
-    file_max.write("# load throughput(msg/s) throughput(MBps) latency(ns):\n")
-    file_max.write("%s %s %s %s\n" % (load_max, tp_max, tp_max*msgSize*8/1e6, lat_max))
+    file_max.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_95th(ms) latency_99th(ms):\n")
+    file_max.write("%s %s %s %s %s %s\n" % (load_max, tp_max, tp_max*msgSize*8/1e6, lat_max/1e6, latency_95th_max/1e6, latency_99th_max/1e6))
     file_max.close()
     
-    # 75 found
+    # 75 found file
     tp_distance_percent   = 100*abs(tp_75_found   - tp_75_ideal     )/tp_75_ideal
     load_distance_percent = 100*abs(load_75_found - load_75_estimate)/load_75_estimate
     file_75 = open(overall_dir_name + "/tp_lat_75.log",  "w")
     file_75.write("# maxtp = %s (load %s), ideal 0.75maxtp = %s (estimated load %s), found 0.75maxtp = %s (load %s): distance %s%% (load distance %s%%)\n" \
                   % (tp_max, load_max, tp_75_ideal, load_75_estimate, tp_75_found, load_75_found, int(round(tp_distance_percent)), int(round(load_distance_percent))))
-    file_75.write("# load throughput(msg/s) throughput(MBps) latency(ns):\n")
-    file_75.write("%s %s %s %s\n" % (load_75_found, tp_75_found, tp_75_found*msgSize*8/1e6, lat_75_found))
+    file_75.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_95th(ms) latency_99th(ms):\n")
+    file_75.write("%s %s %s %s %s %s\n" % (load_75_found, tp_75_found, tp_75_found*msgSize*8/1e6, lat_75_found/1e6, latency_95th_75/1e6, latency_99th_75/1e6))
     file_75.close()
-    
-    #latency cdf load_tp_max
-    load_max_directory = getDirectoryPattern(alg, load_max, learners, groups, pxpg, size, wdisk)
-    cdf_max_file = load_max_directory + "/latencydistribution_conservative_aggregate.log"
-    create_cdf_plot(cdf_max_file, overall_dir_name + "/cdf_max.log")
-    
-    # latency cdf load_tp_75
-    load_75_directory = getDirectoryPattern(alg, load_75_found, learners, groups, pxpg, size, wdisk)
-    cdf_75_file = load_75_directory + "/latencydistribution_conservative_aggregate.log"
-    create_cdf_plot(cdf_75_file, overall_dir_name + "/cdf_75.log")
     
     return lat_max
     
