@@ -3,7 +3,15 @@
 import glob, os, re, sys
 from benchCommon import *
 
-gnuplot_script_sh_path=HOME + "/libmcad/benchLink/simple_tplat.sh"
+####################################################################################################
+# definition
+####################################################################################################
+simple_gnuplot_script_sh_path=HOME + "/libmcad/benchLink/plot_simple_tplat_cdf.sh"
+broadcast_gnuplot_sh_path=HOME + "/libmcad/benchLink/plot_broadcast.sh"
+prettynames = {"libpaxos" : "LibPaxos",
+               "ridge"    : "Ridge"   ,
+               "mrp"      : "Multi-Ring Paxos",
+               "spread"   : "Spread"}
 
 ####################################################################################################
 # functions
@@ -16,6 +24,7 @@ def ds(d, n) :
     return re.split("_", d)[n]
 
 def getAllValsFromDirs(pattern, position) :
+#     print "pattern = %s, position = %s" % (pattern, position)
     allVals = []
     alldirs = glob.glob(pattern)
     for d in alldirs :
@@ -44,6 +53,10 @@ def getfileline(name, linenum) :
     fp.close()
     return wantedline
 
+def geffilelinecolum(name, linenum, colnum) :
+    line = getfileline(name, linenum)
+    return line.split()[colnum - 1]
+
 def getAvgLatency(d) :
     l = getfileline(d + "/latency_conservative_average.log", 3)
     return float(l.split()[2]) if l != None else None
@@ -59,9 +72,14 @@ def saveToFile(filepath, pointlist) :
         f.write("%s %s\n" % p)
     f.close()
 
-def plot(dirPath, msgSize, lat_max_avg) :
+def plot_overalls(dirPath, msgSize, lat_max_avg) :
     print "Plotting in directory %s" % dirPath
-    os.system("%s %s %s %s" % (gnuplot_script_sh_path, dirPath, msgSize, lat_max_avg))
+    os.system("%s %s %s %s" % (simple_gnuplot_script_sh_path, dirPath, msgSize, lat_max_avg))
+
+def plot_broadcast(sizes) :
+    for size in sizes :
+        print "Plotting broadcast graphs for %s bytes" % (size)
+        os.system("%s %s %s" % (broadcast_gnuplot_sh_path, os.getcwd() + "/../", size))
 
 def create_cdf_plot(line_cdf_file, plot_file_name) :
     lineCdf = getfileline(line_cdf_file, 3)
@@ -74,18 +92,21 @@ def create_cdf_plot(line_cdf_file, plot_file_name) :
         properCdf.append((x,y))
         totalCount = y
     properCdfFile = open(plot_file_name, "w")
+    latency_50th = None
     latency_95th = None
     latency_99th = None
     for point in properCdf :
         latency_bucket = point[0]
         percentile = point[1]/totalCount
         properCdfFile.write("%s %s\n" % (latency_bucket, percentile))
+        if latency_50th == None and percentile >= 0.50 :
+            latency_50th = latency_bucket
         if latency_95th == None and percentile >= 0.95 :
             latency_95th = latency_bucket
         if latency_99th == None and percentile >= 0.99 :
             latency_99th = latency_bucket
     properCdfFile.close()
-    return (latency_95th,latency_99th)
+    return (latency_50th,latency_95th,latency_99th)
 
 def generate_max_and_75_tp_lat_files(allThroughputsLatencies, msgSize, overall_dir_name, alg, learners, groups, pxpg, sizeStr, wdisk) :
     load_max = tp_max = lat_max = 0
@@ -112,12 +133,12 @@ def generate_max_and_75_tp_lat_files(allThroughputsLatencies, msgSize, overall_d
     #latency cdf load_tp_max
     load_max_directory = getDirectoryPattern(alg, load_max, learners, groups, pxpg, size, wdisk)
     cdf_max_file = load_max_directory + "/latencydistribution_conservative_aggregate.log"
-    latency_95th_max,latency_99th_max = create_cdf_plot(cdf_max_file, overall_dir_name + "/cdf_max.log")
+    latency_50th_max,latency_95th_max,latency_99th_max = create_cdf_plot(cdf_max_file, overall_dir_name + "/cdf_max.log")
     
     # latency cdf load_tp_75
     load_75_directory = getDirectoryPattern(alg, load_75_found, learners, groups, pxpg, size, wdisk)
     cdf_75_file = load_75_directory + "/latencydistribution_conservative_aggregate.log"
-    latency_95th_75,latency_99th_75 = create_cdf_plot(cdf_75_file, overall_dir_name + "/cdf_75.log")
+    latency_50th_75,latency_95th_75,latency_99th_75 = create_cdf_plot(cdf_75_file, overall_dir_name + "/cdf_75.log")
     
     # max file
     file_max = open(overall_dir_name + "/tp_lat_max.log", "w")
@@ -136,7 +157,79 @@ def generate_max_and_75_tp_lat_files(allThroughputsLatencies, msgSize, overall_d
     file_75.write("%s %s %s %s %s %s\n" % (load_75_found, tp_75_found, tp_75_found*msgSize*8/1e6, lat_75_found/1e6, latency_95th_75/1e6, latency_99th_75/1e6))
     file_75.close()
     
-    return lat_max
+    return latency_50th_max
+
+def createBroadcastData() :
+    # assuming that the script is run inside logsmcast/algorithm/
+    # create a table of (alg,learners,msgsize) -> (maxtpmsgps,maxtpmbps,lat_avg,lat_95)
+    
+    # how to create a file for a clustered histogram in gnuplot
+    # 
+    #
+#
+#   key: group1: AEI
+#        group2: BFJ
+#        group3: CGK
+#        group4: DHL
+#
+#
+#       D           G              K
+#    A CD         E GH            JKL
+#    ABCD         EFGH           IJKL
+#    ________________________________
+#     V1           V2             V3
+#              somexlabel
+#
+#    txt file:
+#    V1 A B C D
+#    V2 E F G H
+#    V3 I J K L
+#
+    data_table = {}
+    all_found_algs     = []
+    all_found_learners = []
+    all_found_msgsizes = []
+    
+    all_algs_dirs = [d for d in glob.glob("../*") if "broadcast" not in d]
+    for algdir in all_algs_dirs :
+        alg_name = re.split("/", algdir)[1]
+        all_found_algs += [alg_name]
+        pattern = algdir + "/" + getDirectoryPattern()
+        alg_learners = sorted([ int(v) for v in getAllValsFromDirs(pattern, 3) ])
+        alg_sizes    = sorted([ int(v) for v in getAllValsFromDirs(pattern, 9) ])
+        
+        for numLearners in alg_learners :
+            for msgSize in alg_sizes :
+                overall_dir = algdir + "/overall_" + getDirectoryPattern(alg_name, "all", numLearners, 1, 1, msgSize, False)
+                maxtp_msgps = geffilelinecolum(overall_dir + "/tp_lat_max.log", 3, 2)
+                maxtp_mbps  = geffilelinecolum(overall_dir + "/tp_lat_max.log", 3, 3)
+                lat_avg     = geffilelinecolum(overall_dir + "/tp_lat_75.log" , 3, 4)
+                lat_95      = geffilelinecolum(overall_dir + "/tp_lat_75.log" , 3, 5)
+                data_table[(alg_name, numLearners, msgSize)] = (prettynames[alg_name], maxtp_msgps, maxtp_mbps, lat_avg, lat_95)
+        
+        all_found_learners += [ l for l in alg_learners if l not in all_found_learners ]
+        all_found_msgsizes += [ s for s in alg_sizes    if s not in all_found_msgsizes ]
+
+    all_found_learners.sort()
+    all_found_msgsizes.sort()
+
+    for msgSize in all_found_msgsizes :
+        bcast_filepath = "../broadcast_%s.log" % msgSize
+        broadcast_file = open(bcast_filepath, "w")
+        broadcast_file.write("# learners [name msg/s Mbps latency_avg latency_95]*\n")
+        for numLearners in [0] + all_found_learners :
+            logLine = "%s" % numLearners
+            for alg in all_found_algs :
+                vals = (prettynames[alg], 0, 0, 0, 0)
+                if data_table.has_key((alg,numLearners,msgSize)) :
+                    vals = data_table[(alg,numLearners,msgSize)]
+                logLine += " \t%s \t%s \t%s \t%s \t%s" % vals
+            logLine += "\n"
+            broadcast_file.write(logLine)
+        broadcast_file.close()
+    
+    return all_found_msgsizes
+    
     
 ####################################################################################################
 ####################################################################################################
@@ -196,7 +289,11 @@ for alg in all_algs :
                             os.makedirs(overall_dir_name)
                         saveToFile(overall_latency_file,    allLatencies)
                         saveToFile(overall_throughput_file, allThroughputs)
-                        lat_max_avg = generate_max_and_75_tp_lat_files(allThroughputsLatencies, int(size), overall_dir_name, alg, learners, groups, pxpg, size, wdisk)
+                        lat_max_median = generate_max_and_75_tp_lat_files(allThroughputsLatencies, int(size), overall_dir_name, alg, learners, groups, pxpg, size, wdisk)
                         if doPlotting :
-                            plot(overall_dir_name, size, lat_max_avg)
+                            plot_overalls(overall_dir_name, size, lat_max_median*1.5)
+
+bcast_sizes = createBroadcastData()
+if doPlotting or True :
+    plot_broadcast(bcast_sizes)
                         

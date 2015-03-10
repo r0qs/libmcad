@@ -33,7 +33,9 @@ writeToDisk   = barg(6)
 
 
 ################################################################################
-logdir = get_logdir("ridge", numClients, numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+numPermits = numClients
+numClients = numGroups * numPxPerGroup
+logdir = get_logdir("mrp", numClients, numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
 print logdir
 clean_ridge_log(logdir)
 
@@ -43,7 +45,7 @@ nodespool = NodePool()
 # create config files
 ensemblesConfigPath  = logdir + "/ensembles_config.json"
 partitionsConfigPath = logdir + "/partitions_config.json"
-sysConfig = generateRidgeSystemConfiguration(nodespool.all(), numGroups, numPxPerGroup, numLearners, 3, writeToDisk, ensemblesConfigPath, partitionsConfigPath, saveToFile = True)
+sysConfig = generateRidgeSystemConfiguration(nodespool.all(), numGroups, numPxPerGroup, numLearners, 3, writeToDisk, ensemblesConfigPath, partitionsConfigPath, saveToFile=True, mode="RING")
 if sysConfig == None :
     sys.exit(1)
 
