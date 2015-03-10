@@ -33,8 +33,8 @@ set y2range[0:*]
 
 set output "$output"
 
-plot "$tpinput"  using 1:(\$2*8*$msize)/1e6 with lines title "throughput", \
-     "$latinput" using 1:(\$2/1e6)          with lines title "latency" axes x1y2
+plot "$tpinput"  using 1:(\$2*8*$msize)/1e6 with linespoints title "throughput", \
+     "$latinput" using 1:(\$2/1e6)          with linespoints title "latency" axes x1y2
 
 END_GNUPLOT
 
