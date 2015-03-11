@@ -21,8 +21,9 @@ set auto x
 
 set output "$output_tp"
 
-plot "$input" using 4:xtic(1) title column(2) fs solid lc rgb "#FFFFFF",\
-  ''        using 9:xtic(1) title column(7) fs solid lc rgb "#CCCCCC"
+plot "$input" using 4 :xtic(1) title column(2 ) fs solid lc rgb "#FFFFFF",\
+    ''        using 10:xtic(1) title column(8 ) fs solid lc rgb "#CCCCCC",\
+    ''        using 16:xtic(1) title column(14) fs solid lc rgb "#999999"
 
 END_GNUPLOT
 
@@ -43,11 +44,9 @@ set auto x
 
 set output "$output_lat"
 
-#plot "$input" using 5:5:((\$6)-(\$5)):xtic(1) title column(2) fs solid lc rgb "#FFFFFF",\
-#    ''        using 10:10:((\$11)-(\$10)):xtic(1) title column(7) fs solid lc rgb "#CCCCCC"
-    
-plot "$input" using 5:5:6:xtic(1) title column(2) fs solid lc rgb "#FFFFFF",\
-    ''        using 10:10:11:xtic(1) title column(7) fs solid lc rgb "#CCCCCC"    
+plot "$input" using 5 :6 :6 :xtic(1) title column(2 ) fs solid lc rgb "#FFFFFF",\
+    ''        using 11:12:12:xtic(1) title column(8 ) fs solid lc rgb "#CCCCCC",\
+    ''        using 17:18:18:xtic(1) title column(14) fs solid lc rgb "#999999"    
 
 END_GNUPLOT
 
