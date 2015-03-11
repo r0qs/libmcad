@@ -53,7 +53,7 @@ def getfileline(name, linenum) :
     fp.close()
     return wantedline
 
-def geffilelinecolum(name, linenum, colnum) :
+def getfilelinecolum(name, linenum, colnum) :
     line = getfileline(name, linenum)
     return line.split()[colnum - 1]
 
@@ -201,10 +201,10 @@ def createBroadcastData() :
         for numLearners in alg_learners :
             for msgSize in alg_sizes :
                 overall_dir = algdir + "/overall_" + getDirectoryPattern(alg_name, "all", numLearners, 1, 1, msgSize, False)
-                maxtp_msgps = geffilelinecolum(overall_dir + "/tp_lat_max.log", 3, 2)
-                maxtp_mbps  = geffilelinecolum(overall_dir + "/tp_lat_max.log", 3, 3)
-                lat_avg     = geffilelinecolum(overall_dir + "/tp_lat_75.log" , 3, 4)
-                lat_95      = geffilelinecolum(overall_dir + "/tp_lat_75.log" , 3, 5)
+                maxtp_msgps = getfilelinecolum(overall_dir + "/tp_lat_max.log", 3, 2)
+                maxtp_mbps  = getfilelinecolum(overall_dir + "/tp_lat_max.log", 3, 3)
+                lat_avg     = getfilelinecolum(overall_dir + "/tp_lat_75.log" , 3, 4)
+                lat_95      = getfilelinecolum(overall_dir + "/tp_lat_75.log" , 3, 5)
                 data_table[(alg_name, numLearners, msgSize)] = (prettynames[alg_name], maxtp_msgps, maxtp_mbps, lat_avg, lat_95)
         
         all_found_learners += [ l for l in alg_learners if l not in all_found_learners ]
