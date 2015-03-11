@@ -85,6 +85,7 @@ lpproposer = lpexecdir + "/proposer"
 lplearner  = lpexecdir + "/learner"
 lpclient   = lpexecdir + "/client"
 logdir     = HOME + "/logsmcast/"
+lpLogConverter = HOME + "/libmcad/benchLink/libpaxosLogConverter.py"
 
 # lpnorand
 lpnrexecdir  = HOME + "/repositories/mine/paxosudp_norandomvalue/build/sample"

@@ -119,6 +119,10 @@ exitcode = sshcmd(clinode, "%s %s/paxos.conf %s %s %s %s" % (lpnrclient,lpnrexec
 # copy client's throughput and latency log
 localcmd("mv %s/client1-%s-%sB.csv %s/client_tp_lat.csv" % (HOME,NUM_OUTSTADINGS,messageSize,logdir))
 
+# convert to the format used by my own scripts
+if exitcode == 0 :
+    localcmd("%s %s" % (lpLogConverter, logdir))
+
 # clean up (for other people)
 localcmd(cleaner)
 
