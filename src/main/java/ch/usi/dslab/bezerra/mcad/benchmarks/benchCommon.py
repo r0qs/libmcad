@@ -57,6 +57,7 @@ def get_logdir_load(algorithm, load, numLearners, numGroups, numPxPerGroup, mess
 
 # single experiment
 onceRunner = {"libpaxos" : HOME + "/libmcad/benchLink/runOnce_libpaxos.py",
+              "lpnorand" : HOME + "/libmcad/benchLink/runOnce_lpnorand.py",
               "mrp"      : HOME + "/libmcad/benchLink/runOnce_mrp.py",
               "ridge"    : HOME + "/libmcad/benchLink/runOnce_ridge.py" }
 cleaner = HOME + "/libmcad/benchLink/cleanUp.py"
@@ -83,7 +84,15 @@ lpacceptor = lpexecdir + "/acceptor"
 lpproposer = lpexecdir + "/proposer"
 lplearner  = lpexecdir + "/learner"
 lpclient   = lpexecdir + "/client"
-logdir   = HOME + "/logsmcast/"
+logdir     = HOME + "/logsmcast/"
+
+# lpnorand
+lpnrexecdir  = HOME + "/repositories/mine/paxosudp_norandomvalue/build/sample"
+lpnracceptor = lpnrexecdir + "/acceptor"
+lpnrproposer = lpnrexecdir + "/proposer"
+lpnrlearner  = lpnrexecdir + "/learner"
+lpnrclient   = lpnrexecdir + "/client"
+logdir       = HOME + "/logsmcast/"
 
 # ridge
 delta_null_messages_ms_disk = 30

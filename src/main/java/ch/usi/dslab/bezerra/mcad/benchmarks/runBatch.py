@@ -43,7 +43,7 @@ loadsGlobal = [250,300]
 numsLearners = [1, 2, 4, 8, 16, 32]
 #numsLearners = [16, 32]
 ##########################################
-#algorithms = ["libpaxos", "mrp", "ridge"]
+#algorithms = ["libpaxos", "lpnorand", "mrp", "ridge"]
 algorithms = ["mrp"]
 #algorithms = ["libpaxos"]
 ##########################################
