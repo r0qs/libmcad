@@ -40,15 +40,15 @@ incParcel = 10
 loadsGlobal = [250,300]
 #numPermits = 1
 ##########################################
-numsLearners = [1, 2, 4, 8, 16, 32]
-#numsLearners = [16, 32]
+#numsLearners = [1, 2, 4, 8, 16, 32]
+numsLearners = [16, 32]
 ##########################################
 #algorithms = ["libpaxos", "mrp", "ridge"]
 algorithms = ["mrp"]
 #algorithms = ["libpaxos"]
 ##########################################
 #messageSizes = [200, 8192, 65536]
-messageSizes = [200]
+messageSizes = [65536]
 ##########################################
 groups = 0
 pxpergroup = 1
