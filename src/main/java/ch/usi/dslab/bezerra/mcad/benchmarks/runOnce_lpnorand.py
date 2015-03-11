@@ -73,11 +73,11 @@ learners  = nodespool.nextn(NUM_LEARNERS)
 clients   = nodespool.nextn(NUM_CLIENTS)
 
 # create log directory
-logdir = get_logdir("libpaxos", 1, NUM_OUTSTADINGS, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+logdir = get_logdir("lpnorand", 1, NUM_OUTSTADINGS, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
 print logdir
 
 # create paxos.conf file
-create_libpaxos_configfile(lpexecdir + "/paxos.conf", acceptors, proposers, writeToDisk)
+create_libpaxos_configfile(lpnrexecdir + "/paxos.conf", acceptors, proposers, writeToDisk)
 
 ''' cleanup : kill processes, erase acceptors' database and erase experiment's logdir
 ''' 
@@ -88,33 +88,33 @@ sleep(5)
 # start acceptors
 for accid in range(NUM_ACCEPTORS) :
     # launch acceptor process accid
-    sshcmdbg(acceptors[accid], "%s %s  %s/paxos.conf  > %s/acceptor_%s.log 2>&1" % (lpacceptor,accid,lpexecdir,logdir,accid))
+    sshcmdbg(acceptors[accid], "%s %s  %s/paxos.conf  > %s/acceptor_%s.log 2>&1" % (lpnracceptor,accid,lpnrexecdir,logdir,accid))
     # launch bw monitor at its node
-    sshcmdbg(acceptors[accid], "bwm-ng %s/bwm-ng.conf > %s/acceptor_%s.csv 2>&1" % (                 lpexecdir,logdir,accid))
+    sshcmdbg(acceptors[accid], "bwm-ng %s/bwm-ng.conf > %s/acceptor_%s.csv 2>&1" % (                 lpnrexecdir,logdir,accid))
 
 sleep(5)
 # start proposers
 for propid in range(NUM_PROPOSERS) :
     # launch proposer propid
-    sshcmdbg(proposers[propid], "%s %s  %s/paxos.conf  > %s/proposer_%s.log 2>&1" % (lpproposer,propid,lpexecdir,logdir,propid))
+    sshcmdbg(proposers[propid], "%s %s  %s/paxos.conf  > %s/proposer_%s.log 2>&1" % (lpnrproposer,propid,lpnrexecdir,logdir,propid))
     # bw monitor for proposer propid
-    sshcmdbg(proposers[propid], "bwm-ng %s/bwm-ng.conf > %s/proposer_%s.csv 2>&1" % (                  lpexecdir,logdir,propid))
+    sshcmdbg(proposers[propid], "bwm-ng %s/bwm-ng.conf > %s/proposer_%s.csv 2>&1" % (                  lpnrexecdir,logdir,propid))
 
 sleep(5)
 # start learners
 for learnerid in range(NUM_LEARNERS) :
     # launch proposer propid
-    sshcmdbg(learners[learnerid], "%s     %s/paxos.conf  > %s/learner_%s.log 2>&1" % (lplearner,lpexecdir,logdir,learnerid))
+    sshcmdbg(learners[learnerid], "%s     %s/paxos.conf  > %s/learner_%s.log 2>&1" % (lpnrlearner,lpnrexecdir,logdir,learnerid))
     # bw monitor for proposer propid
-    sshcmdbg(learners[learnerid], "bwm-ng %s/bwm-ng.conf > %s/learner_%s.csv 2>&1" % (          lpexecdir,logdir,learnerid))
+    sshcmdbg(learners[learnerid], "bwm-ng %s/bwm-ng.conf > %s/learner_%s.csv 2>&1" % (          lpnrexecdir,logdir,learnerid))
 
 sleep(5)
 # client
 clinode = clients[0]
 # start the bw monitor at the client node
-sshcmdbg(clinode, "bwm-ng %s/bwm-ng.conf > %s/client_%s.csv 2>&1" % (lpexecdir,logdir,1))
+sshcmdbg(clinode, "bwm-ng %s/bwm-ng.conf > %s/client_%s.csv 2>&1" % (lpnrexecdir,logdir,1))
 # start the client and try to run it 3 times before giving up
-exitcode = sshcmd(clinode, "%s %s/paxos.conf %s %s %s %s" % (lpclient,lpexecdir,0,NUM_OUTSTADINGS,messageSize,1), 60)
+exitcode = sshcmd(clinode, "%s %s/paxos.conf %s %s %s %s" % (lpnrclient,lpnrexecdir,0,NUM_OUTSTADINGS,messageSize,1), 60)
 
 # copy client's throughput and latency log
 localcmd("mv %s/client1-%s-%sB.csv %s/client_tp_lat.csv" % (HOME,NUM_OUTSTADINGS,messageSize,logdir))
