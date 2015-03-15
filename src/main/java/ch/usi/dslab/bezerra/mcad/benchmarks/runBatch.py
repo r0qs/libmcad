@@ -36,29 +36,30 @@ maxClients = 70
 incFactor = 1
 incParcel = 10
 #loads = getLoads(minClients, maxClients, incFactor, incParcel)
-#loadsGlobal = [1, 2, 3, 4, 5, 6 , 7, 8, 9, 10, 12, 14, 16, 18, 20, 30, 40, 50, 60, 80, 90, 100, 150, 200 ]
-loadsGlobal = [250,300]
+loadsGlobal = [1, 5, 10, 20, 30, 50, 80]
+#loadsGlobal = [250,300]
 #numPermits = 1
 ##########################################
-#numsLearners = [1, 2, 4, 8, 16, 32]
-numsLearners = [16, 32]
+numsLearners = [1, 2, 4, 8, 16, 32]
+#numsLearners = [16, 32]
 ##########################################
-#algorithms = ["libpaxos", "lpnorand", "mrp", "ridge"]
-algorithms = ["mrp"]
+algorithms = ["mrp", "ridge"]#, "lpnorand"]
+#algorithms = ["mrp"]
 #algorithms = ["libpaxos"]
+#algorithms = ["lpnorand"]
 ##########################################
-#messageSizes = [200, 8192, 65536]
-messageSizes = [65536]
+messageSizes = [200, 8192, 65536]
+#messageSizes = [65536]
 ##########################################
 groups = 0
 pxpergroup = 1
-groupConfigs = [{groups : 1, pxpergroup : 1},
+groupConfigs = [#{groups : 1, pxpergroup : 1},
                # {groups : 1, pxpergroup : 2},
                # {groups : 1, pxpergroup : 4},
                # {groups : 1, pxpergroup : 8},
-               # {groups : 2, pxpergroup : 1},
-               # {groups : 4, pxpergroup : 1},
-               # {groups : 8, pxpergroup : 1},
+                {groups : 2, pxpergroup : 1},
+                {groups : 4, pxpergroup : 1},
+                {groups : 8, pxpergroup : 1},
                ]
 ##########################################
 #diskConfigs = [False, True]
@@ -113,6 +114,10 @@ loadsDic = {}
 # (l,g,s)
 #for l in [1,2,4,8] :
 #    loadsDic[(l,1,65536)] = [6,7,8,9]
+
+# lpnorand
+#for l in [1,2,4,8,16,32] :
+#    loadsDic[(l,1,200)] = [10,20,30,40,50,90]
 
 skips = 0
 if len(sys.argv) > 1 :
