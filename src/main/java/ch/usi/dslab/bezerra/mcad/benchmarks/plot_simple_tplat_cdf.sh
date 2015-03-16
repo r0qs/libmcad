@@ -5,6 +5,8 @@ msize=$2
 latmax=$3
 tpinput=${path}/throughput.log
 latinput=${path}/latency.log
+powerinput=${path}/power.log
+criticals=${path}/criticals.log
 output=${path}/tplat.ps
 
 gnuplot << END_GNUPLOT
@@ -19,7 +21,7 @@ set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18
 #set ytics offset 0.45,0
 #set yrange [0:$latrange]
 
-set title "Throughput and latency" #offset 0,-0.5
+set title "$path" #offset 0,-0.5
 
 set xlabel "Load (clients)"
 set ylabel "Throughput (Mbps)"
@@ -33,8 +35,29 @@ set y2range[0:*]
 
 set output "$output"
 
-plot "$tpinput"  using 1:(\$2*8*$msize)/1e6 with linespoints title "throughput", \
-     "$latinput" using 1:(\$2/1e6)          with linespoints title "latency" axes x1y2
+XMAX=200
+
+plot "$tpinput"    using 1:(\$2*8*$msize)  /1e6 with linespoints title "throughput" lc rgb "red"  ,\
+     "$powerinput" using 1:(8*$msize*\$2)       with linespoints title "power"      lc rgb "blue" ,\
+     "$latinput"   using 1:(\$2/1e6)            with linespoints title "latency"    lc rgb "green" axes x1y2 ,\
+     "$criticals"  using 1:(\$2*8*$msize)  /1e6:(\$3 )*XMAX with circles title "tpmax"    lc rgb "red"  ,\
+     "$criticals"  using 4:(\$5*8*$msize)  /1e6:(\$6 )*XMAX with circles title "tp75"     lc rgb "green",\
+     "$criticals"  using 7:(\$8*8*$msize)  /1e6:(\$9 )*XMAX with circles title "maxpower" lc rgb "blue" ,\
+     "$criticals"  using 10:(\$11*8*$msize)/1e6:(\$12)*XMAX with circles title "1 client" lc rgb "black"
+
+set output "$output"
+
+XMAX=GPVAL_X_MAX
+
+replot
+
+#plot "$tpinput"    using 1:(\$2*8*$msize)  /1e6 with linespoints title "throughput" lc rgb "red"  ,\
+#     "$powerinput" using 1:(8*$msize*\$2)       with linespoints title "power"      lc rgb "blue" ,\
+#     "$latinput"   using 1:(\$2/1e6)            with linespoints title "latency"    lc rgb "green" axes x1y2 ,\
+#     "$criticals"  using 1:(\$2*8*$msize)  /1e6:(\$3 )*XMAX with circles title "tpmax"    lc rgb "red"  ,\
+#     "$criticals"  using 4:(\$5*8*$msize)  /1e6:(\$6 )*XMAX with circles title "tp75"     lc rgb "green",\
+#     "$criticals"  using 7:(\$8*8*$msize)  /1e6:(\$9 )*XMAX with circles title "maxpower" lc rgb "blue" ,\
+#     "$criticals"  using 10:(\$11*8*$msize)/1e6:(\$12)*XMAX with circles title "1 client" lc rgb "black"
 
 END_GNUPLOT
 
@@ -43,12 +66,14 @@ rm $output
 
 cdfmaxinput=${path}/cdf_max.log
 cdf75input=${path}/cdf_75.log
+cdfpowerinput=${path}/cdf_power.log
+cdf1client=${path}/cdf_1client.log
 output=${path}/cdfs.ps
 
 gnuplot << END_GNUPLOT
 set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18
 
-set title "Latency CDF" #offset 0,-0.5
+set title '$path' #offset 0,-0.5
 
 set xlabel "Latency (ms)"
 set xtics
@@ -62,8 +87,10 @@ set ytics add (0.99)
 set grid xtics ytics
 set output "$output"
 
-plot "$cdfmaxinput" using ((\$1)/1e6):2 with lines title "max", \
-     "$cdf75input"  using ((\$1)/1e6):2 with lines title "75"
+plot "$cdfmaxinput"   using ((\$1)/1e6):2 with lines title "max"      lc rgb "red"   ,\
+     "$cdf75input"    using ((\$1)/1e6):2 with lines title "75"       lc rgb "green" ,\
+     "$cdfpowerinput" using ((\$1)/1e6):2 with lines title "maxpower" lc rgb "blue"  ,\
+     "$cdf1client"    using ((\$1)/1e6):2 with lines title "1 client" lc rgb "black"
 
 END_GNUPLOT
 
