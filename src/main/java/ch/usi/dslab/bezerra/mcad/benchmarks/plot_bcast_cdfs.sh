@@ -9,10 +9,9 @@ alg2=$6
 alg2path=$7
 alg3=$8
 alg3path=$9
-#alg4=${10}
-#alg4path=${11}
-#maxlat=${12}
-maxlat=${10}
+alg4=${10}
+alg4path=${11}
+maxlat=${12}
 
 output=${outpath}/cdfs_${learners}_learners_${size}_bytes.ps
 
@@ -35,8 +34,8 @@ set output "$output"
 
 plot "$alg1path" using ((\$1)/1e6):2 with lines title "$alg1" lc rgb "red"   ,\
      "$alg2path" using ((\$1)/1e6):2 with lines title "$alg2" lc rgb "green" ,\
-     "$alg3path" using ((\$1)/1e6):2 with lines title "$alg3" lc rgb "blue"  #,\
-#     "$alg4path" using ((\$1)/1e6):2 with lines title "$alg4" lc rgb "black"
+     "$alg3path" using ((\$1)/1e6):2 with lines title "$alg3" lc rgb "blue"  ,\
+     "$alg4path" using ((\$1)/1e6):2 with lines title "$alg4" lc rgb "black"
 
 END_GNUPLOT
 

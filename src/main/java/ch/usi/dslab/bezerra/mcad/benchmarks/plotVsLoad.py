@@ -323,7 +323,13 @@ def createBroadcastData() :
     all_found_learners = []
     all_found_msgsizes = []
     
-    all_algs_dirs = [d for d in glob.glob("../*") if "broadcast" not in d and ".p" not in d]
+    all_algs_dirs_glob = [d for d in glob.glob("../*") if "broadcast" not in d and ".p" not in d]
+    all_algs_dirs = []
+    for alg in ["spread", "lpnorand", "mrp", "ridge"] :
+        algdir = "../" + alg
+        if algdir in all_algs_dirs_glob :
+            all_algs_dirs.append(algdir)
+    
     for algdir in all_algs_dirs :
         alg_name = re.split("/", algdir)[1]
         all_found_algs += [alg_name]

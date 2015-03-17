@@ -38,7 +38,7 @@ let lat95col=tpcol+3
 gnuplot << END_GNUPLOT
 set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18
 
-set title "Maximum throughput - ${size}-bytes messages - ${name}"
+set title "Throughput - ${size}-bytes messages - ${name}"
 
 set xlabel "Destinations"
 set ylabel "Throughput (Mbps)"
@@ -55,7 +55,8 @@ set output "$output_tp"
 
 plot "$input" using $[tpcol+alglinelength*0]:xtic(1) title column(5  ) fs solid lc rgb "#FFFFFF",\
     ''        using $[tpcol+alglinelength*1]:xtic(1) title column(37 ) fs solid lc rgb "#CCCCCC",\
-    ''        using $[tpcol+alglinelength*2]:xtic(1) title column(69 ) fs solid lc rgb "#999999"
+    ''        using $[tpcol+alglinelength*2]:xtic(1) title column(69 ) fs solid lc rgb "#999999",\
+    ''        using $[tpcol+alglinelength*3]:xtic(1) title column(101) fs solid lc rgb "#666666"
 
 END_GNUPLOT
 
@@ -76,13 +77,14 @@ set style histogram errorbars gap 2 lw 1
 set style fill solid border rgb "black"
 set auto x
 
-set yrange[0:50]
+set yrange[0:25]
 
 set output "$output_lat"
 
-plot "$input" using $[lat95col+alglinelength*0]:$[latavgcol+alglinelength*0]:$[latavgcol+alglinelength*0]:xtic(1) title column(5 ) fs solid lc rgb "#FFFFFF",\
-    ''        using $[lat95col+alglinelength*1]:$[latavgcol+alglinelength*1]:$[latavgcol+alglinelength*1]:xtic(1) title column(37) fs solid lc rgb "#CCCCCC",\
-    ''        using $[lat95col+alglinelength*2]:$[latavgcol+alglinelength*2]:$[latavgcol+alglinelength*2]:xtic(1) title column(69) fs solid lc rgb "#999999"
+plot "$input" using $[lat95col+alglinelength*0]:$[latavgcol+alglinelength*0]:$[latavgcol+alglinelength*0]:xtic(1) title column(5  ) fs solid lc rgb "#FFFFFF",\
+    ''        using $[lat95col+alglinelength*1]:$[latavgcol+alglinelength*1]:$[latavgcol+alglinelength*1]:xtic(1) title column(37 ) fs solid lc rgb "#CCCCCC",\
+    ''        using $[lat95col+alglinelength*2]:$[latavgcol+alglinelength*2]:$[latavgcol+alglinelength*2]:xtic(1) title column(69 ) fs solid lc rgb "#999999",\
+    ''        using $[lat95col+alglinelength*3]:$[latavgcol+alglinelength*3]:$[latavgcol+alglinelength*3]:xtic(1) title column(101) fs solid lc rgb "#666666"
 
 END_GNUPLOT
 
