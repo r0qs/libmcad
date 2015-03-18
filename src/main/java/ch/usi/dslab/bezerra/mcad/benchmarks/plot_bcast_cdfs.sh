@@ -3,17 +3,18 @@
 size=$1
 learners=$2
 outpath=$3
-alg1=$4
-alg1path=$5
-alg2=$6
-alg2path=$7
-alg3=$8
-alg3path=$9
-alg4=${10}
-alg4path=${11}
-maxlat=${12}
+tptype=$4
+alg1=$5
+alg1path=$6
+alg2=$7
+alg2path=$8
+alg3=$9
+alg3path=${10}
+alg4=${11}
+alg4path=${12}
+maxlat=${13}
 
-output=${outpath}/cdfs_${learners}_learners_${size}_bytes.ps
+output=${outpath}/cdfs_${learners}_learners_${size}_bytes_${tptype}.ps
 
 gnuplot << END_GNUPLOT
 set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18

@@ -9,6 +9,8 @@ from benchCommon import *
 simple_gnuplot_script_sh_path = HOME + "/libmcad/benchLink/plot_simple_tplat_cdf.sh"
 broadcast_gnuplot_sh_path = HOME + "/libmcad/benchLink/plot_broadcast.sh"
 bcast_cdfs_gnuplot_sh_path = HOME + "/libmcad/benchLink/plot_bcast_cdfs.sh"
+bcast_multi_bcast_gnuplot_sh_path = HOME + "/libmcad/benchLink/plot_multi_broadcast.sh"
+bcast_multi_cdfs_gnuplot_sh_path = HOME + "/libmcad/benchLink/plot_multi_cdfs.sh"
 prettynames = {"libpaxos" : "LibPaxos",
                "lpnorand" : "LibPaxos",
                "ridge"    : "Ridge"   ,
@@ -67,6 +69,14 @@ class DataSummary :
         self.data_75 = data_75
         self.data_power = data_power
         self.data_1client = data_1client
+        
+    def getDataUnit(self, name):
+        return {
+            "max"     : self.data_max,
+            "1client" : self.data_1client,
+            "75"      : self.data_75,
+            "power"   : self.data_power,
+        }[name]
     
     def toString(self) :
         return "%s %s %s %s %s %s %s %s" % \
@@ -154,21 +164,66 @@ def plot_broadcast_tp_lat(sizes) :
         print "Plotting broadcast graphs for %s bytes" % (size)
         os.system("%s %s %s" % (broadcast_gnuplot_sh_path, os.getcwd() + "/../", size))
 
-def plot_broadcast_cdfs_1client(logdir, data_table, all_algs, all_learners, all_sizes) :
-    for learners in all_learners : 
-        for size in all_sizes :
-            print "Plotting broadcast cdf graphs for (%s learners, %s bytes) " % (learners, size)
-            gnuplot_params = ""
-            max_lat99 = 0
+    print "Plotting broadcast multi graphs"
+    os.system("%s %s" % (bcast_multi_bcast_gnuplot_sh_path, os.getcwd() + "/../"))
+
+def plot_broadcast_cdfs(logdir, data_table, all_algs, all_learners, all_sizes) :
+    for tptype in ["1client", "power"] :
+        for learners in all_learners :
+            cdf_paths = dict()
+            max_lat = dict()
+            for size in all_sizes :
+                print "Plotting broadcast cdf graphs for (%s learners, %s bytes, %s) " % (learners, size, tptype)
+                gnuplot_params = ""
+                cdf_paths[size] = dict()
+                max_lat[size] = 0
+                for alg in all_algs :
+                    cdf_paths[size][alg]  = "%s/%s/overall_%s" % (logdir,alg,getDirectoryPattern(alg, "all", learners, 1, 1, size, False))
+                    cdf_paths[size][alg] += "/cdf_%s.log" % (tptype)
+                    lat99 = float(data_table[(alg,learners,size)].getDataUnit(tptype).lat_95)
+                    if lat99 > max_lat[size] : max_lat[size] = lat99
+                    
+                    gnuplot_params += " " + prettynames[alg] + " " + cdf_paths[size][alg]
+                os.system("%s %s %s %s %s %s %s" % (bcast_cdfs_gnuplot_sh_path, size, learners, os.getcwd() + "/../", tptype, gnuplot_params, max_lat[size]))
+            
+            print "Plotting broadcast cdf multiplot for (%s learners, %s)" % (learners, tptype)
+            multi_params = "%s %s " % (learners, os.getcwd() + "/../")
             for alg in all_algs :
-                cdf_paths = dict()
-                cdf_paths[alg]  = "%s/%s/overall_%s" % (logdir,alg,getDirectoryPattern(alg, "all", learners, 1, 1, size, False))
-                cdf_paths[alg] += "/cdf_1client.log"
-                lat99 = float(data_table[(alg,learners,size)].data_1client.lat_99)
-                if lat99 > max_lat99 : max_lat99 = lat99 
+                multi_params += "%s " % (prettynames[alg])
+            rsizes = list(all_sizes)
+            rsizes.reverse()
+            for size in rsizes :
+                for alg in all_algs :
+                    multi_params += "%s " % (cdf_paths[size][alg])
+            for size in rsizes :
+                multi_params+= "%s " % (max_lat[size])
+            multi_params += "%s" % (tptype)
+            
+            os.system("%s %s" % (bcast_multi_cdfs_gnuplot_sh_path, multi_params))
+            
                 
-                gnuplot_params += " " + prettynames[alg] + " " + cdf_paths[alg]
-            os.system("%s %s %s %s %s %s" % (bcast_cdfs_gnuplot_sh_path, size, learners, os.getcwd() + "/../", gnuplot_params, max_lat99))
+            # % learners, "..", (for alg in algs, insert here), 
+            # learners=$1
+            # outpath=$2
+            # alg1=$3
+            # alg2=$4
+            # alg3=$5
+            # alg4=$6
+            # alg1path64k=$7
+            # alg2path64k=$8
+            # alg3path64k=$9
+            # alg4path64k=${10}
+            # alg1path8k=${11}
+            # alg2path8k=${12}
+            # alg3path8k=${13}
+            # alg4path8k=${14}
+            # alg1path200=${15}
+            # alg2path200=${16}
+            # alg3path200=${17}
+            # alg4path200=${18}
+            # maxlat64k=${19}
+            # maxlat8k=${20}
+            # maxlat200=${21}
 
             
 
@@ -378,7 +433,6 @@ def createBroadcastData() :
     
     return (data_table, all_found_algs, all_found_learners, all_found_msgsizes)
     
-    
 ####################################################################################################
 ####################################################################################################
 
@@ -459,5 +513,5 @@ data_table,all_algs,all_learners,all_sizes = createBroadcastData()
 if doBroadcastPlotting :
     plot_broadcast_tp_lat(all_sizes)
 
-if doCdfPlotting :    
-    plot_broadcast_cdfs_1client("..", data_table, all_algs, all_learners, all_sizes)
+if doCdfPlotting :
+    plot_broadcast_cdfs("..", data_table, all_algs, all_learners, all_sizes)
