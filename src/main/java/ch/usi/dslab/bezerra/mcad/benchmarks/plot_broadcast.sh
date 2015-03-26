@@ -5,24 +5,26 @@ size=$2
 
 input=${directory}/broadcast_${size}.log
 
-alglinelength=32
+alglinelength=33
 # tp cols
-# 8  -> tp max
-# 15 -> tp 75
-# 22 -> tp power
-# 29 -> tp 1client
+# 9  -> tp max
+# 16 -> tp 75
+# 23 -> tp power
+# 30 -> tp 1client
+
+algnamecol=6
 
 datatypes[0]="max"
-tpcols[0]=8
+tpcols[0]=9
 
 datatypes[1]="75"
 tpcols[1]=15
 
 datatypes[2]="power"
-tpcols[2]=22
+tpcols[2]=23
 
 datatypes[3]="1client"
-tpcols[3]=29
+tpcols[3]=30
 
 for i in 0 1 2 3 ;
 do
@@ -53,10 +55,10 @@ set auto x
 
 set output "$output_tp"
 
-plot "$input" using $[tpcol+alglinelength*0]:xtic(1) title column(5  ) fs solid lc rgb "#FFFFFF",\
-    ''        using $[tpcol+alglinelength*1]:xtic(1) title column(37 ) fs solid lc rgb "#CCCCCC",\
-    ''        using $[tpcol+alglinelength*2]:xtic(1) title column(69 ) fs solid lc rgb "#999999",\
-    ''        using $[tpcol+alglinelength*3]:xtic(1) title column(101) fs solid lc rgb "#666666"
+plot "$input" using $[tpcol+alglinelength*0]:xtic(1) title column($[algnamecol+alglinelength*0]) fs solid lc rgb "#FFFFFF",\
+    ''        using $[tpcol+alglinelength*1]:xtic(1) title column($[algnamecol+alglinelength*1]) fs solid lc rgb "#CCCCCC",\
+    ''        using $[tpcol+alglinelength*2]:xtic(1) title column($[algnamecol+alglinelength*2]) fs solid lc rgb "#999999",\
+    ''        using $[tpcol+alglinelength*3]:xtic(1) title column($[algnamecol+alglinelength*3]) fs solid lc rgb "#666666"
 
 END_GNUPLOT
 
@@ -81,10 +83,10 @@ set yrange[0:25]
 
 set output "$output_lat"
 
-plot "$input" using $[lat95col+alglinelength*0]:$[latavgcol+alglinelength*0]:$[latavgcol+alglinelength*0]:xtic(1) title column(5  ) fs solid lc rgb "#FFFFFF",\
-    ''        using $[lat95col+alglinelength*1]:$[latavgcol+alglinelength*1]:$[latavgcol+alglinelength*1]:xtic(1) title column(37 ) fs solid lc rgb "#CCCCCC",\
-    ''        using $[lat95col+alglinelength*2]:$[latavgcol+alglinelength*2]:$[latavgcol+alglinelength*2]:xtic(1) title column(69 ) fs solid lc rgb "#999999",\
-    ''        using $[lat95col+alglinelength*3]:$[latavgcol+alglinelength*3]:$[latavgcol+alglinelength*3]:xtic(1) title column(101) fs solid lc rgb "#666666"
+plot "$input" using $[lat95col+alglinelength*0]:$[latavgcol+alglinelength*0]:$[latavgcol+alglinelength*0]:xtic(1) title column($[algnamecol+alglinelength*0]) fs solid lc rgb "#FFFFFF",\
+    ''        using $[lat95col+alglinelength*1]:$[latavgcol+alglinelength*1]:$[latavgcol+alglinelength*1]:xtic(1) title column($[algnamecol+alglinelength*1]) fs solid lc rgb "#CCCCCC",\
+    ''        using $[lat95col+alglinelength*2]:$[latavgcol+alglinelength*2]:$[latavgcol+alglinelength*2]:xtic(1) title column($[algnamecol+alglinelength*2]) fs solid lc rgb "#999999",\
+    ''        using $[lat95col+alglinelength*3]:$[latavgcol+alglinelength*3]:$[latavgcol+alglinelength*3]:xtic(1) title column($[algnamecol+alglinelength*3]) fs solid lc rgb "#666666"
 
 END_GNUPLOT
 
