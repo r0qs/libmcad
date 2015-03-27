@@ -156,10 +156,10 @@ set auto x
 
 set yrange[0:100]
 
-plot "$input200" using (\$$[tpcol+alglinelength*0]) title column($[algnamecol+alglinelength*0]) fs solid lc rgb "#FFFFFF",\
-     ''          using (\$$[tpcol+alglinelength*1]) title column($[algnamecol+alglinelength*1]) fs solid lc rgb "#CCCCCC",\
-     ''          using (\$$[tpcol+alglinelength*2]) title column($[algnamecol+alglinelength*2]) fs solid lc rgb "#999999",\
-     ''          using (\$$[tpcol+alglinelength*3]) title column($[algnamecol+alglinelength*3]) fs solid lc rgb "#666666"
+plot "$input200" using (\$$[tpcol+alglinelength*0]):xtic(1) title column($[algnamecol+alglinelength*0]) fs solid lc rgb "#FFFFFF",\
+     ''          using (\$$[tpcol+alglinelength*1]):xtic(1) title column($[algnamecol+alglinelength*1]) fs solid lc rgb "#CCCCCC",\
+     ''          using (\$$[tpcol+alglinelength*2]):xtic(1) title column($[algnamecol+alglinelength*2]) fs solid lc rgb "#999999",\
+     ''          using (\$$[tpcol+alglinelength*3]):xtic(1) title column($[algnamecol+alglinelength*3]) fs solid lc rgb "#666666"
 ##########################################################
 END_GNUPLOT
 pstopdf $output_tp
@@ -203,7 +203,7 @@ unset xtics
 set ylabel "Latency (ms)" offset ${latlabeloff64k[i]}
 set grid ytics
 set style data histogram
-set style histogram errorbars gap 3 lw 1
+set style histogram cluster errorbars gap 3 lw 1
 
 set style fill solid border rgb "black"
 set auto x
@@ -232,7 +232,7 @@ unset xtics
 set ylabel "Latency (ms)" offset ${latlabeloff8k[i]}
 set grid ytics
 set style data histogram
-set style histogram errorbars gap 2 lw 1
+set style histogram cluster errorbars gap 3 lw 1
 
 set style fill solid border rgb "black"
 set auto x
@@ -257,7 +257,7 @@ set ylabel "Latency (ms)" offset ${latlabeloff200[i]}
 set xtics offset 0,0.5
 set grid ytics
 set style data histogram
-set style histogram errorbars gap 2 lw 1
+set style histogram cluster errorbars gap 3 lw 1
 
 set style fill solid border rgb "black"
 set auto x

@@ -204,7 +204,7 @@ set ylabel "Latency (ms)" offset ${latlabeloff64k[i]}
 set ytics 0,10
 set grid ytics
 set style data histogram
-set style histogram errorbars gap 3 lw 1
+set style histogram cluster errorbars gap 3 lw 1
 
 set style fill solid border rgb "black"
 set auto x
@@ -233,7 +233,7 @@ set ylabel "Latency (ms)" offset ${latlabeloff8k[i]}
 set ytics 0,2
 set grid ytics
 set style data histogram
-set style histogram errorbars gap 2 lw 1
+set style histogram cluster errorbars gap 3 lw 1
 
 set style fill solid border rgb "black"
 set auto x
@@ -258,7 +258,7 @@ set ytics 0,2
 set xtics offset 0,0.5
 set grid ytics
 set style data histogram
-set style histogram errorbars gap 2 lw 1
+set style histogram cluster errorbars gap 3 lw 1
 
 set style fill solid border rgb "black"
 set auto x

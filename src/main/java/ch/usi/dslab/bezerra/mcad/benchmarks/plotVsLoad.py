@@ -492,7 +492,7 @@ def createMulticastData() :
         for numGroups in alg_groups :
             for msgSize in alg_sizes :
                 data_units = {}
-                overall_dir = algdir + "/overall_" + getDirectoryPattern(alg_name, "all", numGroups*2, numGroups, 1, msgSize, False)
+                overall_dir = algdir + "/overall_" + getDirectoryPattern(alg_name, "all", numGroups*4, numGroups, 1, msgSize, False)
                 for data_type in ["max","75","power","1client"] :
                     data_file = overall_dir + "/tp_lat_%s.log" % (data_type)
                     load     = getfilelinecolum(data_file, 3, 1)
@@ -504,7 +504,7 @@ def createMulticastData() :
                     lat_99   = getfilelinecolum(data_file, 3, 7)
                     data_units[data_type] = DataUnit(load, tp_msgps, tp_mbps, lat_avg, lat_50, lat_95, lat_99)
                 data_table[(alg_name, numGroups, msgSize)] = \
-                  DataSummary(alg_name, numGroups*2, numGroups, msgSize, prettynamesmcast[alg_name], \
+                  DataSummary(alg_name, numGroups*4, numGroups, msgSize, prettynamesmcast[alg_name], \
                   data_units["max"], data_units["75"], data_units["power"], data_units["1client"])
         
         all_found_groups += [ g for g in alg_groups if g not in all_found_groups ]
