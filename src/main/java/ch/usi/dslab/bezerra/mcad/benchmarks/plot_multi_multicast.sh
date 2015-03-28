@@ -35,9 +35,9 @@ latlabeloff200[1]="2.5"
 
 datatypes[2]="power"
 tpcols[2]=23
-maxlat64k[2]="40"
-maxlat8k[2]="10"
-maxlat200[2]="10"
+maxlat64k[2]="60"
+maxlat8k[2]="15"
+maxlat200[2]="20"
 latlabeloff64k[2]="1.75"
 latlabeloff8k[2]="1.75"
 latlabeloff200[2]="1.75"
@@ -146,7 +146,7 @@ set title "200 Bytes messages"
 
 set xlabel "Multicast groups" offset 0,1.0
 set ylabel "Throughput (Mbps)" offset 3
-set ytics 0,30,120
+set ytics 0,45
 set xtics offset 0,0.5
 set grid ytics
 set style data histogram
@@ -155,7 +155,7 @@ set style histogram cluster gap 3
 set style fill solid border rgb "black"
 set auto x
 
-set yrange[0:120]
+set yrange[0:180]
 
 plot "$input200" using (\$$[tpcol+alglinelength*0]):xtic(1) title column($[algnamecol+alglinelength*0]) fs solid lc rgb "#FFFFFF",\
      ''          using (\$$[tpcol+alglinelength*1]):xtic(1) title column($[algnamecol+alglinelength*1]) fs solid lc rgb "#999999",\
@@ -201,7 +201,7 @@ set key top right maxrows 1 samplen 1.5
 unset xlabel
 unset xtics
 set ylabel "Latency (ms)" offset ${latlabeloff64k[i]}
-set ytics 0,10
+set ytics 0,12
 set grid ytics
 set style data histogram
 set style histogram cluster errorbars gap 3 lw 1
@@ -230,7 +230,7 @@ unset key
 unset xlabel
 unset xtics
 set ylabel "Latency (ms)" offset ${latlabeloff8k[i]}
-set ytics 0,2
+set ytics 0,3
 set grid ytics
 set style data histogram
 set style histogram cluster errorbars gap 3 lw 1
@@ -254,7 +254,7 @@ set title "200 Bytes messages"
 
 set xlabel "Multicast groups" offset 0,1.0
 set ylabel "Latency (ms)" offset ${latlabeloff200[i]}
-set ytics 0,2
+set ytics 0,4
 set xtics offset 0,0.5
 set grid ytics
 set style data histogram
