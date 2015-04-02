@@ -8,6 +8,7 @@ latinput=${path}/latency.log
 powerinput=${path}/power.log
 criticals=${path}/criticals.log
 output=${path}/tplat.ps
+prettypath=$(echo $path | tr _ " ")
 
 gnuplot << END_GNUPLOT
 set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18
@@ -21,7 +22,7 @@ set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18
 #set ytics offset 0.45,0
 #set yrange [0:$latrange]
 
-set title "$path" #offset 0,-0.5
+set title "$prettypath" #offset 0,-0.5
 
 set xlabel "Load (clients)"
 set ylabel "Throughput (Mbps)"
@@ -73,7 +74,7 @@ output=${path}/cdfs.ps
 gnuplot << END_GNUPLOT
 set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18
 
-set title '$path' #offset 0,-0.5
+set title '$prettypath' #offset 0,-0.5
 
 set xlabel "Latency (ms)"
 set xtics

@@ -9,11 +9,19 @@ from benchCommon import *
 simple_gnuplot_script_sh_path = HOME + "/libmcad/benchLink/plot_simple_tplat_cdf.sh"
 broadcast_gnuplot_sh_path = HOME + "/libmcad/benchLink/plot_broadcast.sh"
 bcast_cdfs_gnuplot_sh_path = HOME + "/libmcad/benchLink/plot_bcast_cdfs.sh"
-prettynames = {"libpaxos" : "LibPaxos",
-               "lpnorand" : "LibPaxos",
-               "ridge"    : "Ridge"   ,
-               "mrp"      : "\"Ring Paxos\"",
-               "spread"   : "Spread"}
+bcast_multi_bcast_gnuplot_sh_path = HOME + "/libmcad/benchLink/plot_multi_broadcast.sh"
+bcast_multi_cdfs_gnuplot_sh_path = HOME + "/libmcad/benchLink/plot_multi_cdfs.sh"
+mcast_multi_mcast_gnuplot_sh_path = HOME + "/libmcad/benchLink/plot_multi_multicast.sh"
+prettynamesbcast = {"libpaxos" : "LibPaxos",
+                    "lpnorand" : "LibPaxos",
+                    "ridge"    : "Ridge"   ,
+                    "mrp"      : "\"Ring Paxos\"",
+                    "spread"   : "Spread"}
+prettynamesmcast = {"libpaxos" : "LibPaxos",
+                    "lpnorand" : "LibPaxos",
+                    "ridge"    : "Ridge"   ,
+                    "mrp"      : "\"Multi-Ring Paxos\"",
+                    "spread"   : "Spread"}
 
 class DataUnit :
     #load
@@ -51,6 +59,7 @@ class DataUnit :
 class DataSummary :
     alg_name = None
     numLearners = None
+    numGroups = None
     msgSize = None
     prettyname = None
     data_max = None
@@ -58,20 +67,29 @@ class DataSummary :
     data_power = None
     data_1client = None
     
-    def __init__(self, alg_name=None, numLearners=None, msgSize=None, prettyname=None, data_max=None, data_75=None, data_power=None, data_1client=None):
+    def __init__(self, alg_name=None, numLearners=None, numGroups=None, msgSize=None, prettyname=None, data_max=None, data_75=None, data_power=None, data_1client=None):
         self.alg_name = alg_name
         self.numLearners = numLearners
+        self.numGroups = numGroups
         self.msgSize = msgSize
         self.prettyname = prettyname
         self.data_max = data_max
         self.data_75 = data_75
         self.data_power = data_power
         self.data_1client = data_1client
+        
+    def getDataUnit(self, name):
+        return {
+            "max"     : self.data_max,
+            "1client" : self.data_1client,
+            "75"      : self.data_75,
+            "power"   : self.data_power,
+        }[name]
     
     def toString(self) :
-        return "%s %s %s %s %s %s %s %s" % \
-          (self.alg_name, self.numLearners, self.msgSize, self.prettyname,\
-           self.data_max, self.data_75, self.data_power, self.data_1client)
+        return "%s %s %s %s %s %s %s %s %s" % \
+          (self.alg_name, self.numLearners, self.numGroups,  self.msgSize, self.prettyname,\
+           self.data_max, self.data_75,     self.data_power, self.data_1client)
     
     def __str__(self):
         return self.toString()
@@ -83,7 +101,7 @@ class DataSummary :
     @staticmethod
     def emptySummary(name) :
         emptyUnit = DataUnit(0, 0, 0, 0, 0, 0, 0)
-        emptySum = DataSummary("xxx", 0, 0, name, emptyUnit, emptyUnit, emptyUnit, emptyUnit)
+        emptySum = DataSummary("xxx", 0, 0, 0, name, emptyUnit, emptyUnit, emptyUnit, emptyUnit)
         return emptySum
 
 ####################################################################################################
@@ -150,25 +168,73 @@ def plot_overalls(dirPath, msgSize, lat_max_avg) :
     os.system("%s %s %s %s" % (simple_gnuplot_script_sh_path, dirPath, msgSize, lat_max_avg))
 
 def plot_broadcast_tp_lat(sizes) :
-    for size in sizes :
-        print "Plotting broadcast graphs for %s bytes" % (size)
-        os.system("%s %s %s" % (broadcast_gnuplot_sh_path, os.getcwd() + "/../", size))
+#     for size in sizes :
+#         print "Plotting broadcast graphs for %s bytes" % (size)
+#         os.system("%s %s %s" % (broadcast_gnuplot_sh_path, os.getcwd() + "/../", size))
+    print "Plotting broadcast multi graphs"
+    os.system("%s %s" % (bcast_multi_bcast_gnuplot_sh_path, os.getcwd() + "/../"))
 
-def plot_broadcast_cdfs_1client(logdir, data_table, all_algs, all_learners, all_sizes) :
-    for learners in all_learners : 
-        for size in all_sizes :
-            print "Plotting broadcast cdf graphs for (%s learners, %s bytes) " % (learners, size)
-            gnuplot_params = ""
-            max_lat99 = 0
+def plot_multicast_tp_lat() :
+    print "Plotting multicast multi graphs"
+    os.system("%s %s" % (mcast_multi_mcast_gnuplot_sh_path, os.getcwd() + "/../"))
+
+def plot_broadcast_cdfs(logdir, data_table, all_algs, all_learners, all_sizes) :
+    for tptype in ["1client", "power"] :
+        for learners in all_learners :
+            cdf_paths = dict()
+            max_lat = dict()
+            for size in all_sizes :
+                print "Plotting broadcast cdf graphs for (%s learners, %s bytes, %s) " % (learners, size, tptype)
+                gnuplot_params = ""
+                cdf_paths[size] = dict()
+                max_lat[size] = 0
+                for alg in all_algs :
+                    cdf_paths[size][alg]  = "%s/%s/overall_%s" % (logdir,alg,getDirectoryPattern(alg, "all", learners, 1, 1, size, False))
+                    cdf_paths[size][alg] += "/cdf_%s.log" % (tptype)
+                    lat99 = float(data_table[(alg,learners,size)].getDataUnit(tptype).lat_95)
+                    if lat99 > max_lat[size] : max_lat[size] = lat99
+                    
+                    gnuplot_params += " " + prettynamesbcast[alg] + " " + cdf_paths[size][alg]
+                os.system("%s %s %s %s %s %s %s" % (bcast_cdfs_gnuplot_sh_path, size, learners, os.getcwd() + "/../", tptype, gnuplot_params, max_lat[size]))
+            
+            print "Plotting broadcast cdf multiplot for (%s learners, %s)" % (learners, tptype)
+            multi_params = "%s %s " % (learners, os.getcwd() + "/../")
             for alg in all_algs :
-                cdf_paths = dict()
-                cdf_paths[alg]  = "%s/%s/overall_%s" % (logdir,alg,getDirectoryPattern(alg, "all", learners, 1, 1, size, False))
-                cdf_paths[alg] += "/cdf_1client.log"
-                lat99 = float(data_table[(alg,learners,size)].data_1client.lat_99)
-                if lat99 > max_lat99 : max_lat99 = lat99 
+                multi_params += "%s " % (prettynamesbcast[alg])
+            rsizes = list(all_sizes)
+            rsizes.reverse()
+            for size in rsizes :
+                for alg in all_algs :
+                    multi_params += "%s " % (cdf_paths[size][alg])
+            for size in rsizes :
+                multi_params+= "%s " % (max_lat[size])
+            multi_params += "%s" % (tptype)
+            
+            os.system("%s %s" % (bcast_multi_cdfs_gnuplot_sh_path, multi_params))
+            
                 
-                gnuplot_params += " " + prettynames[alg] + " " + cdf_paths[alg]
-            os.system("%s %s %s %s %s %s" % (bcast_cdfs_gnuplot_sh_path, size, learners, os.getcwd() + "/../", gnuplot_params, max_lat99))
+            # % learners, "..", (for alg in algs, insert here), 
+            # learners=$1
+            # outpath=$2
+            # alg1=$3
+            # alg2=$4
+            # alg3=$5
+            # alg4=$6
+            # alg1path64k=$7
+            # alg2path64k=$8
+            # alg3path64k=$9
+            # alg4path64k=${10}
+            # alg1path8k=${11}
+            # alg2path8k=${12}
+            # alg3path8k=${13}
+            # alg4path8k=${14}
+            # alg1path200=${15}
+            # alg2path200=${16}
+            # alg3path200=${17}
+            # alg4path200=${18}
+            # maxlat64k=${19}
+            # maxlat8k=${20}
+            # maxlat200=${21}
 
             
 
@@ -323,7 +389,13 @@ def createBroadcastData() :
     all_found_learners = []
     all_found_msgsizes = []
     
-    all_algs_dirs = [d for d in glob.glob("../*") if "broadcast" not in d and ".p" not in d]
+    all_algs_dirs_glob = [d for d in glob.glob("../*") if "broadcast" not in d and ".p" not in d  and "multicast" not in d]
+    all_algs_dirs = []
+    for alg in ["spread", "lpnorand", "mrp", "ridge"] :
+        algdir = "../" + alg
+        if algdir in all_algs_dirs_glob :
+            all_algs_dirs.append(algdir)
+    
     for algdir in all_algs_dirs :
         alg_name = re.split("/", algdir)[1]
         all_found_algs += [alg_name]
@@ -346,7 +418,7 @@ def createBroadcastData() :
                     lat_99   = getfilelinecolum(data_file, 3, 7)
                     data_units[data_type] = DataUnit(load, tp_msgps, tp_mbps, lat_avg, lat_50, lat_95, lat_99)
                 data_table[(alg_name, numLearners, msgSize)] = \
-                  DataSummary(alg_name, numLearners, msgSize, prettynames[alg_name], \
+                  DataSummary(alg_name, numLearners, 1, msgSize, prettynamesbcast[alg_name], \
                   data_units["max"], data_units["75"], data_units["power"], data_units["1client"])
         
         all_found_learners += [ l for l in alg_learners if l not in all_found_learners ]
@@ -362,7 +434,7 @@ def createBroadcastData() :
         for numLearners in [0] + all_found_learners :
             logLine = "%s " % numLearners
             for alg in all_found_algs :
-                vals = DataSummary.emptySummary(prettynames[alg])
+                vals = DataSummary.emptySummary(prettynamesbcast[alg])
                 if data_table.has_key((alg, numLearners, msgSize)) :
                     vals = data_table[(alg, numLearners, msgSize)]
                 logLine += vals.toString() + " "
@@ -371,8 +443,92 @@ def createBroadcastData() :
         broadcast_file.close()
     
     return (data_table, all_found_algs, all_found_learners, all_found_msgsizes)
+
+def createMulticastData() :
+    # assuming that the script is run inside logsmcast/algorithm/
+    # create a table of (alg,groups,msgsize) -> (maxtpmsgps,maxtpmbps,lat_avg,lat_50,lat_95)
     
+    # how to create a file for a clustered histogram in gnuplot
+    # 
+    #
+#
+#   key: group1: AEI
+#        group2: BFJ
+#        group3: CGK
+#        group4: DHL
+#
+#
+#       D           G              K
+#    A CD         E GH            JKL
+#    ABCD         EFGH           IJKL
+#    ________________________________
+#     V1           V2             V3
+#              somexlabel
+#
+#    txt file:
+#    V1 A B C D
+#    V2 E F G H
+#    V3 I J K L
+#
+    data_table = {}
+    all_found_algs = []
+    all_found_groups = []
+    all_found_msgsizes = []
     
+    all_algs_dirs_glob = [d for d in glob.glob("../*") if "broadcast" not in d and ".p" not in d and "multicast" not in d]
+    all_algs_dirs = []
+    for alg in ["spread", "mrp", "ridge"] :
+        algdir = "../" + alg
+        if algdir in all_algs_dirs_glob :
+            all_algs_dirs.append(algdir)
+    
+    for algdir in all_algs_dirs :
+        alg_name = re.split("/", algdir)[1]
+        all_found_algs += [alg_name]
+        pattern = algdir + "/" + getDirectoryPattern()
+        alg_groups = sorted([ int(v) for v in getAllValsFromDirs(pattern, 5) ])
+        alg_sizes = sorted([ int(v) for v in getAllValsFromDirs(pattern, 9) ])
+        
+        for numGroups in alg_groups :
+            for msgSize in alg_sizes :
+                data_units = {}
+                overall_dir = algdir + "/overall_" + getDirectoryPattern(alg_name, "all", numGroups*4, numGroups, 1, msgSize, False)
+                for data_type in ["max","75","power","1client"] :
+                    data_file = overall_dir + "/tp_lat_%s.log" % (data_type)
+                    load     = getfilelinecolum(data_file, 3, 1)
+                    tp_msgps = getfilelinecolum(data_file, 3, 2)
+                    tp_mbps  = getfilelinecolum(data_file, 3, 3)
+                    lat_avg  = getfilelinecolum(data_file, 3, 4)
+                    lat_50   = getfilelinecolum(data_file, 3, 5)
+                    lat_95   = getfilelinecolum(data_file, 3, 6)
+                    lat_99   = getfilelinecolum(data_file, 3, 7)
+                    data_units[data_type] = DataUnit(load, tp_msgps, tp_mbps, lat_avg, lat_50, lat_95, lat_99)
+                data_table[(alg_name, numGroups, msgSize)] = \
+                  DataSummary(alg_name, numGroups*4, numGroups, msgSize, prettynamesmcast[alg_name], \
+                  data_units["max"], data_units["75"], data_units["power"], data_units["1client"])
+        
+        all_found_groups += [ g for g in alg_groups if g not in all_found_groups ]
+        all_found_msgsizes += [ s for s in alg_sizes    if s not in all_found_msgsizes ]
+
+    all_found_groups.sort()
+    all_found_msgsizes.sort()
+
+    for msgSize in all_found_msgsizes :
+        mcast_filepath = "../multicast_%s.log" % msgSize
+        multicast_file = open(mcast_filepath, "w")
+        multicast_file.write("# groups [name load msg/s Mbps latency_avg latency_50th latency_95 latency_99]x{max, 75, power, 1client}*\n")
+        for numGroups in [0] + all_found_groups :
+            logLine = "%s " % numGroups
+            for alg in all_found_algs :
+                vals = DataSummary.emptySummary(prettynamesmcast[alg])
+                if data_table.has_key((alg, numGroups, msgSize)) :
+                    vals = data_table[(alg, numGroups, msgSize)]
+                logLine += vals.toString() + " "
+            logLine += "\n"
+            multicast_file.write(logLine)
+        multicast_file.close()
+    
+    return (data_table, all_found_algs, all_found_groups, all_found_msgsizes)
 ####################################################################################################
 ####################################################################################################
 
@@ -392,6 +548,8 @@ if len(sys.argv) > 2 :
 doCdfPlotting = False
 if len(sys.argv) > 3 :
     doCdfPlotting = sys.argv[3] in ["True", "true", "T", "t", "1"]
+
+doMulticastPlotting = True
 
 
 
@@ -453,5 +611,9 @@ data_table,all_algs,all_learners,all_sizes = createBroadcastData()
 if doBroadcastPlotting :
     plot_broadcast_tp_lat(all_sizes)
 
-if doCdfPlotting :    
-    plot_broadcast_cdfs_1client("..", data_table, all_algs, all_learners, all_sizes)
+if doCdfPlotting :
+    plot_broadcast_cdfs("..", data_table, all_algs, all_learners, all_sizes)
+
+data_table,all_algs,all_groups,all_sizes = createMulticastData()
+if doMulticastPlotting :
+    plot_multicast_tp_lat()
