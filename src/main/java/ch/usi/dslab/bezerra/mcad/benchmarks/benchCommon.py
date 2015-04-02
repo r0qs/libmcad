@@ -19,7 +19,7 @@ def noderange(first,last) :
     return ["node" + str(val) for val in range(first, last + 1)]
 
 #availableNodes = noderange(1,34) + noderange(41,50)
-availableNodes = noderange(1,35) + noderange(41,52) + noderange(54,60) + noderange(62,64)
+availableNodes = noderange(1,35) + noderange(41,52) + noderange(54,60) + noderange(62,64) + noderange(66,67) + noderange(69,70)
 
 def testNodes() :
     for n in availableNodes :
@@ -70,11 +70,11 @@ javaCommand = "java -XX:+UseG1GC -Xms3g -Xmx3g"
 benchServerClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer"
 benchClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient"
 dynamicClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.DynamicBenchClient"
-benchDuration = 60
+benchDuration = 600
 
 # batching parameters
-batch_size_threshold_bytes_memory = 0
-batch_time_threshold_ms_memory    = 0
+batch_size_threshold_bytes_memory = 8192
+batch_time_threshold_ms_memory    = 10
 batch_size_threshold_bytes_disk = 0
 batch_time_threshold_ms_disk    = 0
 
