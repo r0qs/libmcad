@@ -36,9 +36,9 @@ maxClients = 70
 incFactor = 1
 incParcel = 10
 #loads = getLoads(minClients, maxClients, incFactor, incParcel)
-#loadsGlobal = [1, 5, 10, 20, 25, 30, 35, 40, 50, 80, 120]
+loadsGlobal = [1, 5, 10, 20, 25, 30, 35, 40, 50, 80, 120]
 #loadsGlobal = [14,15,16,17,18,19]
-loadsGlobal = [50]
+#loadsGlobal = [50]
 #loadsGlobal = range(20,41)
 #numPermits = 1
 ##########################################

@@ -70,7 +70,7 @@ javaCommand = "java -XX:+UseG1GC -Xms3g -Xmx3g"
 benchServerClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer"
 benchClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient"
 dynamicClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.DynamicBenchClient"
-benchDuration = 600
+benchDuration = 60
 
 # batching parameters
 batch_size_threshold_bytes_memory = 8192

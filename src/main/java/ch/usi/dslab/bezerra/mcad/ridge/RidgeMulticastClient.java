@@ -148,6 +148,7 @@ public class RidgeMulticastClient extends Client implements MulticastClient {
       this.ridgeMulticastAgent = rmcAgent;
       this.receivedReplies     = new LinkedBlockingDeque<Message>();
       this.requestBatcher      = new RequestBatcher(this);
+      requestBatcher.start();
    }
    
    @Override
