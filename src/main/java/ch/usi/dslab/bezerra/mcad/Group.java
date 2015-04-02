@@ -102,6 +102,16 @@ public abstract class Group {
       this.groupId = groupId;
    }
    
+   @Override
+   public boolean equals(Object other) {
+      return this.getId() == ((Group) other).getId();
+   }
+   
+   @Override
+   public int hashCode() {
+      return this.getId();
+   }
+   
    public abstract List<Integer> getMembers();
    
 }

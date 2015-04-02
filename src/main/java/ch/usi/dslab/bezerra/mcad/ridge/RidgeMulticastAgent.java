@@ -50,6 +50,7 @@ import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.OptimisticMulticastAgent;
+import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastClient.RequestBatcher;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.ridge.Acceptor;
 import ch.usi.dslab.bezerra.ridge.AcceptorSequence;
@@ -305,9 +306,11 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
 
          int batchSizeThreshold = getJSInt(config, "batch_size_threshold_bytes");
          Batcher.setMessageSizeThreshold(batchSizeThreshold);
+         RequestBatcher.setClientBatchSize_Bytes(batchSizeThreshold);
 
          int batchTimeThreshold = getJSInt(config, "batch_time_threshold_ms");
          Batcher.setMessageSizeThreshold(batchTimeThreshold);
+         RequestBatcher.setClientBatchTimeout_ms(batchTimeThreshold);
          
          if (config.containsKey("deliver_conservative")) {
             boolean deliverConservative = (Boolean) config.get("deliver_conservative");

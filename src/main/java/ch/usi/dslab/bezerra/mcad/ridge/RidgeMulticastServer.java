@@ -26,6 +26,9 @@
 
 package ch.usi.dslab.bezerra.mcad.ridge;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
@@ -36,10 +39,12 @@ public class RidgeMulticastServer implements MulticastServer {
    
    MulticastAgent associatedMulticastAgent;
    Learner associatedLearner;
+   Queue<ClientMessage> unbatchedClientMessages;
 
    public RidgeMulticastServer(MulticastAgent associatedAgent, Learner associatedLearner) {
       this.associatedMulticastAgent = associatedAgent;
       this.associatedLearner = associatedLearner;
+      this.unbatchedClientMessages = new LinkedList<ClientMessage>();
    }
    
    @Override
@@ -64,14 +69,28 @@ public class RidgeMulticastServer implements MulticastServer {
 
    @Override
    public ClientMessage deliverClientMessage() {
-      Message msg = associatedMulticastAgent.deliverMessage();
-      if (msg instanceof ClientMessage)
-         return (ClientMessage) msg;
-      else {
-         System.err.println("msg is not a ClientMessage");
-         System.exit(1);
-         return null;
+      if (unbatchedClientMessages.isEmpty()) {
+         Message nextClientRequestBatch = associatedMulticastAgent.deliverMessage();
+         nextClientRequestBatch.rewind();
+         while (nextClientRequestBatch.hasNext()) {
+            ClientMessage clireq = (ClientMessage) nextClientRequestBatch.getNext();
+            clireq.unpackContents();
+            unbatchedClientMessages.add(clireq);
+         }
       }
+
+      ClientMessage climsg = unbatchedClientMessages.remove();
+      return climsg;
+     
+//      
+//      
+//      if (msg instanceof ClientMessage)
+//         return (ClientMessage) msg;
+//      else {
+//         System.err.println("msg is not a ClientMessage");
+//         System.exit(1);
+//         return null;
+//      }
    }
 
 }
