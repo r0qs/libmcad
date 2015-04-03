@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+from math import ceil
 from time import sleep
 from benchCommon import *
 from systemConfigurer_ridge import *
@@ -23,7 +24,7 @@ def clean_ridge_storage(accnodes) :
 
 ################################################################################
 # experiment variables
-numClients    = iarg(1)
+loadGiven     = iarg(1)
 numLearners   = iarg(2)
 numGroups     = iarg(3)
 numPxPerGroup = iarg(4)
@@ -33,8 +34,8 @@ writeToDisk   = barg(6)
 
 
 ################################################################################
-numPermits = numClients
-numClients = numGroups * numPxPerGroup
+numPermits = loadGiven
+numClients = numLearners
 logdir = get_logdir("ridge", numClients, numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
 print logdir
 clean_ridge_log(logdir)
