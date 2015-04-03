@@ -73,8 +73,8 @@ dynamicClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.DynamicBenchClient"
 benchDuration = 60
 
 # batching parameters
-batch_size_threshold_bytes_memory = 8192
-batch_time_threshold_ms_memory    = 10
+batch_size_threshold_bytes_memory = 1500
+batch_time_threshold_ms_memory    = 1
 batch_size_threshold_bytes_disk = 0
 batch_time_threshold_ms_disk    = 0
 
