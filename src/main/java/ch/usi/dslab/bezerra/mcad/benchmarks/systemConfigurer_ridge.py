@@ -51,6 +51,8 @@ def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearners, ens
         config["storage_type"]           = ridge_memory_storage_type
         config["batch_size_threshold_bytes"] = batch_size_threshold_bytes_memory
         config["batch_time_threshold_ms"]    = batch_time_threshold_ms_memory
+    config["client_batch_size_threshold_bytes"] = client_batch_size_threshold_bytes
+    config["client_batch_time_threshold_ms"] = client_batch_time_threshold_ms
     config["deliver_conservative"]       = True
     config["deliver_optimistic_uniform"] = False
     config["deliver_optimistic_fast"]    = False

@@ -306,11 +306,19 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
 
          int batchSizeThreshold = getJSInt(config, "batch_size_threshold_bytes");
          Batcher.setMessageSizeThreshold(batchSizeThreshold);
-         RequestBatcher.setClientBatchSize_Bytes(batchSizeThreshold);
 
          int batchTimeThreshold = getJSInt(config, "batch_time_threshold_ms");
          Batcher.setMessageSizeThreshold(batchTimeThreshold);
-         RequestBatcher.setClientBatchTimeout_ms(batchTimeThreshold);
+
+         if (config.containsKey("client_batch_size_threshold_bytes")) {
+            int clientBatchSizeThreshold = getJSInt(config, "client_batch_size_threshold_bytes");
+            RequestBatcher.setClientBatchSize_Bytes(clientBatchSizeThreshold);
+         }
+         
+         if (config.containsKey("client_batch_time_threshold_ms")) {
+            int clientBatchTimeThreshold = getJSInt(config, "client_batch_time_threshold_ms");
+            RequestBatcher.setClientBatchTimeout_ms(clientBatchTimeThreshold);
+         }
          
          if (config.containsKey("deliver_conservative")) {
             boolean deliverConservative = (Boolean) config.get("deliver_conservative");

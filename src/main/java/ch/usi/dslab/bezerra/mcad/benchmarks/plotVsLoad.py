@@ -324,7 +324,7 @@ def generate_max_and_75_and_power_tp_lat_files(allThroughputsLatencies, msgSize,
     # max file
     file_max = open(overall_dir_name + "/tp_lat_max.log", "w")
     file_max.write("# maxtp = %s (load %s), ideal 0.75maxtp = %s (estimated load %s)\n" % (tp_max, load_max, tp_75_ideal, load_75_estimate))
-    file_max.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_95th(ms) latency_99th(ms):\n")
+    file_max.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_50th(ms) latency_95th(ms) latency_99th(ms):\n")
     file_max.write("%s %s %s %s %s %s %s\n" % (load_max, tp_max, tp_max * msgSize * 8 / 1e6, lat_max / 1e6, latency_50th_max / 1e6, latency_95th_max / 1e6, latency_99th_max / 1e6))
     file_max.close()
     
@@ -334,19 +334,19 @@ def generate_max_and_75_and_power_tp_lat_files(allThroughputsLatencies, msgSize,
     file_75 = open(overall_dir_name + "/tp_lat_75.log", "w")
     file_75.write("# maxtp = %s (load %s), ideal 0.75maxtp = %s (estimated load %s), found 0.75maxtp = %s (load %s): distance %s%% (load distance %s%%)\n" \
                   % (tp_max, load_max, tp_75_ideal, load_75_estimate, tp_75_found, load_75_found, int(round(tp_distance_percent)), int(round(load_distance_percent))))
-    file_75.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_95th(ms) latency_99th(ms):\n")
+    file_75.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_50th(ms) latency_95th(ms) latency_99th(ms):\n")
     file_75.write("%s %s %s %s %s %s %s\n" % (load_75_found, tp_75_found, tp_75_found * msgSize * 8 / 1e6, lat_75_found / 1e6, latency_50th_75 / 1e6, latency_95th_75 / 1e6, latency_99th_75 / 1e6))
     file_75.close()
     
     # power file
     file_power = open(overall_dir_name + "/tp_lat_power.log", "w")
-    file_power.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_95th(ms) latency_99th(ms):\n#\n")
+    file_power.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_50th(ms) latency_95th(ms) latency_99th(ms):\n#\n")
     file_power.write("%s %s %s %s %s %s %s\n" % (load_power, tp_power, tp_power * msgSize * 8 / 1e6, lat_power / 1e6, latency_50th_power / 1e6, latency_95th_power / 1e6, latency_99th_power / 1e6))
     file_power.close()
     
     # single client file
     file_1client = open(overall_dir_name + "/tp_lat_1client.log", "w")
-    file_1client.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_95th(ms) latency_99th(ms):\n#\n")
+    file_1client.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_50th(ms) latency_95th(ms) latency_99th(ms):\n#\n")
     file_1client.write("%s %s %s %s %s %s %s\n" % (load_1client, tp_1client, tp_1client * msgSize * 8 / 1e6, lat_1client / 1e6, latency_50th_1client / 1e6, latency_95th_1client / 1e6, latency_99th_1client / 1e6))
     file_1client.close()
     
