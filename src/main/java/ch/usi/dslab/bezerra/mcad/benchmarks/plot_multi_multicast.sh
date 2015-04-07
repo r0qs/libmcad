@@ -291,10 +291,10 @@ tpnormalspread8k=392.026248446
 tpnormalspread200=39.702140016
 tpnormalmrp64k=813.586920243
 tpnormalmrp8k=393.640110719
-tpnormalmrp200=19.0226404368
+tpnormalmrp200=51.40373708
 tpnormalridge64k=804.669443015
 tpnormalridge8k=361.43646389
-tpnormalridge200=24.0744799184
+tpnormalridge200=55.5787152944
 
 i=0
 name=${datatypes[i]}
