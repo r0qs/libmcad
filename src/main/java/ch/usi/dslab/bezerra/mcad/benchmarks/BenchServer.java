@@ -112,7 +112,7 @@ public class BenchServer {
    public static class FastDeliverer extends Thread {
       FastMulticastServer fastmcserver;
       public FastDeliverer(MulticastServer parent) {
-         if (fastmcserver instanceof FastMulticastServer)
+         if (parent instanceof FastMulticastServer)
             this.fastmcserver = (FastMulticastServer) parent;
          else {
             System.err.println(String.format("Provided MulticastServer does not implement FastMulticastServer (%s). Setting to null.", parent.getClass().getName()));
