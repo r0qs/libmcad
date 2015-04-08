@@ -184,7 +184,7 @@ def plot_broadcast_cdfs(logdir, data_table, all_algs, all_learners, all_sizes) :
             cdf_paths = dict()
             max_lat = dict()
             for size in all_sizes :
-                print "Plotting broadcast cdf graphs for (%s learners, %s bytes, %s) " % (learners, size, tptype)
+                #print "Plotting broadcast cdf graphs for (%s learners, %s bytes, %s) " % (learners, size, tptype)
                 gnuplot_params = ""
                 cdf_paths[size] = dict()
                 max_lat[size] = 0
@@ -195,7 +195,7 @@ def plot_broadcast_cdfs(logdir, data_table, all_algs, all_learners, all_sizes) :
                     if lat99 > max_lat[size] : max_lat[size] = lat99
                     
                     gnuplot_params += " " + prettynamesbcast[alg] + " " + cdf_paths[size][alg]
-                os.system("%s %s %s %s %s %s %s" % (bcast_cdfs_gnuplot_sh_path, size, learners, os.getcwd() + "/../", tptype, gnuplot_params, max_lat[size]))
+                #os.system("%s %s %s %s %s %s %s" % (bcast_cdfs_gnuplot_sh_path, size, learners, os.getcwd() + "/../", tptype, gnuplot_params, max_lat[size]))
             
             print "Plotting broadcast cdf multiplot for (%s learners, %s)" % (learners, tptype)
             multi_params = "%s %s " % (learners, os.getcwd() + "/../")
