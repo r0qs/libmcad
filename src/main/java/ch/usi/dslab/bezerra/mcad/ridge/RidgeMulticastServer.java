@@ -99,7 +99,7 @@ public class RidgeMulticastServer implements MulticastServer, FastMulticastServe
          }
       }
 
-      ClientMessage fastclimsg = unbatchedClientMessages.remove();
+      ClientMessage fastclimsg = unbatchedFastClientMessages.remove();
       return fastclimsg;
    }
 
