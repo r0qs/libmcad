@@ -42,34 +42,36 @@ incParcel = 10
 #loadsGlobal = [1000,2500,5000,10000,15000,20000,50000]
 #loadsGlobal = [6250]
 #loadsGlobal = [36,37,38,39,40,41,42,43,44]
-loadsGlobal = [20]
-#loadsGlobal = range(20,41)
+#loadsGlobal = [20]
+loadsGlobal = range(1,11)
 #numPermits = 1
 ##########################################
 #numsLearners = [1, 2, 4, 8, 16, 32]
 #numsLearners = [1, 2, 4, 8, 32]
-#numsLearners = [16]
+numsLearners = [1]
 ##########################################
 #algorithms = ["mrp", "ridge", "lpnorand"]
 #algorithms = ["ridge"]
-algorithms = ["mrp"]
+#algorithms = ["mrp"]
 #algorithms = ["libpaxos"]
 #algorithms = ["lpnorand"]
 #algorithms = ["ridge", "mrp"]
+algorithms = ["ridgeopt"]
 ##########################################
 #messageSizes = [200, 8192, 65536]
 #messageSizes = [65536]
-messageSizes = [200]
+messageSizes = [8192]
+#messageSizes = [200]
 ##########################################
 groups = 0
 pxpergroup = 1
-groupConfigs = [#{groups : 1, pxpergroup : 1},
+groupConfigs = [{groups : 1, pxpergroup : 1},
                 #{groups : 1, pxpergroup : 2},
                 #{groups : 1, pxpergroup : 4},
                 #{groups : 1, pxpergroup : 8},
                 #{groups : 2, pxpergroup : 1},
                 #{groups : 4, pxpergroup : 1},
-                {groups : 8, pxpergroup : 1},
+                #{groups : 8, pxpergroup : 1},
                ]
 ##########################################
 #diskConfigs = [False, True]
@@ -191,7 +193,7 @@ for writeToDisk in diskConfigs :
         for algorithm in algorithms :
             for groupConfig in groupConfigs :
 #################################
-                numsLearners = [groupConfig[groups] * 4]
+                #numsLearners = [groupConfig[groups] * 4]
 #################################
                 for numLearners in numsLearners :
                     lgs = (numLearners,groupConfig[groups],messageSize)
