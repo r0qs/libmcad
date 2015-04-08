@@ -206,11 +206,11 @@ def generatePartitioningFile(serverList, partitionsFile, saveToFile) :
     return pconf
         
 
-def generateRidgeSystemConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, partitionsFilePath, saveToFile = True, mode = "DYNAMIC") :
+def generateRidgeSystemConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, partitionsFilePath, saveToFile = True, mode = "DYNAMIC", fastDelivery=True) :
     gathererNode = nodes[0]
     remainingNodes = availableNodes[1:]
     
-    systemConfiguration = generateRidgeConfiguration(remainingNodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, saveToFile, mode)
+    systemConfiguration = generateRidgeConfiguration(remainingNodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, saveToFile, mode, fastDelivery)
     if systemConfiguration == None :
         return None
     generatePartitioningFile(systemConfiguration.server_list, partitionsFilePath, saveToFile)

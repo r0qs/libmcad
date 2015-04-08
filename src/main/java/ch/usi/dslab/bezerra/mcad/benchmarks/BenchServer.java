@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.commons.math3.util.Pair;
 
 import ch.usi.dslab.bezerra.mcad.ClientMessage;
-import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
+import ch.usi.dslab.bezerra.mcad.FastMulticastServer;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
@@ -110,27 +110,45 @@ public class BenchServer {
    }
    
    public static class FastDeliverer extends Thread {
-      MulticastServer mcserver;
+      FastMulticastServer fastmcserver;
       public FastDeliverer(MulticastServer parent) {
-         this.mcserver = parent;
+         if (fastmcserver instanceof FastMulticastServer)
+            this.fastmcserver = (FastMulticastServer) parent;
+         else {
+            System.err.println("Provided MulticastServer does not implement FastMulticastServer. Setting to null.");
+            this.fastmcserver = null;
+         }
+            
       }
       public void run() {
-         if ((mcserver.getMulticastAgent() instanceof FastMulticastAgent) == false) {
-            System.err.println("Provided MulticastAgent does not implement FastMulticastAgent");
+         if (fastmcserver == null) {
+            System.err.println("Provided MulticastServer was set to null (given one does not implement FastMulticastServer)");
             return;
          }
-         FastMulticastAgent omca = (FastMulticastAgent) mcserver.getMulticastAgent();
+         boolean isRidge = fastmcserver instanceof RidgeMulticastServer;
+         int numGroupServers = -1;
+         int serverIndex = -1;
+         if (isRidge) {
+            MulticastAgent mca = fastmcserver.getMulticastAgent();
+            numGroupServers = mca.getLocalGroup().getMembers().size();
+            serverIndex     = mca.getLocalGroup().getMembers().indexOf(fastmcserver.getId());
+         }
          while (true) {
-            ClientMessage optmsg = (ClientMessage) omca.deliverMessageFast();
+            ClientMessage optmsg = fastmcserver.deliverClientMessageFast();
             int  clientId = optmsg.getSourceClientId();
             long msgSeq   = optmsg.getMessageSequence();
             
             boolean optimistic = true;
             Message reply = new Message(msgSeq, optimistic);
-            if (mcserver.isConnectedToClient(clientId))
-               mcserver.sendReply(clientId, reply);
+            if (isRidge) {
+               if (msgSeq % numGroupServers == serverIndex) {
+                  fastmcserver.sendReply(clientId, reply);
+               }
+            }
+            else if (fastmcserver.isConnectedToClient(clientId)) {
+               fastmcserver.sendReply(clientId, reply);
+            }
             OrderVerifier.instance.addOptDelivery(clientId, msgSeq);
-//            System.out.println("opt-delivered message " + clientId + "." + msgSeq);
          }
       }
    }

@@ -30,21 +30,25 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import ch.usi.dslab.bezerra.mcad.ClientMessage;
+import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
+import ch.usi.dslab.bezerra.mcad.FastMulticastServer;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.ridge.Learner;
 
-public class RidgeMulticastServer implements MulticastServer {
+public class RidgeMulticastServer implements MulticastServer, FastMulticastServer {
    
-   MulticastAgent associatedMulticastAgent;
+   FastMulticastAgent associatedMulticastAgent;
    Learner associatedLearner;
    Queue<ClientMessage> unbatchedClientMessages;
+   Queue<ClientMessage> unbatchedFastClientMessages;
 
-   public RidgeMulticastServer(MulticastAgent associatedAgent, Learner associatedLearner) {
+   public RidgeMulticastServer(FastMulticastAgent associatedAgent, Learner associatedLearner) {
       this.associatedMulticastAgent = associatedAgent;
       this.associatedLearner = associatedLearner;
       this.unbatchedClientMessages = new LinkedList<ClientMessage>();
+      this.unbatchedFastClientMessages = new LinkedList<ClientMessage>();
    }
    
    @Override
@@ -81,16 +85,22 @@ public class RidgeMulticastServer implements MulticastServer {
 
       ClientMessage climsg = unbatchedClientMessages.remove();
       return climsg;
-     
-//      
-//      
-//      if (msg instanceof ClientMessage)
-//         return (ClientMessage) msg;
-//      else {
-//         System.err.println("msg is not a ClientMessage");
-//         System.exit(1);
-//         return null;
-//      }
+   }
+
+   @Override
+   public ClientMessage deliverClientMessageFast() {
+      if (unbatchedFastClientMessages.isEmpty()) {
+         Message nextFastClientRequestBatch = associatedMulticastAgent.deliverMessageFast();
+         nextFastClientRequestBatch.rewind();
+         while (nextFastClientRequestBatch.hasNext()) {
+            ClientMessage clireq = (ClientMessage) nextFastClientRequestBatch.getNext();
+            clireq.unpackContents();
+            unbatchedFastClientMessages.add(clireq);
+         }
+      }
+
+      ClientMessage fastclimsg = unbatchedClientMessages.remove();
+      return fastclimsg;
    }
 
 }
