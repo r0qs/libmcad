@@ -115,7 +115,7 @@ public class BenchServer {
          if (fastmcserver instanceof FastMulticastServer)
             this.fastmcserver = (FastMulticastServer) parent;
          else {
-            System.err.println("Provided MulticastServer does not implement FastMulticastServer. Setting to null.");
+            System.err.println(String.format("Provided MulticastServer does not implement FastMulticastServer (%s). Setting to null.", parent.getClass().getName()));
             this.fastmcserver = null;
          }
             
