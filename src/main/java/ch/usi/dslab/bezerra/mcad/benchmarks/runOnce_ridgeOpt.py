@@ -34,8 +34,7 @@ writeToDisk   = barg(6)
 
 ################################################################################
 numPermits = numClients
-numClients = numGroups * numPxPerGroup
-logdir = HOME + "/logsopt/%d"
+numClients = numGroups * numPxPerGroup * 10
 logdir = get_logdir("ridgeopt", numClients, numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk, baseDir="logsopt")
 print logdir
 
