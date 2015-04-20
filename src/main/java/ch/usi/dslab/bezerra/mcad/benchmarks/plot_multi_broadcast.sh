@@ -88,7 +88,7 @@ set rmargin 5
 
 set ytics offset 0.75
 
-set title "64 kiloBytes messages" offset 0,-0.75
+set title "64 kilobytes messages" offset 0,-0.75
 
 set key top right maxrows 1 samplen 1.5
 unset xlabel
@@ -115,7 +115,7 @@ plot "$input64k" using (\$$[tpcol+alglinelength*0])/1e3:xtic(1) title column($[a
 set size 1,0.35
 set origin 0,0.325
 
-set title "8 kiloBytes messages"
+set title "8 kilobytes messages"
 
 unset key
 
@@ -142,7 +142,7 @@ plot "$input8k" using (\$$[tpcol+alglinelength*0])/1e3:xtic(1) title column($[al
 set size 1,0.35
 set origin 0,0.0125
 
-set title "200 Bytes messages"
+set title "200 bytes messages"
 
 set xlabel "Destinations" offset 0,1.0
 set ylabel "Throughput (Mbps)" offset 3
@@ -195,7 +195,7 @@ set rmargin 5
 
 set ytics offset 0.75
 
-set title "64 kiloBytes messages" offset 0,-0.75
+set title "64 kilobytes messages" offset 0,-0.75
 
 set key top right maxrows 1 samplen 1.5
 unset xlabel
@@ -223,7 +223,7 @@ plot "$input64k" using $[lat95col+alglinelength*0]:$[latavgcol+alglinelength*0]:
 set size 1,0.35
 set origin 0,0.325
 
-set title "8 kiloBytes messages"
+set title "8 kilobytes messages"
 
 unset key
 
@@ -250,7 +250,7 @@ plot "$input8k" using $[lat95col+alglinelength*0]:$[latavgcol+alglinelength*0]:$
 set size 1,0.35
 set origin 0,0.0125
 
-set title "200 Bytes messages"
+set title "200 bytes messages"
 
 set xlabel "Destinations" offset 0,1.0
 set ylabel "Latency (ms)" offset ${latlabeloff200[i]}

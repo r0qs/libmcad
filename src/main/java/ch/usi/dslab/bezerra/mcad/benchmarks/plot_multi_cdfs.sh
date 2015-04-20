@@ -51,7 +51,7 @@ set rmargin 5
 
 set ytics offset 0.75
 
-set title "64 kiloBytes messages" offset 0,-0.75
+set title "64 kilobytes messages" offset 0,-0.75
 
 set key top left samplen 1.5 reverse Left
 unset xlabel
@@ -76,7 +76,7 @@ plot "$alg1path64k" using (\$1/1e6):2 with lines title "$alg1" lc rgb "red"     
 set size 1,0.33333
 set origin 0,0.33333
 
-set title "8 kiloBytes messages"
+set title "8 kilobytes messages"
 
 unset key
 
@@ -100,7 +100,7 @@ plot "$alg1path8k" using ((\$1)/1e6):2 with lines title "$alg1" lc rgb "red"    
 set size 1,0.33333
 set origin 0,0.0
 
-set title "200 Bytes messages"
+set title "200 bytes messages"
 
 set xlabel "Latency (ms)" offset 0,1.1
 #set ylabel "Latency (ms)" offset 2

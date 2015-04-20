@@ -24,7 +24,7 @@ set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18
 
 set title "$prettypath" #offset 0,-0.5
 
-set logscale x
+#set logscale x
 
 set xlabel "Load (clients)"
 set ylabel "Throughput (Mbps)"
@@ -32,8 +32,8 @@ set y2label "Latency (ms)"
 set y2tics
 set grid ytics
 
-set xrange[1:*]
 #set xrange[1:*]
+set xrange[0:*]
 set yrange[0:*]
 set y2range[0:*]
 
