@@ -46,6 +46,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
@@ -585,6 +586,18 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
          e.printStackTrace();
       }
       return msg;
+   }
+
+   @Override
+   public void notifyMessageConsumed(DeliveryMetadata metadata) {
+      // TODO Auto-generated method stub
+      
+   }
+
+   @Override
+   public void notifyCheckpointMade() {
+      // TODO Auto-generated method stub
+      
    }
 
 }

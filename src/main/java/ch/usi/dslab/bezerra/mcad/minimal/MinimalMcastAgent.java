@@ -39,6 +39,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
@@ -272,6 +273,18 @@ public class MinimalMcastAgent implements MulticastAgent {
    @Override
    public void multicast(List<Group> destinations, Message message) {
       multicast(destinations, message.getBytes());
+   }
+
+   @Override
+   public void notifyMessageConsumed(DeliveryMetadata metadata) {
+      // TODO Auto-generated method stub
+      
+   }
+
+   @Override
+   public void notifyCheckpointMade() {
+      // TODO Auto-generated method stub
+      
    }
 
 }

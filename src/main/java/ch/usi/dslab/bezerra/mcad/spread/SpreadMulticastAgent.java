@@ -45,7 +45,7 @@ import spread.SpreadConnection;
 import spread.SpreadException;
 import spread.SpreadGroup;
 import spread.SpreadMessage;
-
+import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
@@ -364,5 +364,17 @@ public class SpreadMulticastAgent implements MulticastAgent {
 		}
 
 	}
+
+   @Override
+   public void notifyMessageConsumed(DeliveryMetadata metadata) {
+      // TODO Auto-generated method stub
+      
+   }
+
+   @Override
+   public void notifyCheckpointMade() {
+      // TODO Auto-generated method stub
+      
+   }
 
 }
