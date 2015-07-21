@@ -5,7 +5,6 @@ import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 public class URPDeliveryMetadata extends DeliveryMetadata {
    int  ringId;
    long instanceId;
-   static int M = 1;
 
 //   public URPDeliveryMetadata(int ringId, long instanceId) {
 //      this.ringId     = ringId;
@@ -34,14 +33,6 @@ public class URPDeliveryMetadata extends DeliveryMetadata {
       return instanceId;
    }
    
-   public static int getMultiRingM() {
-      return M;
-   }
-
-   public static void setMultiRingM(int m) {
-      M = m;
-   }
-
    @Override
    public boolean precedes(DeliveryMetadata other) {
       return this.compareTo(other) < 0;
@@ -62,6 +53,9 @@ public class URPDeliveryMetadata extends DeliveryMetadata {
       else { // this.ringId != other.ringId
          long mergeroundthis  = this .instanceId;
          long mergeroundother = other.instanceId;
+         
+         int M = URPMcastAgent.getAgent().getMergeBlockSize();
+         
          if (M != 1) {
             mergeroundthis  /= M;
             mergeroundother /= M;

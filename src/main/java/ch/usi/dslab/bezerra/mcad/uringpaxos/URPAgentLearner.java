@@ -57,12 +57,14 @@ public class URPAgentLearner implements Runnable {
       urpAgentLearnerThread.start();
    }
    
-   // assume that the learner has the same ids in ALL rings   
+   /** This method assumes that the learner has the same ids in ALL rings it subscribes to
+    * 
+    * @return the learner's id (assumed to be the same in all rings)
+    */
    public int getLearnerId() {
-      // TODO
-      return -1;
+      return learnerId;
    }
-
+   
    @Override
    public void run() {      
       if (paxos.getLearner() == null) {

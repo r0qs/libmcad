@@ -50,6 +50,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import ch.usi.da.paxos.api.Learner;
 import ch.usi.da.paxos.api.PaxosRole;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
@@ -62,6 +63,14 @@ import ch.usi.dslab.bezerra.netwrapper.Message;
 
 public class URPMcastAgent implements MulticastAgent {
    public static final Logger log = Logger.getLogger(URPMcastAgent.class);
+   
+   private static URPMcastAgent instance = null;
+   
+   public static URPMcastAgent getAgent() {
+      return instance;
+   }
+   
+   int multiRingMergeBlock = 1;
    Node URPaxosNode = null;
    URPGroup localGroup = null;
    URPAgentLearner urpAgentLearner;
@@ -119,6 +128,26 @@ public class URPMcastAgent implements MulticastAgent {
       loadURPAgentConfig(configFile, isInGroup, ids);
       firstDeliveryMetadata = null;
       multicaster = new Multicaster(this);
+      instance = this;
+   }
+   
+   /** This method returns the parameter M of Multi-Ring Paxos, i.e., how many instances
+    *  from each ring are taken at once to do the deterministic merging.
+    * 
+    * @return The parameter M of Multi-Ring Paxos
+    */
+   public int getMergeBlockSize() {
+      return multiRingMergeBlock;      
+   }
+
+   
+   /** This method sets the parameter M of Multi-Ring Paxos, i.e., how many instances
+    *  from each ring will be taken at once to do the deterministic merging.
+    *  
+    * @param M - the parameter M of Multi-Ring Paxos
+    */
+   public void setMergeBlockSize(int M) {
+      this.multiRingMergeBlock = M;
    }
    
    void mapGroupsToRings() {
@@ -381,7 +410,7 @@ public class URPMcastAgent implements MulticastAgent {
          
          if (config.containsKey("multi_ring_m")) {
             int M = ((Long) config.get("multi_ring_m")).intValue();
-            URPDeliveryMetadata.setMultiRingM(M);
+            setMergeBlockSize(M);
          }
          
          Boolean deserializeToMessageField = (Boolean) config.get("deserialize_to_Message");
@@ -600,7 +629,16 @@ public class URPMcastAgent implements MulticastAgent {
 
    @Override
    public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
-      // TODO Auto-generated method stub
+      URPDeliveryMetadata delivery = (URPDeliveryMetadata) deliveryToKeep;
+      /*
+       1 - get highest x multiple of M, such that x < delivery.instanceId (-1, because we're keeping instanceId)
+       2 - set all rings subscribed by this learner with safe (x)
+      */
+      long previousInstance = delivery.instanceId - 1L;
+      long safeInstance = previousInstance - (previousInstance % multiRingMergeBlock);
+      Learner learner = URPaxosNode.getLearner();
+      for (URPRingData urd : localGroup.associatedRings)
+         learner.setSafeInstance(urd.ringId, safeInstance);
    }
 
    @Override
