@@ -65,6 +65,7 @@ public class URPMcastAgent implements MulticastAgent {
    Node URPaxosNode = null;
    URPGroup localGroup = null;
    URPAgentLearner urpAgentLearner;
+   URPDeliveryMetadata firstDeliveryMetadata;
    URPMulticastServer urpMcastServer;
    Map<Long, URPRingData> mappingGroupsToRings;
    BlockingQueue<byte[]> byteArrayDeliveryQueue;
@@ -116,6 +117,7 @@ public class URPMcastAgent implements MulticastAgent {
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]> ();
       messageDeliveryQueue   = new LinkedBlockingQueue<Message>();
       loadURPAgentConfig(configFile, isInGroup, ids);
+      firstDeliveryMetadata = null;
       multicaster = new Multicaster(this);
    }
    
@@ -377,6 +379,11 @@ public class URPMcastAgent implements MulticastAgent {
             fastRing = (Boolean) config.get("fast_ring");
          }
          
+         if (config.containsKey("multi_ring_m")) {
+            int M = ((Long) config.get("multi_ring_m")).intValue();
+            URPDeliveryMetadata.setMultiRingM(M);
+         }
+         
          Boolean deserializeToMessageField = (Boolean) config.get("deserialize_to_Message");
          if (deserializeToMessageField != null)
             deserializeToMessage = deserializeToMessageField;
@@ -592,15 +599,17 @@ public class URPMcastAgent implements MulticastAgent {
    }
 
    @Override
-   public void notifyMessageConsumed(DeliveryMetadata metadata) {
+   public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
       // TODO Auto-generated method stub
-      
    }
 
    @Override
-   public void notifyCheckpointMade() {
-      // TODO Auto-generated method stub
+   public boolean hasWholeDeliveryPreffix() {
+      int firstRing = Integer.MAX_VALUE;
+      for (URPRingData rd : localGroup.associatedRings)
+         if (rd.ringId < firstRing) firstRing = rd.ringId;
       
+      return firstDeliveryMetadata.ringId == firstRing && firstDeliveryMetadata.instanceId == 1;
    }
 
 }

@@ -1,7 +1,9 @@
 package ch.usi.dslab.bezerra.mcad;
 
-public interface DeliveryMetadata {
+public abstract class DeliveryMetadata implements Comparable<DeliveryMetadata> {
    
-   boolean precedes(DeliveryMetadata other);
+   public abstract boolean precedes(DeliveryMetadata other);
+   public abstract boolean equals(Object other);
+   public abstract int     hashCode();
 
 }

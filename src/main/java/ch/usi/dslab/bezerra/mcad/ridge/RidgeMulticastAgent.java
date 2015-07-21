@@ -589,13 +589,13 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
    }
 
    @Override
-   public void notifyMessageConsumed(DeliveryMetadata metadata) {
+   public boolean hasWholeDeliveryPreffix() {
       // TODO Auto-generated method stub
-      
+      return false;
    }
 
    @Override
-   public void notifyCheckpointMade() {
+   public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
       // TODO Auto-generated method stub
       
    }

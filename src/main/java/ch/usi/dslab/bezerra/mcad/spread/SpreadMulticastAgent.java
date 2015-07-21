@@ -366,13 +366,13 @@ public class SpreadMulticastAgent implements MulticastAgent {
 	}
 
    @Override
-   public void notifyMessageConsumed(DeliveryMetadata metadata) {
+   public boolean hasWholeDeliveryPreffix() {
       // TODO Auto-generated method stub
-      
+      return false;
    }
 
    @Override
-   public void notifyCheckpointMade() {
+   public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
       // TODO Auto-generated method stub
       
    }

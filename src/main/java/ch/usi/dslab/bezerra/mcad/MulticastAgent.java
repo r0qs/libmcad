@@ -35,6 +35,6 @@ public interface MulticastAgent {
    public void multicast(List<Group> destinations, Message message);
    public Message deliverMessage();
    public Group getLocalGroup();
-   public void notifyMessageConsumed(DeliveryMetadata metadata);
-   public void notifyCheckpointMade();
+   public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep);
+   public boolean hasWholeDeliveryPreffix();
 }
