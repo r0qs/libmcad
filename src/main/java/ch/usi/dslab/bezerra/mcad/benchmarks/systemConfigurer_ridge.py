@@ -38,7 +38,7 @@ serverList = [{"id": 0, "partition": 0}]
 
 # ridgeConfiguration = generateRidgeConfiguration(availableNodes, numPartitions, replicasPerPartition, ensembleSize, configFilePath)
 
-def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearners, ensembleSize, writeToDisk, configFilePath, saveToFile, mode="DYNAMIC") :
+def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearners, ensembleSize, writeToDisk, configFilePath, saveToFile, mode="DYNAMIC", fastDelivery=False) :
     config = dict()
     config["agent_class"] = "RidgeMulticastAgent"
     if writeToDisk == True :
@@ -51,9 +51,11 @@ def generateRidgeConfiguration(nodes, numGroups, numPxPerGroup, numLearners, ens
         config["storage_type"]           = ridge_memory_storage_type
         config["batch_size_threshold_bytes"] = batch_size_threshold_bytes_memory
         config["batch_time_threshold_ms"]    = batch_time_threshold_ms_memory
+    config["client_batch_size_threshold_bytes"] = client_batch_size_threshold_bytes
+    config["client_batch_time_threshold_ms"] = client_batch_time_threshold_ms
     config["deliver_conservative"]       = True
     config["deliver_optimistic_uniform"] = False
-    config["deliver_optimistic_fast"]    = False
+    config["deliver_optimistic_fast"]    = fastDelivery
     config["direct_fast"]                = True
     config["latency_estimation_sample"]  = latency_estimation_sample
     config["latency_estimation_devs"]    = latency_estimation_devs
@@ -204,11 +206,11 @@ def generatePartitioningFile(serverList, partitionsFile, saveToFile) :
     return pconf
         
 
-def generateRidgeSystemConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, partitionsFilePath, saveToFile = True, mode = "DYNAMIC") :
+def generateRidgeSystemConfiguration(nodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, partitionsFilePath, saveToFile = True, mode = "DYNAMIC", fastDelivery=True) :
     gathererNode = nodes[0]
     remainingNodes = availableNodes[1:]
     
-    systemConfiguration = generateRidgeConfiguration(remainingNodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, saveToFile, mode)
+    systemConfiguration = generateRidgeConfiguration(remainingNodes, numGroups, numPxPerGroup, numLearnersPerGroup, ensembleSize, writeToDisk, ensemblesFilePath, saveToFile, mode, fastDelivery)
     if systemConfiguration == None :
         return None
     generatePartitioningFile(systemConfiguration.server_list, partitionsFilePath, saveToFile)

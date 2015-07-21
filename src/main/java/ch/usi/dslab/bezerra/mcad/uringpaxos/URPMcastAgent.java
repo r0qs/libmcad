@@ -51,9 +51,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import ch.usi.da.paxos.api.PaxosRole;
-import ch.usi.da.paxos.ring.FastNode;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
+import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.Util;
@@ -65,6 +65,7 @@ public class URPMcastAgent implements MulticastAgent {
    Node URPaxosNode = null;
    URPGroup localGroup = null;
    URPAgentLearner urpAgentLearner;
+   URPDeliveryMetadata firstDeliveryMetadata;
    URPMulticastServer urpMcastServer;
    Map<Long, URPRingData> mappingGroupsToRings;
    BlockingQueue<byte[]> byteArrayDeliveryQueue;
@@ -116,6 +117,7 @@ public class URPMcastAgent implements MulticastAgent {
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]> ();
       messageDeliveryQueue   = new LinkedBlockingQueue<Message>();
       loadURPAgentConfig(configFile, isInGroup, ids);
+      firstDeliveryMetadata = null;
       multicaster = new Multicaster(this);
    }
    
@@ -210,7 +212,7 @@ public class URPMcastAgent implements MulticastAgent {
       return hash;
    }
    
-   boolean checkMessageAndEnqueue(byte[] msg, long t_batch_ready, long batch_serial_start,
+   boolean checkMessageAndEnqueue(byte[] msg, URPDeliveryMetadata deliveryMetadata, long t_batch_ready, long batch_serial_start,
          long batch_serial_end, long t_learner_delivered) {
       
       boolean localNodeIsDestination = false;
@@ -231,6 +233,7 @@ public class URPMcastAgent implements MulticastAgent {
 //            deserializedMsg.piggyback_proposer_serialend   = batch_serial_end;
             deserializedMsg.t_learner_delivered = t_learner_delivered;
 //            deserializedMsg.t_learner_deserialized = System.currentTimeMillis();
+            deserializedMsg.setAttachment(deliveryMetadata);
             messageDeliveryQueue.add(deserializedMsg);
          }
          else {
@@ -370,9 +373,15 @@ public class URPMcastAgent implements MulticastAgent {
          
          Group.changeGroupImplementationClass(URPGroup.class);
          
+         @SuppressWarnings("unused")
          boolean fastRing = false;
          if (config.containsKey("fast_ring")) {
             fastRing = (Boolean) config.get("fast_ring");
+         }
+         
+         if (config.containsKey("multi_ring_m")) {
+            int M = ((Long) config.get("multi_ring_m")).intValue();
+            URPDeliveryMetadata.setMultiRingM(M);
          }
          
          Boolean deserializeToMessageField = (Boolean) config.get("deserialize_to_Message");
@@ -532,7 +541,8 @@ public class URPMcastAgent implements MulticastAgent {
 
             // ----------------------------------------------
             // Creating Paxos node from list of ring descriptors
-            URPaxosNode = fastRing ? new FastNode(zoo_host, localURPaxosRings) : new Node(zoo_host, localURPaxosRings);
+//            URPaxosNode = fastRing ? new FastNode(zoo_host, localURPaxosRings) : new Node(zoo_host, localURPaxosRings);
+            URPaxosNode = new Node(zoo_host, localURPaxosRings);
             URPaxosNode.start();
             Runtime.getRuntime().addShutdownHook(new Thread() {
                @Override
@@ -586,6 +596,20 @@ public class URPMcastAgent implements MulticastAgent {
    @Override
    public void multicast(List<Group> destinations, Message message) {
       multicast(destinations, message.getBytes());
+   }
+
+   @Override
+   public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
+      // TODO Auto-generated method stub
+   }
+
+   @Override
+   public boolean hasWholeDeliveryPreffix() {
+      int firstRing = Integer.MAX_VALUE;
+      for (URPRingData rd : localGroup.associatedRings)
+         if (rd.ringId < firstRing) firstRing = rd.ringId;
+      
+      return firstDeliveryMetadata.ringId == firstRing && firstDeliveryMetadata.instanceId == 1;
    }
 
 }

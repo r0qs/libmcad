@@ -46,11 +46,11 @@ class NodePool:
         return ret
 # ============================
 
-def get_logdir(algorithm, numClients, numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk):
-    return get_logdir_load(algorithm, int(numClients) * int(numPermits), numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
+def get_logdir(algorithm, numClients, numPermits, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk, baseDir="logsmcast"):
+    return get_logdir_load(algorithm, int(numClients) * int(numPermits), numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk, baseDir)
 
-def get_logdir_load(algorithm, load, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk):
-    dirpath = logdir + "/%s/%s_%s_clients_%s_learners_%s_groups_%s_pxpergroup_%s_bytes_diskwrite_%s" % \
+def get_logdir_load(algorithm, load, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk, baseDir="logsmcast"):
+    dirpath = HOME + "/" + baseDir + "/%s/%s_%s_clients_%s_learners_%s_groups_%s_pxpergroup_%s_bytes_diskwrite_%s" % \
                 (algorithm, algorithm, load, numLearners, numGroups, numPxPerGroup, messageSize, writeToDisk)
     localcmd("mkdir -p " + dirpath)
     return dirpath
@@ -59,7 +59,8 @@ def get_logdir_load(algorithm, load, numLearners, numGroups, numPxPerGroup, mess
 onceRunner = {"libpaxos" : HOME + "/libmcad/benchLink/runOnce_libpaxos.py",
               "lpnorand" : HOME + "/libmcad/benchLink/runOnce_lpnorand.py",
               "mrp"      : HOME + "/libmcad/benchLink/runOnce_mrp.py",
-              "ridge"    : HOME + "/libmcad/benchLink/runOnce_ridge.py" }
+              "ridge"    : HOME + "/libmcad/benchLink/runOnce_ridge.py",
+              "ridgeopt" : HOME + "/libmcad/benchLink/runOnce_ridgeOpt.py", }
 cleaner = HOME + "/libmcad/benchLink/cleanUp.py"
 clockSynchronizer = HOME + "/libmcad/benchLink/clockSynchronizer.py"
 continousClockSynchronizer = HOME + "/libmcad/benchLink/continuousClockSynchronizer.py"
@@ -77,6 +78,8 @@ batch_size_threshold_bytes_memory = 0
 batch_time_threshold_ms_memory    = 0
 batch_size_threshold_bytes_disk = 0
 batch_time_threshold_ms_disk    = 0
+client_batch_size_threshold_bytes = 2048
+client_batch_time_threshold_ms    = 1
 
 # libpaxos
 lpexecdir  = HOME + "/paxosudp/build/sample"

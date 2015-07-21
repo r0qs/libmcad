@@ -36,36 +36,42 @@ maxClients = 70
 incFactor = 1
 incParcel = 10
 #loads = getLoads(minClients, maxClients, incFactor, incParcel)
-#loadsGlobal = [1, 5, 10, 20, 25, 30, 35, 40, 50, 80, 120, 200, 500, 1000, 5000, 10000]
-#loadsGlobal = [14,15,16,17,18,19]
-loadsGlobal = [1,2,4,6,8,10,12,15,20,25,30,40,60,90,120,200,500,1000]
-#loadsGlobal = [50]
-#loadsGlobal = range(20,41)
+#loadsGlobal = [1, 5, 10, 20, 25, 30, 35, 40, 50, 80, 120, 200, 300, 400, 500, 1000, 5000, 10000]#500, 1000, 2000, 5000, 7500, 10000, 15000, 20000, 30000, 50000, 75000, 100000]
+#loadsGlobal = [300, 400, 500]
+#loadsGlobal = [1,5,6,7,8,9,10,11,12,13,14,15,20,25,30,35,36,37,38,39,40,41,42,43,44,45, 50, 80, 120, 200, 300, 400, 500]
+#loadsGlobal = [1000,2500,5000,10000,15000,20000,50000]
+#loadsGlobal = [6250]
+#loadsGlobal = [36,37,38,39,40,41,42,43,44]
+#loadsGlobal = [20]
+loadsGlobal = range(1,11)
 #numPermits = 1
 ##########################################
 #numsLearners = [1, 2, 4, 8, 16, 32]
-#numsLearners = [4]
+#numsLearners = [1, 2, 4, 8, 32]
+numsLearners = [1]
 ##########################################
 #algorithms = ["mrp", "ridge", "lpnorand"]
-#algorithms = ["mrp","ridge"]
+#algorithms = ["ridge"]
 #algorithms = ["mrp"]
 #algorithms = ["libpaxos"]
 #algorithms = ["lpnorand"]
-algorithms = ["ridge"]
+#algorithms = ["ridge", "mrp"]
+algorithms = ["ridgeopt"]
 ##########################################
 #messageSizes = [200, 8192, 65536]
 #messageSizes = [65536]
-messageSizes = [200]
+messageSizes = [8192]
+#messageSizes = [200]
 ##########################################
 groups = 0
 pxpergroup = 1
 groupConfigs = [{groups : 1, pxpergroup : 1},
-               # {groups : 1, pxpergroup : 2},
-               # {groups : 1, pxpergroup : 4},
-               # {groups : 1, pxpergroup : 8},
-               # {groups : 2, pxpergroup : 1},
-               # {groups : 4, pxpergroup : 1},
-               # {groups : 8, pxpergroup : 1},
+                #{groups : 1, pxpergroup : 2},
+                #{groups : 1, pxpergroup : 4},
+                #{groups : 1, pxpergroup : 8},
+                #{groups : 2, pxpergroup : 1},
+                #{groups : 4, pxpergroup : 1},
+                #{groups : 8, pxpergroup : 1},
                ]
 ##########################################
 #diskConfigs = [False, True]
@@ -74,9 +80,9 @@ diskConfigs = [False]
 ''' clean up environment before running batch
 '''
 localcmd(cleaner)
-time.sleep(5)
-localcmd(systemParamSetter)
-localcmd(clockSynchronizer)
+#time.sleep(5)
+#localcmd(systemParamSetter)
+#localcmd(clockSynchronizer)
 ################################################################################
 
 loadsDic = {}
@@ -187,7 +193,7 @@ for writeToDisk in diskConfigs :
         for algorithm in algorithms :
             for groupConfig in groupConfigs :
 #################################
-                numsLearners = [groupConfig[groups] * 4]
+                #numsLearners = [groupConfig[groups] * 4]
 #################################
                 for numLearners in numsLearners :
                     lgs = (numLearners,groupConfig[groups],messageSize)

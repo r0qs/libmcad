@@ -113,7 +113,7 @@ public class BenchClient implements Runnable {
       ClientMessage msg = new ClientMessage(new byte[msgSize]);
       
       List<Group> allGroups = Group.getAllGroups();
-      int gid = nextGroup.incrementAndGet() % allGroups.size();
+      int gid = (nextGroup.incrementAndGet() / 10) % allGroups.size();
       Group g = allGroups.get(gid);
       List<Group> dests = new ArrayList<Group>(1);
       dests.add(g);

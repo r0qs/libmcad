@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 
 import ch.usi.da.paxos.api.PaxosNode;
 import ch.usi.da.paxos.message.Value;
+import ch.usi.da.paxos.storage.Decision;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
 public class URPAgentLearner implements Runnable {
@@ -70,8 +71,15 @@ public class URPAgentLearner implements Runnable {
       }
       while (true) {
          try {
-            Value v = paxos.getLearner().getDecisions().take().getValue();
+            Decision d = paxos.getLearner().getDecisions().take();
+            Value v = d.getValue();
+            
+            if (mcAgent.firstDeliveryMetadata != null)
+               mcAgent.firstDeliveryMetadata = new URPDeliveryMetadata(d.getRing(), d.getInstance());;
+            
             if (!v.isSkip()) {
+               URPDeliveryMetadata metadata = new URPDeliveryMetadata(d.getRing(), d.getInstance());
+               
                byte[] rawBatch = v.getValue();
 
                if (rawBatch.length == 0 ) {
@@ -82,13 +90,13 @@ public class URPAgentLearner implements Runnable {
 
                long t_learner_delivered = System.currentTimeMillis();
                Message batch = Message.createFromBytes(rawBatch);
-                              
+               
                while (batch.hasNext()) {
                   byte[] msg = (byte []) batch.getNext(); // cmdContainer
 //                  mcAgent.checkMessageAndEnqueue(msg, batch.t_batch_ready,
 //                        batch.piggyback_proposer_serialstart, batch.piggyback_proposer_serialend,
 //                        t_learner_delivered);
-                  mcAgent.checkMessageAndEnqueue(msg, 0, 0, 0, t_learner_delivered);
+                  mcAgent.checkMessageAndEnqueue(msg, metadata, 0, 0, 0, t_learner_delivered);
                }               
             }            
          }

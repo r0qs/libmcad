@@ -46,10 +46,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.OptimisticMulticastAgent;
+import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastClient.RequestBatcher;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.ridge.Acceptor;
 import ch.usi.dslab.bezerra.ridge.AcceptorSequence;
@@ -308,6 +310,16 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
 
          int batchTimeThreshold = getJSInt(config, "batch_time_threshold_ms");
          Batcher.setMessageSizeThreshold(batchTimeThreshold);
+
+         if (config.containsKey("client_batch_size_threshold_bytes")) {
+            int clientBatchSizeThreshold = getJSInt(config, "client_batch_size_threshold_bytes");
+            RequestBatcher.setClientBatchSize_Bytes(clientBatchSizeThreshold);
+         }
+         
+         if (config.containsKey("client_batch_time_threshold_ms")) {
+            int clientBatchTimeThreshold = getJSInt(config, "client_batch_time_threshold_ms");
+            RequestBatcher.setClientBatchTimeout_ms(clientBatchTimeThreshold);
+         }
          
          if (config.containsKey("deliver_conservative")) {
             boolean deliverConservative = (Boolean) config.get("deliver_conservative");
@@ -574,6 +586,18 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
          e.printStackTrace();
       }
       return msg;
+   }
+
+   @Override
+   public boolean hasWholeDeliveryPreffix() {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
+   @Override
+   public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
+      // TODO Auto-generated method stub
+      
    }
 
 }

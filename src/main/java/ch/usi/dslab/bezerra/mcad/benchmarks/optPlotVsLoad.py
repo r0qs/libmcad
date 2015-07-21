@@ -6,6 +6,7 @@ from benchCommon import *
 ####################################################################################################
 # definitions
 ####################################################################################################
+opt_gnuplot_script_sh_path = HOME + "/libmcad/benchLink/plot_opt.sh"
 simple_gnuplot_script_sh_path = HOME + "/libmcad/benchLink/plot_simple_tplat_cdf.sh"
 broadcast_gnuplot_sh_path = HOME + "/libmcad/benchLink/plot_broadcast.sh"
 bcast_cdfs_gnuplot_sh_path = HOME + "/libmcad/benchLink/plot_bcast_cdfs.sh"
@@ -31,7 +32,7 @@ class DataUnit :
     tp_msgps = None
     tp_mbps  = None
     
-    #latency
+    #consLatency
     lat_avg = None
     lat_50  = None
     lat_95  = None
@@ -148,9 +149,17 @@ def getfilelinecolum(name, linenum, colnum) :
     line = getfileline(name, linenum)
     return line.split()[colnum - 1] if line != None else 0
 
-def getAvgLatency(d) :
+def getAvgConsLatency(d) :
     l = getfileline(d + "/latency_conservative_average.log", 3)
     return float(l.split()[2]) if l != None else None
+
+def getAvgOptLatency(d) :
+    l = getfileline(d + "/latency_optimistic_average.log", 3)
+    return float(l.split()[2]) if l != None else None
+
+def getMistakes(d) :
+    l = getfileline(d + "/mistakes_server_average.log", 3)
+    return 100.0 * float(l.split()[2]) if l != None else None
 
 def getAggThroughput(d) :
     l = getfileline(d + "/throughput_conservative_aggregate.log", 3)
@@ -163,9 +172,16 @@ def saveToFile(filepath, pointlist) :
         f.write("%s %s\n" % p)
     f.close()
 
-def plot_overalls(dirPath, msgSize, lat_max_avg) :
+def saveToFile2(filepath, pointlist) :
+    # p is a tuple (x,y,z)
+    f = open(filepath, "w")
+    for p in pointlist :
+        f.write("%s %s %s\n" % p)
+    f.close()
+
+def plot_overall(dirPath, msgSize, lat_max_avg) :
     print "Plotting in directory %s" % dirPath
-    os.system("%s %s %s %s" % (simple_gnuplot_script_sh_path, dirPath, msgSize, lat_max_avg))
+    os.system("%s %s %s %s" % (opt_gnuplot_script_sh_path, dirPath, msgSize, lat_max_avg))
 
 def plot_broadcast_tp_lat(sizes) :
 #     for size in sizes :
@@ -267,65 +283,76 @@ def create_cdf_plot(line_cdf_file, plot_file_name) :
     return (latency_50th, latency_95th, latency_99th)
 
 def generate_max_and_75_and_power_tp_lat_files(allThroughputsLatencies, msgSize, overall_dir_name, alg, learners, groups, pxpg, sizeStr, wdisk) :
-    load_max = tp_max = lat_max = 0
-    power_max = load_power = tp_power = lat_power = 0
-    load_1client = tp_1client = lat_1client = None
+    load_max = tp_max = lat_max = optlat_max = 0
+    power_max = load_power = tp_power = lat_power = optlat_power = 0
+    load_1client = tp_1client = lat_1client = optlat_1client = None
     for point in allThroughputsLatencies :
-        load, tp, lat = point
+        load, tp, lat, optlat, mistakes = point
         power = tp / lat
         if tp > tp_max :
             load_max = load
             tp_max = tp
             lat_max = lat
+            optlat_max = optlat
         if power > power_max :
             power_max = power
             load_power = load
             tp_power = tp
             lat_power = lat
+            optlat_power = optlat
         if load_1client == None :
             load_1client = load
             tp_1client = tp
             lat_1client = lat
+            optlat_1client = optlat
 
     tp_75_ideal = 0.75 * tp_max
     load_75_estimate = int(round(0.75 * load_max))
-    tp_75_found = load_75_found = lat_75_found = 0
+    tp_75_found = load_75_found = lat_75_found = optlat_75_found = 0
     lowest_distance = float("inf")
     for point in allThroughputsLatencies :
-        load, tp, lat = point
+        load, tp, lat, optlat, mistakes = point
         distance = abs(tp - tp_75_ideal)
         if distance < lowest_distance : 
             lowest_distance = distance
             load_75_found = load
             tp_75_found = tp
             lat_75_found = lat
+            optlat_75_found = optlat
 
     # latency cdf load_tp_max
     load_max_directory = getDirectoryPattern(alg, load_max, learners, groups, pxpg, size, wdisk)
-    cdf_max_file = load_max_directory + "/latencydistribution_conservative_aggregate.log"
-    latency_50th_max, latency_95th_max, latency_99th_max = create_cdf_plot(cdf_max_file, overall_dir_name + "/cdf_max.log")
+    cdf_cons_max_file = load_max_directory + "/latencydistribution_conservative_aggregate.log"
+    cdf_opt__max_file = load_max_directory + "/latencydistribution_optimistic_aggregate.log"
+    latency_cons_50th_max, latency_cons_95th_max, latency_cons_99th_max = create_cdf_plot(cdf_cons_max_file, overall_dir_name + "/cdf_max_cons.log")
+    latency_opt__50th_max, latency_opt__95th_max, latency_opt__99th_max = create_cdf_plot(cdf_opt__max_file, overall_dir_name + "/cdf_max_opt.log")
     
     # latency cdf load_tp_75
     load_75_directory = getDirectoryPattern(alg, load_75_found, learners, groups, pxpg, size, wdisk)
-    cdf_75_file = load_75_directory + "/latencydistribution_conservative_aggregate.log"
-    latency_50th_75, latency_95th_75, latency_99th_75 = create_cdf_plot(cdf_75_file, overall_dir_name + "/cdf_75.log")
+    cdf_cons_75_file = load_75_directory + "/latencydistribution_conservative_aggregate.log"
+    cdf_opt__75_file = load_75_directory + "/latencydistribution_optimistic_aggregate.log"
+    latency_cons_50th_75, latency_cons_95th_75, latency_cons_99th_75 = create_cdf_plot(cdf_cons_75_file, overall_dir_name + "/cdf_75_cons.log")
+    latency_opt__50th_75, latency_opt__95th_75, latency_opt__99th_75 = create_cdf_plot(cdf_opt__75_file, overall_dir_name + "/cdf_75_opt.log")
     
     # latency cdf load_power
     load_power_directory = getDirectoryPattern(alg, load_power, learners, groups, pxpg, size, wdisk)
-    cdf_power_file = load_power_directory + "/latencydistribution_conservative_aggregate.log"
-    latency_50th_power, latency_95th_power, latency_99th_power = create_cdf_plot(cdf_power_file, overall_dir_name + "/cdf_power.log")
+    cdf_cons_power_file = load_power_directory + "/latencydistribution_conservative_aggregate.log"
+    cdf_opt__power_file = load_power_directory + "/latencydistribution_optimistic_aggregate.log"
+    latency_cons_50th_power, latency_cons_95th_power, latency_cons_99th_power = create_cdf_plot(cdf_cons_power_file, overall_dir_name + "/cdf_power_cons.log")
+    latency_opt__50th_power, latency_opt__95th_power, latency_opt__99th_power = create_cdf_plot(cdf_opt__power_file, overall_dir_name + "/cdf_power_opt.log")
 
     # latency cdf 1 client
     load_1client_directory = getDirectoryPattern(alg, load_1client, learners, groups, pxpg, size, wdisk)
-    cdf_1client_file = load_1client_directory + "/latencydistribution_conservative_aggregate.log"
-#     print "cdf_1c_file for (%s, %s, %s) = %s" % (alg, learners, size, cdf_1client_file)
-    latency_50th_1client, latency_95th_1client, latency_99th_1client = create_cdf_plot(cdf_1client_file, overall_dir_name + "/cdf_1client.log")
-    
+    cdf_cons_1client_file = load_1client_directory + "/latencydistribution_conservative_aggregate.log"
+    cdf_opt__1client_file = load_1client_directory + "/latencydistribution_optimistic_aggregate.log"
+    latency_cons_50th_1client, latency_cons_95th_1client, latency_cons_99th_1client = create_cdf_plot(cdf_cons_1client_file, overall_dir_name + "/cdf_1client_cons.log")
+    latency_opt__50th_1client, latency_opt__95th_1client, latency_opt__99th_1client = create_cdf_plot(cdf_opt__1client_file, overall_dir_name + "/cdf_1client_opt.log")
+        
     # max file
     file_max = open(overall_dir_name + "/tp_lat_max.log", "w")
     file_max.write("# maxtp = %s (load %s), ideal 0.75maxtp = %s (estimated load %s)\n" % (tp_max, load_max, tp_75_ideal, load_75_estimate))
-    file_max.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_50th(ms) latency_95th(ms) latency_99th(ms):\n")
-    file_max.write("%s %s %s %s %s %s %s\n" % (load_max, tp_max, tp_max * msgSize * 8 / 1e6, lat_max / 1e6, latency_50th_max / 1e6, latency_95th_max / 1e6, latency_99th_max / 1e6))
+    file_max.write("# load throughput(msg/s) throughput(MBps) latency_cons_avg(ms) latency_cons_50th(ms) latency_cons_95th(ms) latency_cons_99th(ms) latency_opt__avg(ms) latency_opt__50th(ms) latency_opt__95th(ms) latency_opt__99th(ms):\n")
+    file_max.write("%s %s %s %s %s %s %s %s %s %s %s\n" % (load_max, tp_max, tp_max * msgSize * 8 / 1e6, lat_max / 1e6, latency_cons_50th_max / 1e6, latency_cons_95th_max / 1e6, latency_cons_99th_max / 1e6, optlat_max / 1e6, latency_opt__50th_max / 1e6, latency_opt__95th_max / 1e6, latency_opt__99th_max / 1e6 ))
     file_max.close()
     
     # 75 found file
@@ -334,20 +361,20 @@ def generate_max_and_75_and_power_tp_lat_files(allThroughputsLatencies, msgSize,
     file_75 = open(overall_dir_name + "/tp_lat_75.log", "w")
     file_75.write("# maxtp = %s (load %s), ideal 0.75maxtp = %s (estimated load %s), found 0.75maxtp = %s (load %s): distance %s%% (load distance %s%%)\n" \
                   % (tp_max, load_max, tp_75_ideal, load_75_estimate, tp_75_found, load_75_found, int(round(tp_distance_percent)), int(round(load_distance_percent))))
-    file_75.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_50th(ms) latency_95th(ms) latency_99th(ms):\n")
-    file_75.write("%s %s %s %s %s %s %s\n" % (load_75_found, tp_75_found, tp_75_found * msgSize * 8 / 1e6, lat_75_found / 1e6, latency_50th_75 / 1e6, latency_95th_75 / 1e6, latency_99th_75 / 1e6))
+    file_75.write("# load throughput(msg/s) throughput(MBps) latency_cons_avg(ms) latency_cons_50th(ms) latency_cons_95th(ms) latency_cons_99th(ms) latency_opt__avg(ms) latency_opt__50th(ms) latency_opt__95th(ms) latency_opt__99th(ms):\n")
+    file_75.write("%s %s %s %s %s %s %s %s %s %s %s\n" % (load_75_found, tp_75_found, tp_75_found * msgSize * 8 / 1e6, lat_75_found / 1e6, latency_cons_50th_75 / 1e6, latency_cons_95th_75 / 1e6, latency_cons_99th_75 / 1e6, optlat_75_found / 1e6, latency_opt__50th_75 / 1e6, latency_opt__95th_75 / 1e6, latency_opt__99th_75 / 1e6))
     file_75.close()
     
     # power file
     file_power = open(overall_dir_name + "/tp_lat_power.log", "w")
-    file_power.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_50th(ms) latency_95th(ms) latency_99th(ms):\n#\n")
-    file_power.write("%s %s %s %s %s %s %s\n" % (load_power, tp_power, tp_power * msgSize * 8 / 1e6, lat_power / 1e6, latency_50th_power / 1e6, latency_95th_power / 1e6, latency_99th_power / 1e6))
+    file_power.write("# load throughput(msg/s) throughput(MBps) latency_cons_avg(ms) latency_cons_50th(ms) latency_cons_95th(ms) latency_cons_99th(ms) latency_opt__avg(ms) latency_opt__50th(ms) latency_opt__95th(ms) latency_opt__99th(ms):\n#\n")
+    file_power.write("%s %s %s %s %s %s %s %s %s %s %s\n" % (load_power, tp_power, tp_power * msgSize * 8 / 1e6, lat_power / 1e6, latency_cons_50th_power / 1e6, latency_cons_95th_power / 1e6, latency_cons_99th_power / 1e6, optlat_power / 1e6, latency_opt__50th_power / 1e6, latency_opt__95th_power / 1e6, latency_opt__99th_power / 1e6))
     file_power.close()
     
     # single client file
     file_1client = open(overall_dir_name + "/tp_lat_1client.log", "w")
-    file_1client.write("# load throughput(msg/s) throughput(MBps) latency_avg(ms) latency_50th(ms) latency_95th(ms) latency_99th(ms):\n#\n")
-    file_1client.write("%s %s %s %s %s %s %s\n" % (load_1client, tp_1client, tp_1client * msgSize * 8 / 1e6, lat_1client / 1e6, latency_50th_1client / 1e6, latency_95th_1client / 1e6, latency_99th_1client / 1e6))
+    file_1client.write("# load throughput(msg/s) throughput(MBps) latency_cons_avg(ms) latency_cons_50th(ms) latency_cons_95th(ms) latency_cons_99th(ms) latency_opt__avg(ms) latency_opt__50th(ms) latency_opt__95th(ms) latency_opt__99th(ms):\n#\n")
+    file_1client.write("%s %s %s %s %s %s %s %s %s %s %s\n" % (load_1client, tp_1client, tp_1client * msgSize * 8 / 1e6, lat_1client / 1e6, latency_cons_50th_1client / 1e6, latency_cons_95th_1client / 1e6, latency_cons_99th_1client / 1e6, optlat_1client / 1e6, latency_opt__50th_1client / 1e6, latency_opt__95th_1client / 1e6, latency_opt__99th_1client / 1e6))
     file_1client.close()
     
     # critical points file
@@ -356,7 +383,7 @@ def generate_max_and_75_and_power_tp_lat_files(allThroughputsLatencies, msgSize,
     file_criticals.write("%s %s 0.025 %s %s 0.02 %s %s 0.015 %s %s 0.01\n" % (load_max, tp_max, load_75_found, tp_75_found, load_power, tp_power, load_1client, tp_1client))
     file_criticals.close()
     
-    return latency_50th_max
+    return latency_cons_50th_max
 
 def createBroadcastData() :
     # assuming that the script is run inside logsmcast/algorithm/
@@ -541,16 +568,6 @@ doOverallPlotting = False
 if len(sys.argv) > 1 :
     doOverallPlotting = sys.argv[1] in ["True", "true", "T", "t", "1"]
 
-doBroadcastPlotting = False
-if len(sys.argv) > 2 :
-    doBroadcastPlotting = sys.argv[2] in ["True", "true", "T", "t", "1"]
-
-doCdfPlotting = False
-if len(sys.argv) > 3 :
-    doCdfPlotting = sys.argv[3] in ["True", "true", "T", "t", "1"]
-
-doMulticastPlotting = True
-
 
 
 # libpaxos_10_clients_16_learners_1_groups_1_pxpergroup_140_bytes_diskwrite_False
@@ -575,45 +592,48 @@ for alg in all_algs :
                         clis = sorted([int(v) for v in getAllValsFromDirs(dirpattern, 1)])
                         if len(clis) == 0 :
                             continue
-                        allLatencies = []
+                        allConservativeLatencies = []
+                        allOptimisticLatencies = []
+                        allMistakes = []
                         allThroughputs = []
+                        allTpMistakes = []
                         allPowers = []
                         allThroughputsLatencies = []
                         for cli in clis :
                             cliDir = getDirectoryPattern(alg, cli, learners, groups, pxpg, size, wdisk)
-                            latency = getAvgLatency(cliDir)
+                            consLatency = getAvgConsLatency(cliDir)
+                            optLatency = getAvgOptLatency(cliDir)
+                            mistakes = getMistakes(cliDir)
                             throughput = getAggThroughput(cliDir)
-                            if latency == None or throughput == None:
+                            if consLatency == None or throughput == None or optLatency == None:
                                 continue
-                            allLatencies  .append((cli, latency))
+                            allConservativeLatencies.append((cli, consLatency))
+                            allOptimisticLatencies  .append((cli, optLatency))
+                            allMistakes             .append((cli, mistakes))
                             allThroughputs.append((cli, throughput))
-                            allPowers     .append((cli, throughput / latency))
-                            allThroughputsLatencies.append((cli, throughput, latency))
-                        if not allLatencies or not allThroughputs :
+                            allTpMistakes .append((cli, throughput, mistakes))
+                            allPowers     .append((cli, throughput / consLatency))
+                            allThroughputsLatencies.append((cli, throughput, consLatency, optLatency, mistakes))
+                        if not allConservativeLatencies or not allThroughputs or not allOptimisticLatencies:
                             print "No valid points for %s. Skipping." % (overall_dir_name)
                             continue
 
-                        overall_latency_file = overall_dir_name + "/latency.log"
+                        overall_consLatency_file = overall_dir_name + "/consLatency.log"
+                        overall_optLatency_file = overall_dir_name + "/optLatency.log"
+                        overall_mistakes_file = overall_dir_name + "/mistakes.log"
                         overall_throughput_file = overall_dir_name + "/throughput.log"
+                        overall_tpmistakes_file = overall_dir_name + "/tp_mistakes.log"
                         overall_power_file = overall_dir_name + "/power.log"
                         overall_max_tp_file = overall_dir_name + "/tp_lat_max.log"
                         overall_75_tp_file = overall_dir_name + "/tp_lat_75.log"
                         if not os.path.exists(overall_dir_name) :
                             os.makedirs(overall_dir_name)
-                        saveToFile(overall_latency_file, allLatencies)
+                        saveToFile(overall_consLatency_file, allConservativeLatencies)
+                        saveToFile(overall_optLatency_file, allOptimisticLatencies)
+                        saveToFile(overall_mistakes_file, allMistakes)
                         saveToFile(overall_throughput_file, allThroughputs)
+                        saveToFile2(overall_tpmistakes_file, allTpMistakes)
                         saveToFile(overall_power_file, allPowers)
                         lat_max_median = generate_max_and_75_and_power_tp_lat_files(allThroughputsLatencies, int(size), overall_dir_name, alg, learners, groups, pxpg, size, wdisk)
                         if doOverallPlotting :
-                            plot_overalls(overall_dir_name, size, lat_max_median * 1.5)
-
-data_table,all_algs,all_learners,all_sizes = createBroadcastData()
-if doBroadcastPlotting :
-    plot_broadcast_tp_lat(all_sizes)
-
-if doCdfPlotting :
-    plot_broadcast_cdfs("..", data_table, all_algs, all_learners, all_sizes)
-
-data_table,all_algs,all_groups,all_sizes = createMulticastData()
-if doMulticastPlotting :
-    plot_multicast_tp_lat()
+                            plot_overall(overall_dir_name, size, lat_max_median * 1.5)
