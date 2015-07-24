@@ -413,9 +413,10 @@ public class URPMcastAgent implements MulticastAgent {
             setMergeBlockSize(M);
          }
          
-         Boolean deserializeToMessageField = (Boolean) config.get("deserialize_to_Message");
-         if (deserializeToMessageField != null)
+         if (config.containsKey("deserialize_to_Message")) {
+            Boolean deserializeToMessageField = (Boolean) config.get("deserialize_to_Message");
             deserializeToMessage = deserializeToMessageField;
+         }
          
          JSONArray groupsArray = (JSONArray) config.get("groups");         
          Iterator<Object> it_group = groupsArray.iterator();
