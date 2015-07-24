@@ -55,8 +55,8 @@ sender_class = "ch.usi.dslab.bezerra.mcad.tests.TestClient"
 config_file = script_dir() + "/ridge_1g1e.json"
 contact_servers = []# [9, 10, 11, 12]
 
-if len(sys.argv) != 2 :
-    print " usage: " + sys.argv[0] + " urp/ridge"
+if len(sys.argv) not in [2,3] :
+    print " usage: " + sys.argv[0] + " urp/ridge [config_file]"
     sys.exit()
 
 if len(sys.argv) == 2 :
@@ -68,6 +68,8 @@ if len(sys.argv) == 2 :
         config_file = script_dir() + "/ridge_1g1e.json"
 #         contact_servers = [9, 10, 11, 12]
 
+if len(sys.argv) == 3 :
+    config_file = sys.argv[2]
 
 contact_servers_str = str(contact_servers).replace(',','').strip('[]')
 
