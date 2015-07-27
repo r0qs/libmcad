@@ -122,6 +122,7 @@ mcadurpconfig = open(mcadurpconfigfile)
 config = json.load(mcadurpconfig)
 
 num_rings = len(config["rings"])
+
 if "multi_ring_m" in config :
     global_parameters["multi_ring_m"] = config["multi_ring_m"]
 

@@ -1,14 +1,21 @@
 {
   "agent_class" : "URPMcastAgent" ,
+
+  "deserialize_to_Message" : true ,
   
   "fast_ring" : false;
   "multi_ring_m" : 1 ,
+  "multi_ring_lambda": 20000 ,
+  "multi_ring_delta_t": 10 ,
+  "multi_ring_start_time": 1437990243000 ,
   
-  "deserialize_to_Message" : true ,
-
   "enable_batching"  : true
   "batch_size_bytes" : 10000 ,
   "batch_time_ms"    : 10 ,
+  
+  "deliver_skip_messages": 1,
+
+  "reference_ring": 0,
     
   "groups" :
   [
@@ -29,7 +36,24 @@
   [
     {
       "ring_id" : 1 ,
-      "destination_groups" : [1]
+      "destination_groups" : [1] ,
+      
+      "p1_resend_time": 1000 ,
+      "p1_preexecution_number": 5000 ,
+      "concurrent_values": 20 ,
+      "quorum_size": 2 ,
+      "buffer_size": 2097152 ,
+      "trim_quorum": 2 ,
+      "stable_storage": "ch.usi.da.paxos.storage.BufferArray" ,
+      "tcp_nodelay": 1 ,
+      "tcp_crc": 0 ,
+      "learner_recovery": 1 ,
+      "trim_modulo": 0 ,
+      "auto_trim": 0 ,
+      "value_size": 32768 ,
+      "value_count": 900000 ,
+      "value_resend_time": 10000 ,
+      "batch_policy": "none" ,
     }
   ] ,
   

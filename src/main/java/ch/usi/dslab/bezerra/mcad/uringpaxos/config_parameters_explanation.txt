@@ -1,7 +1,8 @@
 *: indicates required parameter
 (): indicates a non-required parameter and its default value
 
-=== MULTICAST IMPLEMENTATION
+
+=== GLOBAL PARAMETERS
 
 <agent_class> Tells the multicast agent factory which MulticastAgent class to
 instantiate (in this case, URPMcastAgent) and how to read the other config
@@ -10,14 +11,19 @@ parameters.
 * "agent_class" : "URPMcastAgent"
 
 
-( "fast_ring" : false ) --- do not set to true, as the fast-ring implementation does not yet work (as of 07/24/2015)
-
-( "multi_ring_m" : 1 )
-( "deserialize_to_Message" : true )
+== BATCHING (done by libmcad)
+This batching is done by the URPHelperNode class, outside of the URingPaxos library.
 
 ( "enable_batching"  : true )
 ( "batch_size_bytes" : 30000 )
 ( "batch_time_ms"    : 5 )
+
+
+== ZOOKEEPER LOCATION
+
+ZooKeeper is required by the URingPaxos (Unicast [Multi-]Ring Paxos) library.
+The libmcad deployer will start the ZooKeeper service at the given location with
+the given parameters.
 
 * "zookeeper" :
   {
@@ -27,108 +33,36 @@ parameters.
   } ,
 
 
+== Multi-Ring Paxos global parameters (most aren't required in the config file)
+
+( "multi_ring_lambda": 20000 )
+( "multi_ring_delta_t": 10 )
+( "multi_ring_start_time": current_time_millis()) to synchronize the rings, giving all them the same start time
+( "multi_ring_m" : 1 )
+( "deserialize_to_Message" : true )
+( "deliver_skip_messages": 1 )
+( "reference_ring": 0 )
+( "fast_ring" : false ) --- do not set to true, as the fast-ring implementation does not yet work (as of 07/24/2015)
 
 
 
+=== PER-RING PARAMETERS
+These settings are per ring, and each ring can choose different values for those parameters.
+They are all optional, with the default being as follows.
 
-
-
-=== BATCHING
-    
-After receiving <batch_size_threshold_bytes> bytes or <batch_time_threshold_ms>
-milliseconds have elapsed since the last proposal, the coordinator proposes whatever
-messages are in its queue. As for client batching, the clients may hold some of its
-multicast messages before sending them, in order to increase throughput without
-overwhelming the coordinator with small messages.
-  
-* "batch_size_threshold_bytes" : 65536
-* "batch_time_threshold_ms"    : 50
-( "client_batch_size_threshold_bytes" : 0 )
-( "client_batch_time_threshold_ms"    : 0 )
-
-
-=== LIVENESS
-
-After <delta_null_messages_ms> milliseconds of inactivity (no messages to multicast),
-the coordinator will create a null message to ensure liveness.
-  
-( "delta_null_messages_ms" : 500 )
-
-
-=== DELIVERIES
-
-These flags enable or disable different kinds of deliveries. If <direct_fast> is true,
-the client sends to each learner separately, using up the client's bandwidth, but reducing
-latency; otherwise, the client chooses a random distributing learner, increasing the
-latenchy of the optimistic delivery in one communication step.
-  
-( "deliver_conservative"       : true )
-( "deliver_optimistic_uniform" : true )
-( "deliver_optimistic_fast"    : true )
-( "direct_fast"                : true )
-
-
-=== LATENCY ESTIMATION
-
-These parameters control how latency is estimated (for the wait window and thus optimistic
-deliveries). The <latency_estimation_sample> parameters defines how many recent deliveries
-are taken into consideration to estimate the latency between each remote process and the
-local one. The resulting average may be incremented by a numer of standard deviations, which
-is defined by the <latency_estimation_devs> parameter. To avoid far processes from disrupting
-the optimistic deliveries too much, <latency_estimation_max> sets a cap on the estimated
-latency to any remote process.",
-  
-( "latency_estimation_sample"  : 5 )
-( "latency_estimation_devs"    : 0 )
-( "latency_estimation_max"     : 2147483647 )
-
-
-=== STORAGE
-
-The <storage_type> defines how acceptors will store decisions made. The options are: bdb, bdbsync,
-bdbasync, memory, memcache, listcache, fastarray, modarray, nostorage, nullstorage. Refer to the
-ch.usi.dslab.bezerra.ridge.storage package for more details on each of these storage algorithms.
-
-( "storage_type" : "nullstorage" )
-
-
-=== MESSAGE DISSEMINATION MODE AMONG LEARNERS
-
-The <learner_broadcast_mode> can be set to RING or DYNAMIC. With the former, messages are disseminated
-among learners in a sequence (as in a ring); the latter uses distributing learners and implements, as
-described in "Ridge: high-throughput, low-latency atomic multicast."
-
-* "learner_broadcast_mode" : "DYNAMIC"
-
-
-=== USING MULTIPLE ACCEPTOR SEQUENCES
-
-To reduce the number of writes to disk done by acceptors, which may be detrimental specially when using
-bdbsync (due to the synchronous nature of the writes), Ridge may use different quorums for each message.
-This is compatible with the Paxos algorithm, and aims at distributing the disk writes among acceptors.
-If a good set of acceptor sequences is given, the disk throughput may be close to twice as much that 
-achieved when always using the same quorum for all consensus instances. One problem is that the coordinator
-is always be part of the quorum. For that reason, when there are enough non-coordinator acceptors in the
-sequence (i.e., a majority of all acceptors), the coordinator does not need to write to disk.
-
-* "acceptor_sequences" :
-  [
-    {
-      "id" : 0,
-      "ensemble_id" : 0,
-      "coordinator_writes" : true,
-      "acceptors" : [0, 1]
-    } ,
-    {
-      "id" : 1,
-      "ensemble_id" : 0,
-      "coordinator_writes" : true,
-      "acceptors" : [0, 2]
-    } ,
-    {
-      "id" : 2,
-      "ensemble_id" : 0,
-      "coordinator_writes" : false,
-      "acceptors" : [0, 1, 2]
-    } ,
-  ] ,
+( "stable_storage": "ch.usi.da.paxos.storage.BufferArray" )
+( "batch_policy": "none" )
+( "p1_resend_time": 1000 )
+( "p1_preexecution_number": 5000 )
+( "concurrent_values": 20 )
+( "quorum_size": 2 )
+( "buffer_size": 2097152 )
+( "trim_quorum": 2 )
+( "tcp_nodelay": 1 )
+( "tcp_crc": 0 )
+( "learner_recovery": 1 )
+( "trim_modulo": 0 )
+( "auto_trim": 0 )
+( "value_size": 32768 )
+( "value_count": 900000 )
+( "value_resend_time": 10000 )
