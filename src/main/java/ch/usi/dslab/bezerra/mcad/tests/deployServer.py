@@ -48,13 +48,13 @@ if len(sys.argv) not in [3,4] :
     sys.exit(1)
 receiver_id = sys.argv[1] + " "
 alg = sys.argv[2]
-if len(sys.argv) == 3 :
+if len(sys.argv) == 4 :
+    config_file = sys.argv[3]
+else :
     if alg == "urp" :
-        config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_server_" + str(int(receiver_id)) + ".json "
+        config_file = script_dir() + "/urp_1g1r.json "
     elif alg == "ridge" :
         config_file = script_dir() + "/ridge_1g1e.json "
-else :
-    config_file = sys.argv[3]
 
 
 java_bin = "java -XX:+UseG1GC"

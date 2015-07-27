@@ -121,11 +121,22 @@ public class URPMcastAgent implements MulticastAgent {
       }
    }
    
-   public URPMcastAgent (String configFile, boolean isInGroup, int... ids) {
+   /** Creates a multicast agent that is not part of any group. For instance, a
+    *  client (which is never a multicast destination) would use this groupless
+    *  multicast agent.
+    * 
+    * @param configFile - the configuration file that describes the multicast
+    *                     deployment used by the agent.
+    */
+   public URPMcastAgent (String configFile) {
+      this(configFile, false, -1);
+   }
+   
+   public URPMcastAgent (String configFile, boolean isInGroup, int nodeId) {
       log.setLevel(Level.OFF);
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]> ();
       messageDeliveryQueue   = new LinkedBlockingQueue<Message>();
-      loadURPAgentConfig(configFile, isInGroup, ids);
+      loadURPAgentConfig(configFile, isInGroup, nodeId);
       firstDeliveryMetadata = null;
       multicaster = new Multicaster(this);
       instance = this;
@@ -372,7 +383,7 @@ public class URPMcastAgent implements MulticastAgent {
    // *** TODO: has to make sure that the max group is known before creating URPRings
    @SuppressWarnings("unchecked")
    // TODO: Using legacy API in the following method (Iterator part)
-   public void loadURPAgentConfig(String filename, boolean hasLocalGroup, int... ids) {
+   public void loadURPAgentConfig(String filename, boolean hasLocalGroup, int nodeId) {
       
       // create all groups
       // create all rings
@@ -533,7 +544,9 @@ public class URPMcastAgent implements MulticastAgent {
          // ==========================================
          // Creating the learner in all relevant rings
          
-         // The "learners" object is optional, and only used to specify server ports
+         // The "learners" object is used to specify server ports and the group of each learner
+         // If the local node is a learner, this will set the variable group
+         int localGroupId = -1;
          boolean hasLearners = config.containsKey("learners");
          if (hasLearners) {
             JSONArray learnersArray = (JSONArray) config.get("learners");
@@ -541,15 +554,17 @@ public class URPMcastAgent implements MulticastAgent {
             while (it_learner.hasNext()) {
                JSONObject jslearner = (JSONObject) it_learner.next();
                int learner_id = Util.getJSInt(jslearner, "learner_id");
+               int group_id   = Util.getJSInt(jslearner, "group_id");
+               if (learner_id == nodeId) localGroupId = group_id;
                String learner_location = (String) jslearner.get("learner_location");
                int learner_port = Util.getJSInt(jslearner, "learner_port");
-               URPMcastServerInfo.addServerToMap(learner_id, learner_location, learner_port);
+               URPMcastServerInfo.addServerToMap(learner_id, group_id, learner_location, learner_port);
+               URPGroup group = (URPGroup) Group.getGroup(group_id);
+               group.addMember(learner_id);
             }
          }
 
          if (hasLocalGroup) {
-            int localGroupId = ids[0];
-            int localNodeId  = ids[1];
 
             URPGroup localGroup = (URPGroup) Group.getGroup(localGroupId);
             setLocalGroup(localGroup);
@@ -559,10 +574,8 @@ public class URPMcastAgent implements MulticastAgent {
             // (just for this learner; other ring nodes also have to parse their urp string)
             // *** ASSUME that the learner has the same id in ALL rings
             List<RingDescription> localURPaxosRings = new ArrayList<RingDescription>();
-            int nodeId = -1;
             for (URPRingData ringData : localGroup.associatedRings) {
                int ringId = ringData.getId();
-               nodeId = (int) localNodeId;
                ArrayList<PaxosRole> pxRoleList = new ArrayList<PaxosRole>();
                pxRoleList.add(PaxosRole.Learner);
                localURPaxosRings.add(new RingDescription(ringId, nodeId, pxRoleList));

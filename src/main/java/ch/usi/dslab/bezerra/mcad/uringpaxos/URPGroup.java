@@ -28,9 +28,7 @@ package ch.usi.dslab.bezerra.mcad.uringpaxos;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import ch.usi.dslab.bezerra.mcad.Group;
 
@@ -42,6 +40,7 @@ public class URPGroup extends Group {
    }
    
    ArrayList<URPRingData> associatedRings;
+   ArrayList<Integer>     members;
    
    static int getMaxGroupId() {
       return maxGroupId;
@@ -52,6 +51,7 @@ public class URPGroup extends Group {
       if (id > maxGroupId)
          maxGroupId = id;
       associatedRings = new ArrayList<URPRingData>();
+      members = new ArrayList<Integer>();
    }
    
    void addAssociatedRing(URPRingData r) {
@@ -59,16 +59,17 @@ public class URPGroup extends Group {
          associatedRings.add(r);
    }
    
-   ArrayList<URPRingData> getCorrespondingRings() {
+   ArrayList<URPRingData> getAssociatedRings() {
       return associatedRings;
+   }
+   
+   void addMember(int memberId) {
+      if (members.contains(memberId) == false)
+         members.add(memberId);
    }
 
    @Override
    public List<Integer> getMembers() {
-      Set<Integer> members = new HashSet<Integer>();
-      for (URPRingData rd : associatedRings) {
-         members.addAll(rd.getLearners());
-      }
       List<Integer> membersList = new ArrayList<Integer>(members);
       Collections.sort(membersList);
       return membersList;

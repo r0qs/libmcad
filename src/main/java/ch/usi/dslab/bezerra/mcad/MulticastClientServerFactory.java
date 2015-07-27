@@ -36,11 +36,10 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import spread.SpreadException;
-
 import ch.usi.dslab.bezerra.mcad.minimal.MinimalMulticastClient;
 import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastAgent;
-import ch.usi.dslab.bezerra.mcad.spread.SpreadMulticastClient;
 import ch.usi.dslab.bezerra.mcad.spread.SpreadMulticastAgent;
+import ch.usi.dslab.bezerra.mcad.spread.SpreadMulticastClient;
 import ch.usi.dslab.bezerra.mcad.spread.SpreadMulticastServer;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMcastAgent;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMulticastClient;
@@ -72,7 +71,7 @@ public class MulticastClientServerFactory {
          }
          else if (agent_type.equals("RidgeMulticastAgent")) {
             logger.info("Creating RidgeMulticastAgent");
-            RidgeMulticastAgent rcmagent = new RidgeMulticastAgent(configFile, clientId, false);
+            RidgeMulticastAgent rcmagent = new RidgeMulticastAgent(configFile, false, clientId);
             return rcmagent.getClient();
          }
          else if (agent_type.equals("SpreadMulticastAgent")) {
@@ -110,14 +109,13 @@ public class MulticastClientServerFactory {
             // TODO
          }
          else if (agent_type.equals("URPMcastAgent")) {
-            int groupId = Util.getJSInt(config, "localnode_group_id");
-            String common_config_file = (String) config.get("common_config_file");
-            URPMcastAgent urpmagent = new URPMcastAgent(common_config_file, true, groupId, serverId);
+            logger.info("Creating URPMulticastServer");
+            URPMcastAgent urpmagent = new URPMcastAgent(configFile, true, serverId);
             return urpmagent.getMulticastServer();
          }
          else if (agent_type.equals("RidgeMulticastAgent")) {
             logger.info("Creating RidgeMulticastServer");
-            RidgeMulticastAgent rcmagent = new RidgeMulticastAgent(configFile, serverId, true);
+            RidgeMulticastAgent rcmagent = new RidgeMulticastAgent(configFile, true, serverId);
             return rcmagent.getServer();
          }
          else if (agent_type.equals("SpreadMulticastAgent")) {

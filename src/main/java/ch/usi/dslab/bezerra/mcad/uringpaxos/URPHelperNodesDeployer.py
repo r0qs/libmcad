@@ -105,6 +105,8 @@ os.system(script_dir() + "/URPZKConfigCreator.py " + zookeeper_server_location +
 # os.system("ssh " + zookeeper_server_location + " " + zookeeper_path + " start")
 # os.system("ssh " + zookeeper_server_location + " " + zookeeper_client_path + " rmr /ringpaxos")
 
+sleep(1)
+
 # MUST ASSUME THAT EACH HELPERNODE IS IN A SINGLE RING
 # AND THAT ALL NODES OF THE SAME RING ARE TOGETHER IN THE CONFIG FILE
 # AND THAT NO RING HAS ID -1

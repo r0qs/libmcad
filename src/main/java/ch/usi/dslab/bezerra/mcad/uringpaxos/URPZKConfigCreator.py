@@ -49,9 +49,9 @@ def current_time_millis() :
 def getringconfig(ringid, parameter) :
     return False
 
-def set_parameter(zkclient, path, value) :
+def set_parameter(zkclient, path, value="") :
     sval = str(value)
-    print "Setting znode " + path + " with value " + sval
+    print "Setting znode " + path + " with value \"" + sval + "\""
     zkclient.create(path, sval, makepath=True)
     
 def set_all_parameters(globals, locals, config, zkclient) :
@@ -62,7 +62,8 @@ def set_all_parameters(globals, locals, config, zkclient) :
     
     for ringcfg in config["rings"] :
         ringid = ringcfg["ring_id"]
-        set_parameter(zkclient, "/ringpaxos/topology" + str(ringid) + "/learners", "");
+        set_parameter(zkclient, "/ringpaxos/rings/" + str(ringid));
+        set_parameter(zkclient, "/ringpaxos/topology" + str(ringid) + "/learners");
         for lpar in locals :
             val = locals[lpar] if lpar not in ringcfg else ringcfg[lpar]
             set_parameter(zkclient, "/ringpaxos/topology" + str(ringid) + "/config/" + lpar, val)

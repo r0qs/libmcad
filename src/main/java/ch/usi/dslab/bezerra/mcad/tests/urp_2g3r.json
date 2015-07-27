@@ -1,6 +1,22 @@
 {
   "agent_class" : "URPMcastAgent" ,
   
+  "deserialize_to_Message" : true ,
+  
+  "fast_ring" : false ,
+  "multi_ring_m" : 1 ,
+  "multi_ring_lambda": 20000 ,
+  "multi_ring_delta_t": 10 ,
+  
+  "enable_batching"  : true ,
+  "batch_size_bytes" : 10000 ,
+  "batch_time_ms"    : 10 ,
+  
+  "deliver_skip_messages": 1,
+
+  "reference_ring": 0,
+  
+  
   "groups" :
   [
     {
@@ -15,7 +31,7 @@
   {
     "location" : "localhost" ,
     "port" : 2181,
-    "path" : "$HOME/zoo/bin/zkServer.sh"
+    "path" : "$HOME/zoo"
   } ,
   
   
@@ -38,19 +54,11 @@
   "ring_nodes" :
   [
     {
-      "node_id" : 10 ,
-      "node_location" : "localhost" ,
-      "node_rings" :
-      [
-        { "ring_id" : 1 , "roles" : ["proposer"] , "proposer_port" : 50001 }
-      ]
-    } ,
-    {
       "node_id" : 11 ,
       "node_location" : "localhost" ,
       "node_rings" :
       [
-        { "ring_id" : 1 , "roles" : ["acceptor"] }
+        { "ring_id" : 1 , "roles" : ["acceptor", "proposer"] , "proposer_port" : 50001 }
       ]
     } ,
     {
@@ -60,29 +68,13 @@
       [
         { "ring_id" : 1 , "roles" : ["acceptor"] }
       ]
-    } ,      
-    {
-      "node_id" : 13 ,
-      "node_location" : "localhost" ,
-      "node_rings" :
-      [
-        { "ring_id" : 1 , "roles" : ["acceptor"] }
-      ]
-    } ,
-    {
-      "node_id" : 20 ,
-      "node_location" : "localhost" ,
-      "node_rings" :
-      [
-        { "ring_id" : 2 , "roles" : ["proposer"] , "proposer_port" : 50002 }
-      ]
     } ,
     {
       "node_id" : 21 ,
       "node_location" : "localhost" ,
       "node_rings" :
       [
-        { "ring_id" : 2 , "roles" : ["acceptor"] }
+        { "ring_id" : 2 , "roles" : ["acceptor", "proposer"] , "proposer_port" : 50002 }
       ]
     } ,
     {
@@ -94,27 +86,11 @@
       ]
     } ,      
     {
-      "node_id" : 23 ,
-      "node_location" : "localhost" ,
-      "node_rings" :
-      [
-        { "ring_id" : 2 , "roles" : ["acceptor"] }
-      ]
-    } ,
-    {
-      "node_id" : 30 ,
-      "node_location" : "localhost" ,
-      "node_rings" :
-      [
-        { "ring_id" : 3 , "roles" : ["proposer"] , "proposer_port" : 50003 }
-      ]
-    } ,
-    {
       "node_id" : 31 ,
       "node_location" : "localhost" ,
       "node_rings" :
       [
-        { "ring_id" : 3 , "roles" : ["acceptor"] }
+        { "ring_id" : 3 , "roles" : ["acceptor", "proposer"] , "proposer_port" : 50003 }
       ]
     } ,
     {
@@ -124,14 +100,26 @@
       [
         { "ring_id" : 3 , "roles" : ["acceptor"] }
       ]
-    } ,      
+    } 
+  ] ,
+
+  
+  "comment" : "the learners object is optional, and only used to specify server ports" ,
+
+  
+  "learners" :
+  [
     {
-      "node_id" : 33 ,
-      "node_location" : "localhost" ,
-      "node_rings" :
-      [
-        { "ring_id" : 3 , "roles" : ["acceptor"] }
-      ]
+      "learner_id" : 33 ,
+      "group_id"   : 1 ,
+      "learner_location" : "localhost" ,
+      "learner_port" : 50032
+    },
+    {
+      "learner_id" : 34 ,
+      "group_id"   : 2 ,
+      "learner_location" : "localhost" ,
+      "learner_port" : 50033
     }
   ]
 }

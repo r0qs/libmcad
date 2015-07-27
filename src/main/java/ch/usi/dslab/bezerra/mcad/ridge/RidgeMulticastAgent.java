@@ -90,7 +90,7 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
    Timestamp lastTimestamp     = Timestamp.ZERO;
    Object    lastTimestampLock = new Object(); // object used only for synchronization
 
-   public RidgeMulticastAgent(String configFile, int pid, boolean isInGroup) {
+   public RidgeMulticastAgent(String configFile, boolean isInGroup, int pid) {
       byteArrayDeliveryQueue = new LinkedBlockingQueue<byte[]>();
       conservativeDeliveryQueue = new LinkedBlockingQueue<Message>();
       optimisticDeliveryQueue = new LinkedBlockingQueue<Message>();

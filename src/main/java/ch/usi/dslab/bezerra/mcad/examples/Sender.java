@@ -43,8 +43,7 @@ public class Sender {
    BufferedReader br;
    
    public Sender (int senderId, String configFile) {
-      int notUsed = 0;
-      mcagent = MulticastAgentFactory.createMulticastAgent(configFile, false, notUsed, senderId);
+      mcagent = MulticastAgentFactory.createMulticastAgent(configFile, false, senderId);
    }
    
    public String askForInput() throws IOException {

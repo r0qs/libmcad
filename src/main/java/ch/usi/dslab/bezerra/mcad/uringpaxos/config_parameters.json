@@ -91,11 +91,13 @@
   [
     {
       "learner_id" : 14 ,
+      "group_id"   :  1 ,
       "learner_location" : "node14" ,
       "learner_port" : 50014
     } ,
     {
       "learner_id" : 15 ,
+      "group_id"   :  1 ,
       "learner_location" : "node15" ,
       "learner_port" : 50015
     }

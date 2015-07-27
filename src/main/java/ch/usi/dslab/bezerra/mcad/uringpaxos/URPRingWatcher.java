@@ -95,7 +95,7 @@ public class URPRingWatcher implements Watcher {
             // connection has changed
             switch (event.getState()) {
                case SyncConnected:
-                  System.out.println("ZOOKEER URPRINGWATCHER CONNECTED!");
+                  System.out.println("ZooKeeper URPRingWatcher connected!");
                   List<String> children = zkClient.getChildren(ringLearnersPath, true);
                   processLearnersZnodes(children);
                   break;
@@ -109,13 +109,13 @@ public class URPRingWatcher implements Watcher {
          }
          if(event.getType() == EventType.NodeChildrenChanged){
             if(event.getPath().startsWith(ringLearnersPath)){
-               System.out.println("ZOOKEER URPRINGWATCHER :: learner ADDED!");
+               System.out.println("ZooKeeper URPRingWatcher :: learner added!");
                List<String> l = zkClient.getChildren(ringLearnersPath, true);
                processLearnersZnodes(l);
             }
          }
       } catch (KeeperException ke) {
-         System.err.println(":::: EXCEPTION being ignored:");
+         System.err.println(":::: exception being ignored:");
          ke.printStackTrace();
       } catch (InterruptedException ie) {
          ie.printStackTrace();

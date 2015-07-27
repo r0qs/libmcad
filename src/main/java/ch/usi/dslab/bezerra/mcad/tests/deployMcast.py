@@ -41,7 +41,8 @@ deployer = ridge_deployer = script_dir() + "/../ridge/RidgeEnsembleNodesDeployer
 config_file = ridge_config_file = script_dir() + "/ridge_1g1e.json "
 
 urp_deployer = script_dir() + "/../uringpaxos/URPHelperNodesDeployer.py "
-urp_config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_common_1g_1r.json "
+# urp_config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_common_1g_1r.json "
+urp_config_file = script_dir() + "/urp_1g1r.json "
 
 l = len(sys.argv)
 if l not in [2,3] :

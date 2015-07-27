@@ -62,7 +62,7 @@ if len(sys.argv) not in [2,3] :
 if len(sys.argv) == 2 :
     alg = sys.argv[1]
     if alg == "urp" :
-        config_file = script_dir() + "/../uringpaxos/configs/urpmcagent_common_1g_1r.json "
+        config_file = script_dir() + "/urp_1g1r.json"
 #         contact_servers = [14, 15]
     elif alg == "ridge" :
         config_file = script_dir() + "/ridge_1g1e.json"

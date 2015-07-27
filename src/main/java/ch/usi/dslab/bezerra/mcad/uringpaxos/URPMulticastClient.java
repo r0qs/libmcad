@@ -59,7 +59,7 @@ public class URPMulticastClient implements MulticastClient, Runnable {
       receivedReplies = new LinkedBlockingQueue<Message>();
       receivingThread = new Thread(this, "URPMulticastClient");
       receivingThread.start();
-      mcagent = new URPMcastAgent(configFile, false);
+      mcagent = new URPMcastAgent(configFile);
    }
 
    public int getId() {
@@ -94,7 +94,7 @@ public class URPMulticastClient implements MulticastClient, Runnable {
          clientTCPSender.send(credentials, serverConnection);
 
          Message ack = deliverReply();
-         System.out.println(String.format("Client %d: %s", this.getId(), ack.getItem(0)));
+         System.out.println(String.format("Client %d connecting to server %d. Server's reply: %s", this.getId(), serverId, ack.getItem(0)));
       } catch (IOException e) {
          // TODO Auto-generated catch block
          e.printStackTrace();

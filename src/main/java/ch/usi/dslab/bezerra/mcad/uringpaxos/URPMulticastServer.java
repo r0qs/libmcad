@@ -89,24 +89,27 @@ public class URPMulticastServer implements MulticastServer {
    public static class URPMcastServerInfo {
       
       static Map<Integer, URPMcastServerInfo> serversMap = new ConcurrentHashMap<Integer, URPMcastServerInfo>();
-      public static void addServerToMap(int serverId, String host, int port) {
-         serversMap.put(serverId, new URPMcastServerInfo(serverId, host, port));
+      public static void addServerToMap(int serverId, int groupId, String host, int port) {
+         serversMap.put(serverId, new URPMcastServerInfo(serverId, groupId, host, port));
       }
       public static URPMcastServerInfo getServer(int id) {
          return serversMap.get(id);
       }
       
-      int id;
+      int serverId;
+      int groupId;
       String host;
       int port;
       TCPConnection tcpConnection;
-      public URPMcastServerInfo(int id, String host, int port) {
-         this.id   = id;
-         this.host = host;
-         this.port = port;
+      
+      public URPMcastServerInfo(int serverId, int groupId, String host, int port) {
+         this.serverId = serverId;
+         this.groupId  = groupId;
+         this.host     = host;
+         this.port     = port;
       }
       public int getId() {
-         return id;
+         return serverId;
       }
       public String getHost() {
          return host;

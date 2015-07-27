@@ -57,7 +57,7 @@ public class MulticastAgentFactory {
       }
 
     */
-   public static MulticastAgent createMulticastAgent(String configFile, boolean isInGroup, int... ids) {
+   public static MulticastAgent createMulticastAgent(String configFile, boolean isInGroup, int nodeId) {
       try {
          log.setLevel(Level.OFF);
          
@@ -77,15 +77,15 @@ public class MulticastAgentFactory {
          }
          else if (agent_type.equals("URPMcastAgent")) {
             log.info("Creating URPMcastAgent");
-            return new URPMcastAgent(configFile, isInGroup, ids);
+            return new URPMcastAgent(configFile, isInGroup, nodeId);
          }
          else if (agent_type.equals("RidgeMulticastAgent")) {
             log.info("Creating RidgeMulticastAgent");
-            return new RidgeMulticastAgent(configFile, ids[1], isInGroup);
+            return new RidgeMulticastAgent(configFile, isInGroup, nodeId);
          }
          else if (agent_type.equals("SpreadMulticastAgent")) {
              log.info("Creating SpreadMulticastAgent");
-             return new SpreadMulticastAgent(configFile, isInGroup, ids[1]);
+             return new SpreadMulticastAgent(configFile, isInGroup, nodeId);
          }
          else {
             log.error("agent_type field in " + configFile + " didn't match any known MulticastAgent type");

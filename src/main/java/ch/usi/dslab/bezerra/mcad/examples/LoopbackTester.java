@@ -38,9 +38,8 @@ public class LoopbackTester {
    public static void main(String[] args) {
       String configFile = args[0];
       int nodeId  = Integer.parseInt(args[1]);
-      int groupId = Integer.parseInt(args[2]);
       //final MulticastAgent mcagent = MulticastAgentFactory.createMulticastAgent(configFile, true, 0, 9);
-      final MulticastAgent mcagent = MulticastAgentFactory.createMulticastAgent(configFile, true, groupId, nodeId);
+      final MulticastAgent mcagent = MulticastAgentFactory.createMulticastAgent(configFile, true, nodeId);
       int i = 0;
       
       Thread deliverer = new Thread () {

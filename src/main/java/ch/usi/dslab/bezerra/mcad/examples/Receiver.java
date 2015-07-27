@@ -35,7 +35,7 @@ public class Receiver extends Thread {
    MulticastAgent mcagent;
    
    public Receiver(int nodeId, int groupId, String configFile) {
-      mcagent = MulticastAgentFactory.createMulticastAgent(configFile, true, groupId, nodeId);
+      mcagent = MulticastAgentFactory.createMulticastAgent(configFile, true, nodeId);
    }   
    
    @Override
