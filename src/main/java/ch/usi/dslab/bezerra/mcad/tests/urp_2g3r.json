@@ -113,13 +113,13 @@
       "learner_id" : 33 ,
       "group_id"   : 1 ,
       "learner_location" : "localhost" ,
-      "learner_port" : 50032
+      "learner_port" : 50033
     },
     {
       "learner_id" : 34 ,
       "group_id"   : 2 ,
       "learner_location" : "localhost" ,
-      "learner_port" : 50033
+      "learner_port" : 50034
     }
   ]
 }
