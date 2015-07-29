@@ -109,7 +109,7 @@ public class URPRingWatcher implements Watcher {
          }
          if(event.getType() == EventType.NodeChildrenChanged){
             if(event.getPath().startsWith(ringLearnersPath)){
-               System.out.println("ZooKeeper URPRingWatcher :: learner added!");
+               System.out.println("ZooKeeper URPRingWatcher :: learner added/removed!");
                List<String> l = zkClient.getChildren(ringLearnersPath, true);
                processLearnersZnodes(l);
             }

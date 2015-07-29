@@ -3,6 +3,8 @@ package ch.usi.dslab.bezerra.mcad.uringpaxos;
 import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 
 public class URPDeliveryMetadata extends DeliveryMetadata {
+   private static final long serialVersionUID = 7355565506510035393L;
+   
    int  ringId;
    long instanceId;
 
@@ -76,6 +78,11 @@ public class URPDeliveryMetadata extends DeliveryMetadata {
    @Override
    public int hashCode() {
       return ((int) instanceId) ^ ringId;
+   }
+   
+   @Override
+   public String toString() {
+      return String.format("URPDeliveryMetadata<%d,%d>", ringId, instanceId);
    }
 
 }

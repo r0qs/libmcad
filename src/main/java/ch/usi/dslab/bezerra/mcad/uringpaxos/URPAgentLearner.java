@@ -76,7 +76,7 @@ public class URPAgentLearner implements Runnable {
             Decision d = paxos.getLearner().getDecisions().take();
             Value v = d.getValue();
             
-            if (mcAgent.firstDeliveryMetadata != null)
+            if (mcAgent.firstDeliveryMetadata == null)
                mcAgent.firstDeliveryMetadata = new URPDeliveryMetadata(d.getRing(), d.getInstance());;
             
             if (!v.isSkip()) {
