@@ -28,9 +28,11 @@ public class RecoveryLearner implements Runnable {
       public void putInteger(int i, DeliveryMetadata dm) {
          currentBurst.add(i);
          if (currentBurst.size() == burstSize) {
-            System.out.println(String.format("h%d(%d) = %s", burstcounter++, burstSize, hashAndClear()));
+            System.out.println(String.format("hash_%d(%d deliveries) = %s", burstcounter++, burstSize, hashAndClear()));
             mcagent.notifyCheckpointMade(dm);
          }
+//         if (burstcounter == 30)
+//            System.exit(0);
       }
       
       private String hashAndClear() {
@@ -39,7 +41,7 @@ public class RecoveryLearner implements Runnable {
          for (int i : currentBurst)
             concat.append(" " + i);
          currentBurst.clear();
-         String hash = toHash(concat.toString().getBytes());
+         String hash = toHash(concat.toString().getBytes()).substring(0, 7);
          return hash;
       }
       

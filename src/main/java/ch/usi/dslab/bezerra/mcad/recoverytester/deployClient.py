@@ -52,7 +52,7 @@ libmcast_cp = "-cp " + script_dir() + "/../../../../../../../../../target/libmca
 app_classpath = ""
 
 sender_class = "ch.usi.dslab.bezerra.mcad.recoverytester.MessageGenerator"
-config_file = script_dir() + "/ridge_1g1e.json"
+config_file = script_dir() + "/ridge_1g1r.json"
 
 if len(sys.argv) not in [2,3] :
     print " usage: " + sys.argv[0] + " urp/ridge [config_file]"

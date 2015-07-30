@@ -54,9 +54,10 @@ public class MessageGenerator implements Runnable {
          destinations.add(Group.getGroup(1));
       }
       else {
-         //send to G1,g2
-         destinations.add(Group.getGroup(1));
-         destinations.add(Group.getGroup(2));
+         //send to all groups
+         destinations.addAll(Group.getAllGroups());
+//         destinations.add(Group.getGroup(1));
+//         destinations.add(Group.getGroup(2));
       }
       
       ClientMessage msg = new ClientMessage(rand.nextInt());
@@ -79,15 +80,19 @@ public class MessageGenerator implements Runnable {
       int count = 0;
 
       while (running) {
-         generateMessage();
-         if (count++ % burstLength == 0) {
-            try {
-               System.out.println("Finished sending a 10000 messages burst... Sleeping for 10 seconds.");
-               Thread.sleep(10000);
-               System.out.println("Woke up! Sendin 10000 more...");
-            } catch (InterruptedException e) {
-               e.printStackTrace();
-            }
+         if (++count % burstLength != 0) {
+            generateMessage();
+         }
+         else {
+//         if (count++ % burstLength == 0) {
+//            try {
+               System.out.println("Finished sending messages...");
+//               Thread.sleep(10000);
+//               System.out.println("Woke up! Sendin 10000 more...");
+//            } catch (InterruptedException e) {
+//               e.printStackTrace();
+//            }
+               break;
          }
       }
       

@@ -8,7 +8,7 @@
   "multi_ring_lambda": 20000 ,
   "multi_ring_delta_t": 10 ,
   
-  "enable_batching"  : true ,
+  "enable_batching"  : false ,
   "batch_size_bytes" : 10000 ,
   "batch_time_ms"    : 10 ,
   

@@ -652,7 +652,7 @@ public class URPMcastAgent implements MulticastAgent {
       long safeInstance = previousInstance - (previousInstance % multiRingMergeBlock);
       Learner learner = URPaxosNode.getLearner();
       for (URPRingData urd : localGroup.associatedRings) {
-         System.out.println(String.format(this.getClass().getSimpleName() + " :: setting instance %d or ring %d as safe", safeInstance, urd.ringId));
+         System.out.println(String.format(this.getClass().getSimpleName() + " :: setting instance %d of ring %d as safe", safeInstance, urd.ringId));
          learner.setSafeInstance(urd.ringId, safeInstance);
       }
    }

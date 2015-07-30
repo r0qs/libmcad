@@ -14,6 +14,8 @@
   "batch_time_ms"    : 10 ,
   
   "deliver_skip_messages": 1,
+  
+  "value_batch_size": "0 -- done in the mrp layer (here or ring?)",
 
   "reference_ring": 0,
     
@@ -50,6 +52,7 @@
       "learner_recovery": 1 ,
       "trim_modulo": 0 ,
       "auto_trim": 0 ,
+      "value_batch_size": "0 -- done in the mrp layer (here or ring?)",
       "value_size": 32768 ,
       "value_count": 900000 ,
       "value_resend_time": 10000 ,

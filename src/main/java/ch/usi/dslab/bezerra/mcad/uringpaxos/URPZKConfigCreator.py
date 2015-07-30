@@ -105,6 +105,7 @@ local_parameters = {
     "value_count": 900000,
     "value_resend_time": 10000,
     "batch_policy": "none",
+    "value_batch_size": 0,
 }
 
 global_parameters = {
@@ -114,6 +115,7 @@ global_parameters = {
     "multi_ring_delta_t": 10,
     "multi_ring_m": 1,
     "reference_ring": 0,
+    "value_batch_size": 0,
 }
 
 
