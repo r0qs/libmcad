@@ -1,0 +1,79 @@
+{
+  "agent_class" : "URPMcastAgent" ,
+  
+  "deserialize_to_Message" : true ,
+  
+  "fast_ring" : false ,
+  "multi_ring_m" : 1 ,
+  "multi_ring_lambda": 20000 ,
+  "multi_ring_delta_t": 10 ,
+  
+  "enable_batching"  : false ,
+  "batch_size_bytes" : 10000 ,
+  "batch_time_ms"    : 10 ,
+  
+  "deliver_skip_messages": 1,
+
+  "reference_ring": 0,
+  
+  
+  "groups" :
+  [
+    {
+      "group_id" : 1
+    }
+  ] ,
+  
+  "zookeeper" :
+  {
+    "location" : "localhost" ,
+    "port" : 2181,
+    "path" : "$HOME/zoo"
+  } ,
+  
+  
+  "rings" :
+  [
+    {
+      "ring_id" : 1 ,
+      "destination_groups" : [1] ,
+      "batch_policy" : "none" ,
+      "trim_modulo" : 500 ,
+      "stable_storage": "ch.usi.da.paxos.storage.BerkeleyStorage"
+    }
+  ] ,
+  
+  "ring_nodes" :
+  [
+    {
+      "node_id" : 11 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring_id" : 1 , "roles" : ["acceptor", "proposer"] , "proposer_port" : 50001 }
+      ]
+    } ,
+    {
+      "node_id" : 12 ,
+      "node_location" : "localhost" ,
+      "node_rings" :
+      [
+        { "ring_id" : 1 , "roles" : ["acceptor"] }
+      ]
+    }
+  ] ,
+
+  
+  "comment" : "the learners object is optional, and only used to specify server ports" ,
+
+  
+  "learners" :
+  [
+    {
+      "learner_id" : 33 ,
+      "group_id"   : 1 ,
+      "learner_location" : "localhost" ,
+      "learner_port" : 50033
+    }
+  ]
+}
