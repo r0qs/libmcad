@@ -50,7 +50,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import ch.usi.da.paxos.api.Learner;
 import ch.usi.da.paxos.api.LearnerCheckpoint;
 import ch.usi.da.paxos.api.PaxosRole;
 import ch.usi.da.paxos.ring.Node;
@@ -644,28 +643,22 @@ public class URPMcastAgent implements MulticastAgent {
    }
 
    @Override
-   public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
-      URPDeliveryMetadata delivery = (URPDeliveryMetadata) deliveryToKeep;
-      /*
-       1 - get highest x multiple of M, such that x < delivery.instanceId (-1, because we're keeping instanceId)
-       2 - set all rings subscribed by this learner with safe (x)
-      */
-      long previousInstance = delivery.instanceId/* - 1L*/;
-      long safeInstance = previousInstance - (previousInstance % multiRingMergeBlock);
-      Learner learner = URPaxosNode.getLearner();
-      for (URPRingData urd : localGroup.associatedRings) {
-         System.out.println(String.format(this.getClass().getSimpleName() + " :: setting instance %d of ring %d as safe", safeInstance, urd.ringId));
-         learner.setSafeInstance(urd.ringId, safeInstance);
-      }
+   public void notifyCheckpointMade(DeliveryMetadata lastDelivery) {
+      if (urpAgentLearner == null)
+         return;
+      URPDeliveryMetadata delivery = (URPDeliveryMetadata) lastDelivery;
+      urpAgentLearner.getURPLearner().setSafeDelivery(delivery.getLearnerDeliveryMetadata());
    }
 
    @Override
    public boolean hasWholeDeliveryPreffix() {
-      int firstRing = Integer.MAX_VALUE;
-      for (URPRingData rd : localGroup.associatedRings)
-         if (rd.ringId < firstRing) firstRing = rd.ringId;
-      
-      return firstDeliveryMetadata.ringId == firstRing && firstDeliveryMetadata.instanceId == 1;
+      // TODO fix this for Eyrie
+      return true;
+//      int firstRing = Integer.MAX_VALUE;
+//      for (URPRingData rd : localGroup.associatedRings)
+//         if (rd.ringId < firstRing) firstRing = rd.ringId;
+//      
+//      return firstDeliveryMetadata.ringId == firstRing && firstDeliveryMetadata.instanceId == 1;
    }
 
    @Override
@@ -675,6 +668,15 @@ public class URPMcastAgent implements MulticastAgent {
          urpAgentLearner.getURPLearner().provideLearnerCheckpoint(lcp);
       }
       return true;
+   }
+
+   @Override
+   public MulticastCheckpoint createMulticastCheckpoint(DeliveryMetadata lastDelivery) {
+      if (urpAgentLearner == null)
+         return null;
+      URPDeliveryMetadata urpdm = (URPDeliveryMetadata) lastDelivery;
+      LearnerCheckpoint lcp = urpAgentLearner.getURPLearner().createCheckpointObject(urpdm.getLearnerDeliveryMetadata());
+      return new URPMulticastCheckpoint(lcp);
    }
 
 }

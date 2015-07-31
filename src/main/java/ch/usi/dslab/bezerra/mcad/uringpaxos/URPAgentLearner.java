@@ -38,6 +38,7 @@ import ch.usi.dslab.bezerra.netwrapper.Message;
 public class URPAgentLearner implements Runnable {
    public static final Logger log = Logger.getLogger(URPAgentLearner.class);
    PaxosNode paxos;
+   Learner learner;
    URPMcastAgent mcAgent;
    Thread urpAgentLearnerThread;
    int learnerId;
@@ -54,6 +55,7 @@ public class URPAgentLearner implements Runnable {
    public URPAgentLearner(URPMcastAgent mcAgent, PaxosNode paxos, int learnerId) {
       this.mcAgent = mcAgent;
       this.paxos = paxos;
+      this.learner = paxos.getLearner();
       this.learnerId = learnerId;
       urpAgentLearnerThread = new Thread(this);
       urpAgentLearnerThread.start();
@@ -78,7 +80,9 @@ public class URPAgentLearner implements Runnable {
          return; // not a learner
       }
       while (true) {
-         Decision d = paxos.getLearner().getNextDecision();
+         
+         
+         Decision d = learner.getNextDecision();
          
          if (d.isSkip()) continue;
          
@@ -86,9 +90,9 @@ public class URPAgentLearner implements Runnable {
          
          
          if (mcAgent.firstDeliveryMetadata == null)
-            mcAgent.firstDeliveryMetadata = new URPDeliveryMetadata(d.getRing(), d.getInstance());;
+            mcAgent.firstDeliveryMetadata = new URPDeliveryMetadata(learner.getLastDeliveryMetadata());
          
-         URPDeliveryMetadata metadata = new URPDeliveryMetadata(d.getRing(), d.getInstance());
+         URPDeliveryMetadata metadata = new URPDeliveryMetadata(learner.getLastDeliveryMetadata());
          
          byte[] rawBatch = v.getValue();
 

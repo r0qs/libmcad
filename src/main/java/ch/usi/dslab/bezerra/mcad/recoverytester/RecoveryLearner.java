@@ -1,26 +1,37 @@
 package ch.usi.dslab.bezerra.mcad.recoverytester;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
+import ch.usi.dslab.bezerra.mcad.MulticastCheckpoint;
 import ch.usi.dslab.bezerra.mcad.MulticastClientServerFactory;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
 
 public class RecoveryLearner implements Runnable {
-
+   
    public static class Hasher {
 
       int burstcounter    = 1;
       List<Integer> currentBurst;
       MulticastAgent mcagent;
+      MulticastServer mcserver;
       
-      public Hasher(MulticastAgent mca) {
-         mcagent = mca;
+      public Hasher(MulticastServer mcs) {
+         mcserver = mcs;
+         mcagent = mcs.getMulticastAgent();
          currentBurst = new ArrayList<Integer>();
       }
       
@@ -29,8 +40,48 @@ public class RecoveryLearner implements Runnable {
             System.out.println(String.format("hash(%d deliveries) = %s", currentBurst.size(), hashAndClear(currentBurst)));
          }
          currentBurst.add(i);
-         if (count == 500)
-            mcagent.notifyCheckpointMade(dm);
+         if (count == 500) {
+            createCheckpoint(dm);
+         }
+      }
+      
+      private void createCheckpoint(DeliveryMetadata dm) {
+         MulticastCheckpoint mcp = mcagent.createMulticastCheckpoint(dm);
+         
+         String checkpointFileName = "/tmp/urpmcastcheckpoint_" + mcserver.getId() + ".bin";
+         
+         try {
+            ObjectOutputStream oos = new ObjectOutputStream(new DeflaterOutputStream(new FileOutputStream(checkpointFileName)));
+            oos.writeObject(mcp);
+            oos.close();
+         }
+         catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+         }
+         
+         mcagent.notifyCheckpointMade(dm);
+      }
+      
+      private MulticastCheckpoint loadMulticastCheckpoint() {
+         String checkpointFileName = "/tmp/urpmcastcheckpoint_" + mcserver.getId() + ".bin";
+         
+         File f = new File(checkpointFileName);
+         if(!f.exists())
+            return null;
+         
+         try {
+            ObjectInputStream ois = new ObjectInputStream(new InflaterInputStream(new FileInputStream(checkpointFileName)));
+            MulticastCheckpoint cp = (MulticastCheckpoint) ois.readObject();
+            ois.close();
+            return cp;
+         }
+         catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            System.exit(1);
+         }
+         
+         return null;
       }
       
       private String hashAndClear(List<Integer> burst) {
@@ -71,7 +122,7 @@ public class RecoveryLearner implements Runnable {
 
    public RecoveryLearner(String configFile, int learnerId) {
       mcServer = MulticastClientServerFactory.getServer(learnerId, configFile);
-      hasher = new Hasher(mcServer.getMulticastAgent());
+      hasher = new Hasher(mcServer);
       learnerThread = new Thread(this, "RecoveryLearner");
    }
    
@@ -85,7 +136,9 @@ public class RecoveryLearner implements Runnable {
       boolean gotBurstHead = false;
       int count = 0;
       
-      mcServer.getMulticastAgent().provideMulticastCheckpoint(null);
+      MulticastCheckpoint mcp = hasher.loadMulticastCheckpoint();
+      
+      mcServer.getMulticastAgent().provideMulticastCheckpoint(mcp);
       
       while (running) {
          ClientMessage msg = mcServer.deliverClientMessage();

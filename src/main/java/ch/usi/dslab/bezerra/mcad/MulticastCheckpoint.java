@@ -1,5 +1,7 @@
 package ch.usi.dslab.bezerra.mcad;
 
-public interface MulticastCheckpoint {
+import java.io.Serializable;
+
+public interface MulticastCheckpoint extends Serializable {
 
 }

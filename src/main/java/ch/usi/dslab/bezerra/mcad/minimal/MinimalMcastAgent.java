@@ -294,4 +294,11 @@ public class MinimalMcastAgent implements MulticastAgent {
       return false;
    }
 
+   @Override
+   public MulticastCheckpoint createMulticastCheckpoint(
+         DeliveryMetadata lastDelivery) {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
 }
