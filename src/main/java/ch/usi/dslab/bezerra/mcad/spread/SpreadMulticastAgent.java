@@ -48,6 +48,7 @@ import spread.SpreadMessage;
 import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
+import ch.usi.dslab.bezerra.mcad.MulticastCheckpoint;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 import ch.usi.dslab.bezerra.netwrapper.tcp.TCPConnection;
 
@@ -375,6 +376,12 @@ public class SpreadMulticastAgent implements MulticastAgent {
    public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
       // TODO Auto-generated method stub
       
+   }
+
+   @Override
+   public boolean provideMulticastCheckpoint(MulticastCheckpoint checkpoint) {
+      // TODO Auto-generated method stub
+      return false;
    }
 
 }

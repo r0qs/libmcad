@@ -29,6 +29,7 @@ package ch.usi.dslab.bezerra.mcad.uringpaxos;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import ch.usi.da.paxos.api.Learner;
 import ch.usi.da.paxos.api.PaxosNode;
 import ch.usi.da.paxos.message.Value;
 import ch.usi.da.paxos.storage.Decision;
@@ -56,6 +57,10 @@ public class URPAgentLearner implements Runnable {
       this.learnerId = learnerId;
       urpAgentLearnerThread = new Thread(this);
       urpAgentLearnerThread.start();
+   }
+   
+   public Learner getURPLearner() {
+      return paxos.getLearner();
    }
    
    /** This method assumes that the learner has the same ids in ALL rings it subscribes to

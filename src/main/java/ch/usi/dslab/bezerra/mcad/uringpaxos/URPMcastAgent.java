@@ -51,12 +51,14 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import ch.usi.da.paxos.api.Learner;
+import ch.usi.da.paxos.api.LearnerCheckpoint;
 import ch.usi.da.paxos.api.PaxosRole;
 import ch.usi.da.paxos.ring.Node;
 import ch.usi.da.paxos.ring.RingDescription;
 import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
+import ch.usi.dslab.bezerra.mcad.MulticastCheckpoint;
 import ch.usi.dslab.bezerra.mcad.Util;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMulticastServer.URPMcastServerInfo;
 import ch.usi.dslab.bezerra.netwrapper.Message;
@@ -664,6 +666,15 @@ public class URPMcastAgent implements MulticastAgent {
          if (rd.ringId < firstRing) firstRing = rd.ringId;
       
       return firstDeliveryMetadata.ringId == firstRing && firstDeliveryMetadata.instanceId == 1;
+   }
+
+   @Override
+   public boolean provideMulticastCheckpoint(MulticastCheckpoint checkpoint) {
+      if (urpAgentLearner != null) {
+         LearnerCheckpoint lcp = checkpoint == null ? null : ((URPMulticastCheckpoint) checkpoint).getLearnerCheckpoint();
+         urpAgentLearner.getURPLearner().provideLearnerCheckpoint(lcp);
+      }
+      return true;
    }
 
 }

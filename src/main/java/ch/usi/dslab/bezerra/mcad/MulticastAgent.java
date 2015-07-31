@@ -36,5 +36,6 @@ public interface MulticastAgent {
    public Message deliverMessage();
    public Group getLocalGroup();
    public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep);
+   public boolean provideMulticastCheckpoint(MulticastCheckpoint checkpoint);
    public boolean hasWholeDeliveryPreffix();
 }

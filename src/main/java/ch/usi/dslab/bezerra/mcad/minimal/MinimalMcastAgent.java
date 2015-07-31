@@ -42,6 +42,7 @@ import org.json.simple.parser.ParseException;
 import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
+import ch.usi.dslab.bezerra.mcad.MulticastCheckpoint;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
 public class MinimalMcastAgent implements MulticastAgent {
@@ -285,6 +286,12 @@ public class MinimalMcastAgent implements MulticastAgent {
    public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
       // TODO Auto-generated method stub
       
+   }
+
+   @Override
+   public boolean provideMulticastCheckpoint(MulticastCheckpoint checkpoint) {
+      // TODO Auto-generated method stub
+      return false;
    }
 
 }

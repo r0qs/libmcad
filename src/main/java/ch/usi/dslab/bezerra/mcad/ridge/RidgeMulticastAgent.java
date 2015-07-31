@@ -50,6 +50,7 @@ import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.FastMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
+import ch.usi.dslab.bezerra.mcad.MulticastCheckpoint;
 import ch.usi.dslab.bezerra.mcad.OptimisticMulticastAgent;
 import ch.usi.dslab.bezerra.mcad.ridge.RidgeMulticastClient.RequestBatcher;
 import ch.usi.dslab.bezerra.netwrapper.Message;
@@ -598,6 +599,12 @@ public class RidgeMulticastAgent implements MulticastAgent, OptimisticMulticastA
    public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
       // TODO Auto-generated method stub
       
+   }
+
+   @Override
+   public boolean provideMulticastCheckpoint(MulticastCheckpoint checkpoint) {
+      // TODO Auto-generated method stub
+      return false;
    }
 
 }

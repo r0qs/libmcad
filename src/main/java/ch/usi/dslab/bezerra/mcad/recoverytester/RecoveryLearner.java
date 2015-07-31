@@ -84,6 +84,9 @@ public class RecoveryLearner implements Runnable {
    public void run() {
       boolean gotBurstHead = false;
       int count = 0;
+      
+      mcServer.getMulticastAgent().provideMulticastCheckpoint(null);
+      
       while (running) {
          ClientMessage msg = mcServer.deliverClientMessage();
          msg.rewind();
