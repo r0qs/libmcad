@@ -15,7 +15,6 @@ public class RecoveryLearner implements Runnable {
 
    public static class Hasher {
 
-      final int burstSize = 1000;
       int burstcounter    = 1;
       List<Integer> currentBurst;
       MulticastAgent mcagent;
@@ -25,22 +24,21 @@ public class RecoveryLearner implements Runnable {
          currentBurst = new ArrayList<Integer>();
       }
       
-      public void putInteger(int i, DeliveryMetadata dm) {
-         currentBurst.add(i);
-         if (currentBurst.size() == burstSize) {
-            System.out.println(String.format("hash_%d(%d deliveries) = %s", burstcounter++, burstSize, hashAndClear()));
-            mcagent.notifyCheckpointMade(dm);
+      public void putInteger(int count, int i, boolean burstHead, DeliveryMetadata dm) {
+         if (burstHead && currentBurst.size() > 0) {
+            System.out.println(String.format("hash(%d deliveries) = %s", currentBurst.size(), hashAndClear(currentBurst)));
          }
-//         if (burstcounter == 30)
-//            System.exit(0);
+         currentBurst.add(i);
+         if (count == 500)
+            mcagent.notifyCheckpointMade(dm);
       }
       
-      private String hashAndClear() {
+      private String hashAndClear(List<Integer> burst) {
          StringBuffer concat = new StringBuffer();
          
-         for (int i : currentBurst)
+         for (int i : burst)
             concat.append(" " + i);
-         currentBurst.clear();
+         burst.clear();
          String hash = toHash(concat.toString().getBytes()).substring(0, 7);
          return hash;
       }
@@ -84,18 +82,19 @@ public class RecoveryLearner implements Runnable {
    
    @Override
    public void run() {
-      boolean discardedFirst = false;
+      boolean gotBurstHead = false;
+      int count = 0;
       while (running) {
          ClientMessage msg = mcServer.deliverClientMessage();
          msg.rewind();
-         int     value        = (Integer) msg.getNext();
+         int     value     = (Integer) msg.getNext();
+         boolean burstHead = (Boolean) msg.getNext();
          
-         if (discardedFirst == false) {
-            discardedFirst = true;
-            continue;
-         }
+         if (burstHead)
+            gotBurstHead = true;
          
-         hasher.putInteger(value, (DeliveryMetadata) msg.getAttachment());                  
+         if (gotBurstHead)
+            hasher.putInteger(count++, value, burstHead, (DeliveryMetadata) msg.getAttachment());                  
       }
    }
    

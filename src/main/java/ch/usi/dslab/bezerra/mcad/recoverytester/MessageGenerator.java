@@ -43,7 +43,7 @@ public class MessageGenerator implements Runnable {
       generatorThread = new Thread(this, "GeneratorThread");
    }
 
-   void generateMessage() {
+   void generateMessage(int count) {
       int ratio = 100;
       
       List<Group> destinations = new ArrayList<Group>();
@@ -60,7 +60,7 @@ public class MessageGenerator implements Runnable {
 //         destinations.add(Group.getGroup(2));
       }
       
-      ClientMessage msg = new ClientMessage(rand.nextInt());
+      ClientMessage msg = new ClientMessage(rand.nextInt(), count % 1000 == 0);
       
       mcclient.multicast(destinations, msg);
    }
@@ -76,12 +76,13 @@ public class MessageGenerator implements Runnable {
    
    @Override
    public void run() {
-      int burstLength = 10000;
+      int msgsToSend = 10000;
       int count = 0;
 
       while (running) {
-         if (++count % burstLength != 0) {
-            generateMessage();
+         if (count < msgsToSend) {
+            generateMessage(count);
+            count++;
          }
          else {
 //         if (count++ % burstLength == 0) {

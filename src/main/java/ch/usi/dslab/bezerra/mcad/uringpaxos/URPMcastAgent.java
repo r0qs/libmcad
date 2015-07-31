@@ -648,7 +648,7 @@ public class URPMcastAgent implements MulticastAgent {
        1 - get highest x multiple of M, such that x < delivery.instanceId (-1, because we're keeping instanceId)
        2 - set all rings subscribed by this learner with safe (x)
       */
-      long previousInstance = delivery.instanceId - 1L;
+      long previousInstance = delivery.instanceId/* - 1L*/;
       long safeInstance = previousInstance - (previousInstance % multiRingMergeBlock);
       Learner learner = URPaxosNode.getLearner();
       for (URPRingData urd : localGroup.associatedRings) {

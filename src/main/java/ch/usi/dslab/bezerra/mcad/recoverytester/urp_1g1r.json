@@ -38,8 +38,9 @@
       "ring_id" : 1 ,
       "destination_groups" : [1] ,
       "batch_policy" : "none" ,
-      "trim_modulo" : 500 ,
-      "stable_storage": "ch.usi.da.paxos.storage.BerkeleyStorage"
+      "trim_modulo" : 1 ,
+      "stable_storage": "ch.usi.da.paxos.storage.H2Storage" ,
+      "trim_quorum" : 1
     }
   ] ,
   

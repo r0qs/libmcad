@@ -41,7 +41,7 @@
       "ring_id" : 1 ,
       "destination_groups" : [1] ,
       "batch_policy" : "none" ,
-      "trim_modulo" : 1 ,
+      "trim_modulo" : 0 ,
       "stable_storage": "ch.usi.da.paxos.storage.H2Storage" ,
       "trim_quorum" : 1
     } ,
@@ -49,7 +49,7 @@
       "ring_id" : 2 ,
       "destination_groups" : [2] ,
       "batch_policy" : "none" ,
-      "trim_modulo" : 1 ,
+      "trim_modulo" : 0 ,
       "stable_storage": "ch.usi.da.paxos.storage.H2Storage" ,
       "trim_quorum" : 1
     } ,
@@ -57,7 +57,7 @@
       "ring_id" : 3 ,
       "destination_groups" : [1,2] ,
       "batch_policy" : "none" ,
-      "trim_modulo" : 1 ,
+      "trim_modulo" : 0 ,
       "stable_storage": "ch.usi.da.paxos.storage.H2Storage" ,
       "trim_quorum" : 1
     }
@@ -129,9 +129,16 @@
     },
     {
       "learner_id" : 34 ,
-      "group_id"   : 2 ,
+      "group_id"   : 1 ,
       "learner_location" : "localhost" ,
       "learner_port" : 50034
+    },
+    {
+      "learner_id" : 35 ,
+      "group_id"   : 2 ,
+      "learner_location" : "localhost" ,
+      "learner_port" : 50035
     }
+    
   ]
 }
