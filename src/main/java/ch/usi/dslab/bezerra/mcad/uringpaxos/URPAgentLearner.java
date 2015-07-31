@@ -40,6 +40,7 @@ public class URPAgentLearner implements Runnable {
    URPMcastAgent mcAgent;
    Thread urpAgentLearnerThread;
    int learnerId;
+   @SuppressWarnings("unused")
    private final static Logger logger;
 //   private final static Logger valuelogger;
    
@@ -72,40 +73,36 @@ public class URPAgentLearner implements Runnable {
          return; // not a learner
       }
       while (true) {
-         try {
-            Decision d = paxos.getLearner().getDecisions().take();
-            Value v = d.getValue();
-            
-            if (mcAgent.firstDeliveryMetadata == null)
-               mcAgent.firstDeliveryMetadata = new URPDeliveryMetadata(d.getRing(), d.getInstance());;
-            
-            if (!v.isSkip()) {
-               URPDeliveryMetadata metadata = new URPDeliveryMetadata(d.getRing(), d.getInstance());
-               
-               byte[] rawBatch = v.getValue();
+         Decision d = paxos.getLearner().getNextDecision();
+         
+         if (d.isSkip()) continue;
+         
+         Value v = d.getValue();
+         
+         
+         if (mcAgent.firstDeliveryMetadata == null)
+            mcAgent.firstDeliveryMetadata = new URPDeliveryMetadata(d.getRing(), d.getInstance());;
+         
+         URPDeliveryMetadata metadata = new URPDeliveryMetadata(d.getRing(), d.getInstance());
+         
+         byte[] rawBatch = v.getValue();
 
-               if (rawBatch.length == 0 ) {
-                  // System.err.println("0 bytes decision!");
-                  // System.exit(1);
-                  continue;
-               }
+         if (rawBatch.length == 0 ) {
+            // System.err.println("0 bytes decision!");
+            // System.exit(1);
+            continue;
+         }
 
-               long t_learner_delivered = System.currentTimeMillis();
-               Message batch = Message.createFromBytes(rawBatch);
-               
-               while (batch.hasNext()) {
-                  byte[] msg = (byte []) batch.getNext(); // cmdContainer
+         long t_learner_delivered = System.currentTimeMillis();
+         Message batch = Message.createFromBytes(rawBatch);
+         
+         while (batch.hasNext()) {
+            byte[] msg = (byte []) batch.getNext(); // cmdContainer
 //                  mcAgent.checkMessageAndEnqueue(msg, batch.t_batch_ready,
 //                        batch.piggyback_proposer_serialstart, batch.piggyback_proposer_serialend,
 //                        t_learner_delivered);
-                  mcAgent.checkMessageAndEnqueue(msg, metadata, 0, 0, 0, t_learner_delivered);
-               }               
-            }            
-         }
-         catch (InterruptedException e) {
-            logger.error(e);
-            System.exit(0);
-         }
+            mcAgent.checkMessageAndEnqueue(msg, metadata, 0, 0, 0, t_learner_delivered);
+         }               
       }
    }
 
