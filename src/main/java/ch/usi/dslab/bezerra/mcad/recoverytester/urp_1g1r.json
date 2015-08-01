@@ -8,10 +8,6 @@
   "multi_ring_lambda": 20000 ,
   "multi_ring_delta_t": 10 ,
   
-  "enable_batching"  : false ,
-  "batch_size_bytes" : 10000 ,
-  "batch_time_ms"    : 10 ,
-  
   "deliver_skip_messages": 1,
 
   "reference_ring": 0,
@@ -37,6 +33,9 @@
     {
       "ring_id" : 1 ,
       "destination_groups" : [1] ,
+      "enable_batching"  : false ,
+      "batch_size_bytes" : 10000 ,
+      "batch_time_ms"    : 10 ,
       "batch_policy" : "none" ,
       "trim_modulo" : 1 ,
       "stable_storage": "ch.usi.da.paxos.storage.H2Storage" ,

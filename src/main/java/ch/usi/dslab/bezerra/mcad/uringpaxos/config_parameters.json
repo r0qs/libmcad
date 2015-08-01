@@ -9,10 +9,6 @@
   "multi_ring_delta_t": 10 ,
   "multi_ring_start_time": 1437990243000 ,
   
-  "enable_batching"  : true
-  "batch_size_bytes" : 10000 ,
-  "batch_time_ms"    : 10 ,
-  
   "deliver_skip_messages": 1,
   
   "value_batch_size": "0 -- done in the mrp layer (here or ring?)",
@@ -39,7 +35,9 @@
     {
       "ring_id" : 1 ,
       "destination_groups" : [1] ,
-      
+      "enable_batching"  : false ,
+      "batch_size_bytes" : 10000 ,
+      "batch_time_ms"    : 10 ,
       "p1_resend_time": 1000 ,
       "p1_preexecution_number": 5000 ,
       "concurrent_values": 20 ,
