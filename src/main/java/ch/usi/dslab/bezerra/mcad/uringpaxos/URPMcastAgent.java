@@ -674,7 +674,9 @@ public class URPMcastAgent implements MulticastAgent {
    public MulticastCheckpoint createMulticastCheckpoint(DeliveryMetadata lastDelivery) {
       if (urpAgentLearner == null)
          return null;
+      
       URPDeliveryMetadata urpdm = (URPDeliveryMetadata) lastDelivery;
+      System.out.println("Creating multicast checkpoint after delivery " + urpdm.getLearnerDeliveryMetadata());
       LearnerCheckpoint lcp = urpAgentLearner.getURPLearner().createCheckpointObject(urpdm.getLearnerDeliveryMetadata());
       return new URPMulticastCheckpoint(lcp);
    }

@@ -28,6 +28,9 @@ public class RecoveryLearner implements Runnable {
       List<Integer> currentBurst;
       MulticastAgent mcagent;
       MulticastServer mcserver;
+      DeliveryMetadata lastDeliveryMetadata = null;
+      int cpsMade = 0;
+      int cpsMax  = 4;
       
       public Hasher(MulticastServer mcs) {
          mcserver = mcs;
@@ -35,14 +38,14 @@ public class RecoveryLearner implements Runnable {
          currentBurst = new ArrayList<Integer>();
       }
       
-      public void putInteger(int count, int i, boolean burstHead, DeliveryMetadata dm) {
+      public void putInteger(int i, boolean burstHead, DeliveryMetadata dm) {
          if (burstHead && currentBurst.size() > 0) {
             System.out.println(String.format("hash(%d deliveries) = %s", currentBurst.size(), hashAndClear(currentBurst)));
+            if (cpsMade++ < cpsMax)
+               createCheckpoint(lastDeliveryMetadata);
          }
          currentBurst.add(i);
-         if (count == 500) {
-            createCheckpoint(dm);
-         }
+         lastDeliveryMetadata = dm;
       }
       
       private void createCheckpoint(DeliveryMetadata dm) {
@@ -69,6 +72,8 @@ public class RecoveryLearner implements Runnable {
          File f = new File(checkpointFileName);
          if(!f.exists())
             return null;
+         
+         System.out.println("Located checkpoint " + checkpointFileName + ". Loading it...");
          
          try {
             ObjectInputStream ois = new ObjectInputStream(new InflaterInputStream(new FileInputStream(checkpointFileName)));
@@ -133,11 +138,8 @@ public class RecoveryLearner implements Runnable {
    
    @Override
    public void run() {
-      boolean gotBurstHead = false;
-      int count = 0;
       
       MulticastCheckpoint mcp = hasher.loadMulticastCheckpoint();
-      
       mcServer.getMulticastAgent().provideMulticastCheckpoint(mcp);
       
       while (running) {
@@ -146,11 +148,7 @@ public class RecoveryLearner implements Runnable {
          int     value     = (Integer) msg.getNext();
          boolean burstHead = (Boolean) msg.getNext();
          
-         if (burstHead)
-            gotBurstHead = true;
-         
-         if (gotBurstHead)
-            hasher.putInteger(count++, value, burstHead, (DeliveryMetadata) msg.getAttachment());                  
+         hasher.putInteger(value, burstHead, (DeliveryMetadata) msg.getAttachment());                  
       }
    }
    

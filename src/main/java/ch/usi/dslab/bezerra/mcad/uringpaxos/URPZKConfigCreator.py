@@ -129,6 +129,8 @@ num_rings = len(config["rings"])
 if "multi_ring_m" in config :
     global_parameters["multi_ring_m"] = config["multi_ring_m"]
 
+print "hosts=%s" % (zknode + ":" + zkport)
+
 zk = KazooClient(hosts=zknode + ":" + zkport)
 zk.start()
 
