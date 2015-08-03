@@ -114,6 +114,12 @@ ringCmdLists = []
 lastRing = -1
 cmdList = []
 
+def getRingConfig(cfg, rid) :
+    for ring_config in cfg["rings"] :
+        if ring_config["ring_id"] == rid :
+            return ring_config
+    return None
+
 for node in config["ring_nodes"] :
     nodestring = ""
     for ring in node["node_rings"] :
@@ -145,12 +151,15 @@ for node in config["ring_nodes"] :
         enable_batching="true"
         batch_size=30000
         batch_time=5
-        if ring.get("enable_batching") != None and ring["enable_batching"] == False :
+        
+        ring_config = getRingConfig(config, ring["ring_id"])
+        
+        if ring_config.get("enable_batching") != None and ring_config["enable_batching"] == False :
             enable_batching="false"
-        if ring.get("batch_size_bytes") != None :
-            batch_size = ring["batch_size_bytes"]
-        if ring.get("batch_time_ms") != None :
-            batch_time = ring["batch_time_ms"]
+        if ring_config.get("batch_size_bytes") != None :
+            batch_size = ring_config["batch_size_bytes"]
+        if ring_config.get("batch_time_ms") != None :
+            batch_time = ring_config["batch_time_ms"]
 
         command_string += " " + str(ring["proposer_port"]) + " " + enable_batching + " " + str(batch_size) + " " + str(batch_time)
 

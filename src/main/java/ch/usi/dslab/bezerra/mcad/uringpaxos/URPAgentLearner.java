@@ -92,7 +92,8 @@ public class URPAgentLearner implements Runnable {
          if (mcAgent.firstDeliveryMetadata == null)
             mcAgent.firstDeliveryMetadata = new URPDeliveryMetadata(learner.getLastDeliveryMetadata());
          
-         URPDeliveryMetadata metadata = new URPDeliveryMetadata(learner.getLastDeliveryMetadata());
+//         URPDeliveryMetadata metadata = new URPDeliveryMetadata(learner.getLastDeliveryMetadata());
+         URPDeliveryMetadata metadata = new URPDeliveryMetadata(d.getDeliveryMetadata());
          
          byte[] rawBatch = v.getValue();
 

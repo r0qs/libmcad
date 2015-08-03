@@ -31,6 +31,7 @@ public class RecoveryLearner implements Runnable {
       DeliveryMetadata lastDeliveryMetadata = null;
       int cpsMade = 0;
       int cpsMax  = 4;
+      int totalDelivered = 0;
       
       public Hasher(MulticastServer mcs) {
          mcserver = mcs;
