@@ -6,5 +6,7 @@ target/
 .pydevproject
 .settings
 *pyc
+*.swp
+*.swo
 zookeeper.out
 dependency-reduced-pom.xml
