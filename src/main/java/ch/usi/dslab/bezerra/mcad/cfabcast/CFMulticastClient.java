@@ -32,7 +32,6 @@ import ch.usi.dslab.bezerra.mcad.MulticastClient;
 import ch.usi.dslab.bezerra.mcad.cfabcast.CFMulticastClient;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
-import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -43,8 +42,8 @@ import akka.pattern.Patterns;
 import akka.util.Timeout;
 
 import scala.concurrent.ExecutionContext;
-import scala.concurrent.Await;
 import scala.concurrent.Future;
+import scala.concurrent.duration.Duration;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -54,16 +53,17 @@ import akka.dispatch.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
-public class CFMulticastClient implements MulticastClient, Runnable {
+public class CFMulticastClient implements MulticastClient {
   
   private final int clientId;
-  private final Config config;
-  private final ActorSystem system;
-  private ActorRef mcagent;
+  private static Config config;
+  private static ActorSystem system;
+  private static ActorRef mcagent;
   private BlockingQueue<Message> receivedReplies;
 
   public CFMulticastClient(int clientId) {
     this.clientId = clientId;
+    this.receivedReplies = new LinkedBlockingQueue<Message>();
     this.config = ConfigFactory.parseString("akka.cluster.roles = [client]")
       .withFallback(ConfigFactory.load());
 
@@ -84,11 +84,10 @@ public class CFMulticastClient implements MulticastClient, Runnable {
   @Override
 	public void multicast(List<Group> destinations, ClientMessage clientMessage) {
     //destinations.tell(clientMessage, null);
-    Timeout t = new Timeout(1, TimeUnit.SECONDS);
+    Timeout timeout = new Timeout(Duration.create(1, "seconds"));
 
     //FIXME Not ignore destinations!
-    Future<Object> futureResponse = Patterns.ask(mcagent, clientMessage, t);
-    //String response = (String)Await.result(fut, t.duration());
+    Future<Object> futureResponse = Patterns.ask(mcagent, clientMessage, timeout);
  
     futureResponse.onComplete(new OnComplete<Object>() {
       public void onComplete(Throwable failure, Object response) {
@@ -96,7 +95,7 @@ public class CFMulticastClient implements MulticastClient, Runnable {
           //TODO We got a failure, handle it!
           System.out.println("FAIL ON FUTURE");
         } else {
-          System.out.println("GET THE RESPONSE: " + (String) response);
+          System.out.println("GET THE RESPONSE: " + (ClientMessage) response);
           receivedReplies.add((ClientMessage)response);
         }
       }
@@ -112,11 +111,5 @@ public class CFMulticastClient implements MulticastClient, Runnable {
 			System.exit(1);
 		}
 		return null;
-	}
-
-  @Override
-	public void run() {
-    ClientMessage msg = new ClientMessage("Teste");
-    mcagent.tell(msg, ActorRef.noSender());
 	}
 }

@@ -110,12 +110,12 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
     } else if(message instanceof Message) {
       System.out.println("MULTICAST MESSAGE RECEIVED: " + message);
 
-      //TODO serialize message (clientMessage), creating a new CFMessage and send this to protocol actors in this agent Group
+      //TODO serialize message (clientMessage), creating a new CFMessage(getSender(), Message) and send this to protocol actors in this agent Group
     } else if(message instanceof CFMessage) {
       System.out.println("DELIVERY MESSAGE RECEIVED: " + message);
-      ActorRef sender = getSender();
-      //TODO Deserialize here!
-      // the sender (Client) is your parent, send the response (a Message object) for him.
+      //TODO Deserialize here! Forward response msg or let the protocol actors respond directly
+      // send the sender (Client) in msg
+      // send the response (a Message object) to him.
       //getContext().parent.tell(...)
     } else {
       unhandled(message);
