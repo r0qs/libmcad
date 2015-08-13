@@ -49,6 +49,8 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.actor.ActorRef;
 import akka.dispatch.*;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -68,7 +70,7 @@ public class CFMulticastClient implements MulticastClient {
       .withFallback(ConfigFactory.load());
 
     this.system = ActorSystem.create("ClusterSystem", config);
-    this.mcagent = getContext().actorOf(Props.create(CFMulticastAgent.class), "MulticastClientAgent");
+    this.mcagent = getContext().actorOf(Props.create(CFMulticastAgent.class), "client");
   }
 
   public void connectToOneServerPerPartition() {
@@ -100,8 +102,9 @@ public class CFMulticastClient implements MulticastClient {
           //TODO We got a failure, handle it!
           System.out.println("FAIL ON FUTURE");
         } else {
-          System.out.println("GET THE RESPONSE: " + (ClientMessage) response);
-          receivedReplies.add((ClientMessage)response);
+          System.out.println("GET THE RESPONSE: " + (CFMulticastMessage) response);
+          ClientMessage clientResponse = ((CFMulticastMessage) response).getMessage()
+          receivedReplies.add(clientResponse);
         }
       }
     }, system.dispatcher());

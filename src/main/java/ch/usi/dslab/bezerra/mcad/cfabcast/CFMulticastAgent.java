@@ -31,12 +31,16 @@ import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.cfabcast.CFDummyGroup;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
-import java.util.List;
-
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.UntypedActor;
+import akka.actor.ActorIdentity;
+import akka.actor.ActorSelection;
+import akka.actor.Identify;
+import akka.actor.Terminated;
+import akka.actor.ExtendedActorSystem;
 import akka.cluster.Cluster;
+import akka.cluster.Member;
 import akka.cluster.ClusterEvent;
 import akka.cluster.ClusterEvent.MemberEvent;
 import akka.cluster.ClusterEvent.MemberUp;
@@ -45,12 +49,22 @@ import akka.cluster.ClusterEvent.UnreachableMember;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
-import cfabcast.CFBroadcastMessage;
-import cfabcast.CFDeliveryMessage;
+import java.util.Set;
+import java.util.HashSet;
+import java.io.Serializable;
+
+import cfabcast.messages.*;
+import cfabcast.serialization.CFABCastSerializer;
 
 public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
   LoggingAdapter log = Logging.getLogger(getContext().system(), this);
   Cluster cluster = Cluster.get(getContext().system());
+
+  Set<ActorRef> nodes = new HashSet<ActorRef>();
+  Set<ActorRef> servers = new HashSet<ActorRef>();
+  Set<ActorRef> clients = new HashSet<ActorRef>();
+
+  CFABCastSerializer serializer = new CFABCastSerializer((ExtendedActorSystem) getContext().system());
 
   //TODO read config and initiate groups
 
@@ -67,11 +81,15 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
     cluster.unsubscribe(getSelf());
   }
 
+  void register(Member member) {
+    if(member.hasRole("cfabcast") || member.hasRole("client") || member.hasRole("server"))
+      getContext().actorSelection(member.address() + "/user/*").tell(new Identify(member), getSelf());
+  }
+
   public void multicast(Group single_destination, Message message) {
     CFDummyGroup g = (CFDummyGroup) single_destination;
 
-    // message need to be serializable
-    CFBroadcastMessage broadcastMessage = new CFBroadcastMessage(message);
+    Broadcast broadcastMessage = new Broadcast(serializer.toBinary(message));
 
     for(ActorRef protocolAgents : g.membersRefList)
       protocolAgents.tell(broadcastMessage, getSelf()); 
@@ -93,7 +111,7 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
     // Cluster member events 
     if(message instanceof MemberUp) {
       MemberUp mUp = (MemberUp) message;
-
+      register(mUp.member());
       log.info("Member is Up: {}", mUp.member());
     
     } else if(message instanceof UnreachableMember) {
@@ -106,18 +124,44 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
     
     } else if(message instanceof MemberEvent) {
       // ignore
+
+    } else if(message instanceof ActorIdentity) {
+      ActorIdentity identity = (ActorIdentity) message;
+      Member member = (Member) identity.correlationId();
+      ActorRef ref = identity.getRef();
+      if(ref != null && ref != getSelf()) {
+        log.info("Adding new member with roles: {}", member.getRoles());
+        if(member.hasRole("cfabcast"))
+          nodes.add(ref);
+          //TODO add node to Group
+        if(member.hasRole("client"))
+          clients.add(ref);
+        if(member.hasRole("server"))
+          servers.add(ref);
+        getContext().watch(ref);
+      }   
+
+     //TODO remove node from Group 
+     } else if (message instanceof Terminated) {
+        final Terminated term = (Terminated) message;
+        ActorRef terminated = term.getActor();
+        log.info("Actor: {} terminated!", terminated);
+        if(nodes.contains(terminated))
+          nodes.remove(terminated);
+        else if(clients.contains(terminated))
+          clients.remove(terminated);
+        else if(servers.contains(terminated))
+          servers.remove(terminated);
+
     } else if(message instanceof CFMulticastMessage) {
       System.out.println("MULTICAST MESSAGE RECEIVED: " + message);
       multicast(message.getDestinations(), message.getMessage());
 
-      //TODO serialize message (clientMessage), creating a new CFMessage(getSender(), Message) and send this to protocol actors in this agent Group, message will be the value in the protocol
-    } else if(message instanceof CFDeliveryMessage) {
-      System.out.println("DELIVERY MESSAGE RECEIVED: " + message);
-      //TODO Deserialize here! Forward response msg or let the protocol actors respond directly
-      // send the sender (Client) in msg
-      // send the response (a Message object) to him.
-      Message msg = (Message) message.getObject();
-      getContext().parent.tell(msg);
+    } else if(message instanceof Delivery) {
+      Delivery response = (Delivery) message;
+      CFMulticastMessage msg = (CFMulticastMessage) serializer.fromBinary(response.getData());
+      getContext().parent().tell(msg);
+
     } else {
       unhandled(message);
     }
