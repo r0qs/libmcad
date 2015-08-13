@@ -68,7 +68,7 @@ public class CFMulticastClient implements MulticastClient {
       .withFallback(ConfigFactory.load());
 
     this.system = ActorSystem.create("ClusterSystem", config);
-    this.mcagent = system.actorOf(Props.create(CFMulticastAgent.class), "MulticastClientAgent");
+    this.mcagent = getContext().actorOf(Props.create(CFMulticastAgent.class), "MulticastClientAgent");
   }
 
   public void connectToOneServerPerPartition() {
@@ -87,8 +87,13 @@ public class CFMulticastClient implements MulticastClient {
     Timeout timeout = new Timeout(Duration.create(1, "seconds"));
 
     //FIXME Not ignore destinations!
-    Future<Object> futureResponse = Patterns.ask(mcagent, clientMessage, timeout);
- 
+    // Encapsulate on a Multicast Message: Multicast(destinations, clientMessage)
+    CFMulticastMessage message = new CFMulticastMessage(destinations, clientMessage)
+
+    Future<Object> futureResponse = Patterns.ask(mcagent, message, timeout);
+
+//    receivedReplies.add(futureResponse.getP.get());
+
     futureResponse.onComplete(new OnComplete<Object>() {
       public void onComplete(Throwable failure, Object response) {
         if (failure != null) {

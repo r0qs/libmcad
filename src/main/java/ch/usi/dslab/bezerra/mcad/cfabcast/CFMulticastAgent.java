@@ -45,6 +45,9 @@ import akka.cluster.ClusterEvent.UnreachableMember;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
+import cfabcast.CFBroadcastMessage;
+import cfabcast.CFDeliveryMessage;
+
 public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
   LoggingAdapter log = Logging.getLogger(getContext().system(), this);
   Cluster cluster = Cluster.get(getContext().system());
@@ -66,23 +69,19 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
 
   public void multicast(Group single_destination, Message message) {
     CFDummyGroup g = (CFDummyGroup) single_destination;
-    for(ActorRef ref : g.membersRefList)
-      ref.tell(message, getSelf()); 
+
+    // message need to be serializable
+    CFBroadcastMessage broadcastMessage = new CFBroadcastMessage(message);
+
+    for(ActorRef protocolAgents : g.membersRefList)
+      protocolAgents.tell(broadcastMessage, getSelf()); 
   }
+  //TODO Pass a List with a single group
   public void multicast(List<Group> destinations, Message message) {
     for(Group g : destinations)
       multicast(g, message);
   }
  
-  public byte[] deliver() {
-    //TODO
-    return null;
-  }
-
-  public Message deliverMessage() {
-    //TODO
-    return null;
-  }
   
   public Group getLocalGroup() {
     //TODO
@@ -107,16 +106,18 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
     
     } else if(message instanceof MemberEvent) {
       // ignore
-    } else if(message instanceof Message) {
+    } else if(message instanceof CFMulticastMessage) {
       System.out.println("MULTICAST MESSAGE RECEIVED: " + message);
+      multicast(message.getDestinations(), message.getMessage());
 
-      //TODO serialize message (clientMessage), creating a new CFMessage(getSender(), Message) and send this to protocol actors in this agent Group
-    } else if(message instanceof CFMessage) {
+      //TODO serialize message (clientMessage), creating a new CFMessage(getSender(), Message) and send this to protocol actors in this agent Group, message will be the value in the protocol
+    } else if(message instanceof CFDeliveryMessage) {
       System.out.println("DELIVERY MESSAGE RECEIVED: " + message);
       //TODO Deserialize here! Forward response msg or let the protocol actors respond directly
       // send the sender (Client) in msg
       // send the response (a Message object) to him.
-      //getContext().parent.tell(...)
+      Message msg = (Message) message.getObject();
+      getContext().parent.tell(msg);
     } else {
       unhandled(message);
     }
