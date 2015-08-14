@@ -37,20 +37,10 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import akka.actor.ActorRef;
-import akka.pattern.Patterns;
-import akka.util.Timeout;
-
-import scala.concurrent.ExecutionContext;
-import scala.concurrent.Future;
-import scala.concurrent.duration.Duration;
-
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.actor.ActorRef;
-import akka.dispatch.*;
-import akka.pattern.Patterns;
-import akka.util.Timeout;
+import akka.actor.UntypedActor;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -58,10 +48,10 @@ import com.typesafe.config.ConfigFactory;
 public class CFMulticastClient implements MulticastClient {
   
   private final int clientId;
+  private final ActorRef multicaster;
   private static Config config;
   private static ActorSystem system;
-  private static ActorRef mcagent;
-  private BlockingQueue<Message> receivedReplies;
+  private static BlockingQueue<Message> receivedReplies;
 
   public CFMulticastClient(int clientId) {
     this.clientId = clientId;
@@ -70,8 +60,29 @@ public class CFMulticastClient implements MulticastClient {
       .withFallback(ConfigFactory.load());
 
     this.system = ActorSystem.create("ClusterSystem", config);
-    this.mcagent = getContext().actorOf(Props.create(CFMulticastAgent.class), "client");
+    this.multicaster = getContext().actorOf(Props.create(Multicaster.class), "multicaster");
   }
+
+  static public class Multicaster extends UntypedActor {
+    private final ActorRef mcagent = getContext().actorOf(Props.create(CFMulticastAgent.class), "client");
+
+    @Override
+    public void onReceive(Object message) {
+      if(message instanceof ClientMessage) {
+        ClientMessage clientResponseresponse = (ClientMessage) message;
+        receivedReplies.add(clientResponse);
+
+      } else if(message instanceof CFMulticastMessage) {
+        CFMulticastMessage cfmessage = (CFMulticastMessage) message;
+        mcagent.tell(cfmessage, getSelf());
+
+      } else {
+        log.info("Receive unknown message from {}", getSender());
+        unhandled(message);
+      } 
+    }
+  }
+
 
   public void connectToOneServerPerPartition() {
     //wait for all servers up. Await a agent notification msg
@@ -85,29 +96,10 @@ public class CFMulticastClient implements MulticastClient {
   //TODO Get destinations from Group (Actors refs)
   @Override
 	public void multicast(List<Group> destinations, ClientMessage clientMessage) {
-    //destinations.tell(clientMessage, null);
-    Timeout timeout = new Timeout(Duration.create(1, "seconds"));
-
     //FIXME Not ignore destinations!
     // Encapsulate on a Multicast Message: Multicast(destinations, clientMessage)
-    CFMulticastMessage message = new CFMulticastMessage(destinations, clientMessage)
-
-    Future<Object> futureResponse = Patterns.ask(mcagent, message, timeout);
-
-//    receivedReplies.add(futureResponse.getP.get());
-
-    futureResponse.onComplete(new OnComplete<Object>() {
-      public void onComplete(Throwable failure, Object response) {
-        if (failure != null) {
-          //TODO We got a failure, handle it!
-          System.out.println("FAIL ON FUTURE");
-        } else {
-          System.out.println("GET THE RESPONSE: " + (CFMulticastMessage) response);
-          ClientMessage clientResponse = ((CFMulticastMessage) response).getMessage()
-          receivedReplies.add(clientResponse);
-        }
-      }
-    }, system.dispatcher());
+    CFMulticastMessage message = new CFMulticastMessage(destinations, clientMessage);
+    multicaster.tell(message, null);
 	}
   
   @Override

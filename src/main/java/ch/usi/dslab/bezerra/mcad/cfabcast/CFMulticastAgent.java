@@ -159,7 +159,7 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
 
     } else if(message instanceof Delivery) {
       Delivery response = (Delivery) message;
-      CFMulticastMessage msg = (CFMulticastMessage) serializer.fromBinary(response.getData());
+      ClientMessage msg = (ClientMessage) serializer.fromBinary(response.getData());
       getContext().parent().tell(msg);
 
     } else {
