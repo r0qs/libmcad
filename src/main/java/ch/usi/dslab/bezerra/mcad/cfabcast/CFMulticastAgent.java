@@ -170,8 +170,9 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
           servers.remove(terminated);
 
     } else if(message instanceof CFMulticastMessage) {
-      System.out.println("MULTICAST MESSAGE RECEIVED: " + message);
-      multicast(message.getDestinations(), message.getMessage());
+      CFMulticastMessage msg = (CFMulticastMessage) message;
+      System.out.println("MULTICAST MESSAGE RECEIVED: " + msg);
+      multicast(msg.getDestinations(), msg.getMessage());
 
     } else if(message instanceof Delivery) {
       Delivery response = (Delivery) message;
