@@ -28,6 +28,7 @@ package ch.usi.dslab.bezerra.mcad.cfabcast;
 
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastAgent;
+import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.cfabcast.CFDummyGroup;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
@@ -50,6 +51,7 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
 import java.util.Set;
+import java.util.List;
 import java.util.HashSet;
 import java.io.Serializable;
 
@@ -86,6 +88,7 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
       getContext().actorSelection(member.address() + "/user/*").tell(new Identify(member), getSelf());
   }
 
+  @Override
   public void multicast(Group single_destination, Message message) {
     CFDummyGroup g = (CFDummyGroup) single_destination;
 
@@ -100,10 +103,23 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
       multicast(g, message);
   }
  
-  
+  public Message deliverMessage() {
+    //TODO
+    return null;
+  }
+
   public Group getLocalGroup() {
     //TODO
     return null;
+  }
+
+  public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
+    //TODO
+  }
+
+  public boolean hasWholeDeliveryPreffix() {
+    //TODO
+    return true;
   }
 
   @Override
@@ -159,8 +175,8 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
 
     } else if(message instanceof Delivery) {
       Delivery response = (Delivery) message;
-      ClientMessage msg = (ClientMessage) serializer.fromBinary(response.getData());
-      getContext().parent().tell(msg);
+      Message msg = (Message) serializer.fromBinary(response.getData());
+      getContext().parent().tell(msg, getSelf());
 
     } else {
       unhandled(message);

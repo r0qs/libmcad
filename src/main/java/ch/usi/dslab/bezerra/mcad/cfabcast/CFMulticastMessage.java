@@ -27,6 +27,8 @@
 package ch.usi.dslab.bezerra.mcad.cfabcast;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.Group;

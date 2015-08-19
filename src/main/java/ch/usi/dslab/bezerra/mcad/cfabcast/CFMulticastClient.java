@@ -60,7 +60,7 @@ public class CFMulticastClient implements MulticastClient {
       .withFallback(ConfigFactory.load());
 
     this.system = ActorSystem.create("ClusterSystem", config);
-    this.multicaster = getContext().actorOf(Props.create(Multicaster.class), "multicaster");
+    this.multicaster = system.actorOf(Props.create(Multicaster.class), "multicaster");
   }
 
   static public class Multicaster extends UntypedActor {
@@ -69,7 +69,7 @@ public class CFMulticastClient implements MulticastClient {
     @Override
     public void onReceive(Object message) {
       if(message instanceof ClientMessage) {
-        ClientMessage clientResponseresponse = (ClientMessage) message;
+        ClientMessage clientResponse = (ClientMessage) message;
         receivedReplies.add(clientResponse);
 
       } else if(message instanceof CFMulticastMessage) {
@@ -77,7 +77,6 @@ public class CFMulticastClient implements MulticastClient {
         mcagent.tell(cfmessage, getSelf());
 
       } else {
-        log.info("Receive unknown message from {}", getSender());
         unhandled(message);
       } 
     }
