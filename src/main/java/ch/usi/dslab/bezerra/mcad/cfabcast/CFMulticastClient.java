@@ -33,14 +33,16 @@ import ch.usi.dslab.bezerra.mcad.cfabcast.CFMulticastClient;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.List;
+import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.actor.ActorRef;
-import akka.actor.UntypedActor;
+import akka.contrib.pattern.ClusterClient;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
+import akka.actor.*;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -59,12 +61,31 @@ public class CFMulticastClient implements MulticastClient {
     this.config = ConfigFactory.parseString("akka.cluster.roles = [client]")
       .withFallback(ConfigFactory.load());
 
-    this.system = ActorSystem.create("ClusterSystem", config);
-    this.multicaster = system.actorOf(Props.create(Multicaster.class), "multicaster");
+    this.system = ActorSystem.create("BenchSystem", config);
+    Set<ActorSelection> initialContacts = new HashSet<ActorSelection>();
+    for (String contactAddress : config.getStringList("contact-points")) {
+      initialContacts.add(system.actorSelection(contactAddress + "/user/receptionist"));
+    }
+    final ActorRef clusterClient = system.actorOf(ClusterClient.defaultProps(initialContacts), "clusterClient");
+    this.multicaster = system.actorOf(Multicaster.props(clusterClient), "multicaster");
   }
 
+  // TODO: use MulticastClient as TypedActor
   static public class Multicaster extends UntypedActor {
-    private final ActorRef mcagent = getContext().actorOf(Props.create(CFMulticastAgent.class), "client");
+
+    public static Props props(ActorRef clusterClient) {
+      return Props.create(Multicaster.class, clusterClient);
+    }
+
+    private final ActorRef clusterClient;
+    private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
+//    private final String agentId = UUID.randomUUID().toString();
+    private final ActorRef mcAgent;
+
+    public Multicaster(ActorRef clusterClient) {
+      this.clusterClient = clusterClient;
+      this.mcAgent = getContext().watch(getContext().actorOf(CFMulticastAgent.props(clusterClient), "multicastAgent"));
+    }
 
     @Override
     public void onReceive(Object message) {
@@ -74,9 +95,10 @@ public class CFMulticastClient implements MulticastClient {
 
       } else if(message instanceof CFMulticastMessage) {
         CFMulticastMessage cfmessage = (CFMulticastMessage) message;
-        mcagent.tell(cfmessage, getSelf());
+        mcAgent.tell(cfmessage, getSelf());
 
       } else {
+        log.info("Receive unknown message from {}", getSender());
         unhandled(message);
       } 
     }
