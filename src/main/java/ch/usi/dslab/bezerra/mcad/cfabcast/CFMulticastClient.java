@@ -38,11 +38,15 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
+import akka.actor.*;
 import akka.contrib.pattern.ClusterClient;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import akka.actor.*;
+import akka.japi.Procedure;
+
+import scala.concurrent.duration.Duration;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -59,51 +63,95 @@ public class CFMulticastClient implements MulticastClient {
     this.clientId = clientId;
     this.receivedReplies = new LinkedBlockingQueue<Message>();
     this.config = ConfigFactory.parseString("akka.cluster.roles = [client]")
-      .withFallback(ConfigFactory.load());
+      .withFallback(ConfigFactory.load("client"));
+    this.system = ActorSystem.create("BenchClient", config);
 
-    this.system = ActorSystem.create("BenchSystem", config);
     Set<ActorSelection> initialContacts = new HashSet<ActorSelection>();
     for (String contactAddress : config.getStringList("contact-points")) {
       initialContacts.add(system.actorSelection(contactAddress + "/user/receptionist"));
     }
     final ActorRef clusterClient = system.actorOf(ClusterClient.defaultProps(initialContacts), "clusterClient");
-    this.multicaster = system.actorOf(Multicaster.props(clusterClient), "multicaster");
+    this.multicaster = system.actorOf(Multicaster.props(clusterClient, clientId), String.format("client-%d", clientId));
+
   }
 
   // TODO: use MulticastClient as TypedActor
   static public class Multicaster extends UntypedActor {
+//    private final String agentId = UUID.randomUUID().toString();
+    private final ActorRef clusterClient;
+    private final int cid;
+    private final String serverPath;
+    private final ActorRef mcAgent;
+    private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
-    public static Props props(ActorRef clusterClient) {
-      return Props.create(Multicaster.class, clusterClient);
+    public static Props props(ActorRef clusterClient, int cid) {
+      return Props.create(Multicaster.class, clusterClient, cid);
     }
 
-    private final ActorRef clusterClient;
-    private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-//    private final String agentId = UUID.randomUUID().toString();
-    private final ActorRef mcAgent;
-
-    public Multicaster(ActorRef clusterClient) {
+    public Multicaster(ActorRef clusterClient, int cid) {
       this.clusterClient = clusterClient;
-      this.mcAgent = getContext().watch(getContext().actorOf(CFMulticastAgent.props(clusterClient), "multicastAgent"));
+      this.cid = cid;
+      this.mcAgent = getContext().watch(getContext().actorOf(CFMulticastAgent.props(clusterClient, false), "multicastAgent"));
+      int serverPort = ConfigFactory.load("server").getConfig("akka.remote.netty.tcp").getInt("port");
+      String serverHost = ConfigFactory.load().getConfig("akka.remote.netty.tcp").getString("hostname");
+      // Find a server
+      this.serverPath = String.format("akka.tcp://BenchServer@%s:%d/user/server*", serverHost, serverPort);
+      sendIdentifyRequest(cid, serverPath);
+    }
+
+    private void sendIdentifyRequest(int id, String path) {
+      getContext().actorSelection(path).tell(new Identify(id), getSelf());
+      getContext()
+        .system()
+        .scheduler()
+        .scheduleOnce(Duration.create(3, SECONDS), getSelf(),
+            ReceiveTimeout.getInstance(), getContext().dispatcher(), getSelf());
     }
 
     @Override
     public void onReceive(Object message) {
-      if(message instanceof ClientMessage) {
-        ClientMessage clientResponse = (ClientMessage) message;
-        receivedReplies.add(clientResponse);
+      if (message instanceof ActorIdentity) {
+        ActorIdentity identity = (ActorIdentity) message;
+        ActorRef server = identity.getRef();
+        int serverId = (int) identity.correlationId();
+        if (server == null) {
+          log.error("Server not available on: {}", serverPath);
+        } else {
+          log.info("Client {} receive Identify from {} ID: {}", cid, server, serverId);
+          server.tell(new RegisterMessage(cid), getSelf());
+          getContext().become(active, true);
+        }
 
-      } else if(message instanceof CFMulticastMessage) {
-        CFMulticastMessage cfmessage = (CFMulticastMessage) message;
-        mcAgent.tell(cfmessage, getSelf());
+      } else if (message instanceof ReceiveTimeout) {
+        log.info("Timeout expired, retrying identify server on: {}", serverPath);
+        sendIdentifyRequest(cid, serverPath);
 
       } else {
-        log.info("Receive unknown message from {}", getSender());
-        unhandled(message);
-      } 
+        log.info("Client {} not ready yet", cid);
+      }
     }
-  }
 
+    Procedure<Object> active = new Procedure<Object>() {
+      @Override
+      public void apply(Object message) {
+        if(message instanceof ClientMessage) {
+          ClientMessage clientResponse = (ClientMessage) message;
+          receivedReplies.add(clientResponse);
+
+        } else if(message instanceof CFMulticastMessage) {
+          CFMulticastMessage cfmessage = (CFMulticastMessage) message;
+          mcAgent.tell(cfmessage, getSelf());
+
+        } else if (message instanceof ReceiveTimeout) {
+          // ignore
+
+        } else {
+          log.info("Client receive unknown message from {}", getSender());
+          unhandled(message);
+        }  
+      }
+    };
+  }
 
   public void connectToOneServerPerPartition() {
     //wait for all servers up. Await a agent notification msg
@@ -111,7 +159,7 @@ public class CFMulticastClient implements MulticastClient {
   }
 
   public void connectToServer(int serverId) {
-
+    //TODO
   }
 
   //TODO Get destinations from Group (Actors refs)

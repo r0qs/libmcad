@@ -50,13 +50,12 @@ import cfabcast.serialization.CFABCastSerializer;
 
 public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
   LoggingAdapter log;
-//  Set<ActorRef> nodes;
   ActorRef proposer;
   private CFABCastSerializer serializer;
   private final ActorRef clusterClient;
 
-  public static Props props(ActorRef clusterClient) {
-    return Props.create(CFMulticastAgent.class, clusterClient);
+  public static Props props(ActorRef clusterClient, boolean isServer) {
+    return Props.create(CFMulticastAgent.class, clusterClient, isServer);
   }
 
   //TODO read config and initiate groups
@@ -64,8 +63,11 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
     log = Logging.getLogger(getContext().system(), this);
     this.clusterClient = clusterClient;
     this.serializer = new CFABCastSerializer((ExtendedActorSystem) getContext().system());
-    clusterClient.tell(new ClusterClient.Send("/user/node", RegisterClient.instance(), true), getSelf());
-    clusterClient.tell(new ClusterClient.Send("/user/node", RegisterServer.instance(), true), getSelf());
+    if (isServer) {
+      clusterClient.tell(new ClusterClient.Send("/user/node*", RegisterServer.instance(), true), getSelf());
+    } else {
+      clusterClient.tell(new ClusterClient.Send("/user/node*", RegisterClient.instance(), true), getSelf());
+    }
   }
 
   @Override
@@ -115,20 +117,23 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
   public void onReceive(Object message) {
     if(message instanceof CFMulticastMessage) {
       CFMulticastMessage msg = (CFMulticastMessage) message;
-      log.info("Receive response {} from {} ", msg, getSender());
+      log.info("Agent {} - Sending multicast: {} to {} ", getSelf(), msg, proposer);
       multicast(msg.getDestinations(), msg.getMessage());
 
     } else if(message instanceof Delivery) {
       Delivery response = (Delivery) message;
       Message msg = (Message) serializer.fromBinary(response.getData());
+      log.info("Agent {} - Receive response: {} from {} ", getSelf(), msg, getSender());
       getContext().parent().tell(msg, getSelf());
     
     } else if(message instanceof ClientRegistered) {
       ClientRegistered c = (ClientRegistered) message;
       proposer = c.getProposer();
+      //TODO Create a CFDummyGroup
       Set<ActorRef> group = c.getGroup();
 
     } else {
+      log.info("Agent {} receive unknown message from {}", getSelf(), getSender());
       unhandled(message);
     }
      
