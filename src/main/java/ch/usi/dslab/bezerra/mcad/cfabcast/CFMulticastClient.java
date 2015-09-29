@@ -29,7 +29,6 @@ package ch.usi.dslab.bezerra.mcad.cfabcast;
 import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.Group;
 import ch.usi.dslab.bezerra.mcad.MulticastClient;
-import ch.usi.dslab.bezerra.mcad.cfabcast.CFMulticastClient;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
 import java.io.IOException;
@@ -134,10 +133,12 @@ public class CFMulticastClient implements MulticastClient {
     Procedure<Object> active = new Procedure<Object>() {
       @Override
       public void apply(Object message) {
+        // Reply received from server
         if(message instanceof ClientMessage) {
           ClientMessage clientResponse = (ClientMessage) message;
           receivedReplies.add(clientResponse);
 
+        // Message to multicast
         } else if(message instanceof CFMulticastMessage) {
           CFMulticastMessage cfmessage = (CFMulticastMessage) message;
           mcAgent.tell(cfmessage, getSelf());

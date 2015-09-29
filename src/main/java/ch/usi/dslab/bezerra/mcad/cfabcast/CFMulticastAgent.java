@@ -120,12 +120,13 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
       log.info("Agent {} - Sending multicast: {} to {} ", getSelf(), msg, proposer);
       multicast(msg.getDestinations(), msg.getMessage());
 
+/*  // Replies are sent directly to server associated with some learner 
     } else if(message instanceof Delivery) {
       Delivery response = (Delivery) message;
       Message msg = (Message) serializer.fromBinary(response.getData());
       log.info("Agent {} - Receive response: {} from {} ", getSelf(), msg, getSender());
       getContext().parent().tell(msg, getSelf());
-    
+   */ 
     } else if(message instanceof ClientRegistered) {
       ClientRegistered c = (ClientRegistered) message;
       proposer = c.getProposer();
@@ -133,7 +134,7 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
       Set<ActorRef> group = c.getGroup();
 
     } else {
-      log.info("Agent {} receive unknown message from {}", getSelf(), getSender());
+      log.info("Agent {} receive unknown message: {} from {}", getSelf(), message, getSender());
       unhandled(message);
     }
      
