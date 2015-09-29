@@ -92,7 +92,8 @@ public class CFMulticastServer implements MulticastServer {
     public Multicaster(ActorRef clusterClient, int sid) {
       this.clusterClient = clusterClient;
       this.sid = sid;
-      this.multicastAgent = getContext().watch(getContext().actorOf(MulticastAgent.props(clusterClient, true), "multicastAgent"));
+      this.multicastAgent = getContext().watch(getContext()
+        .actorOf(MulticastAgent.props(clusterClient, true), "multicastAgent"));
     }
 
     @Override
@@ -150,8 +151,8 @@ public class CFMulticastServer implements MulticastServer {
         } 
       }
     };
-  } 
-	
+  }
+  
   @Override
 	public int getId() {
 		return serverId;
@@ -164,9 +165,8 @@ public class CFMulticastServer implements MulticastServer {
 
 	@Override
 	public void sendReply(int clientId, Message reply) {
-    //TODO get client ref based on clientId
     ActorRef client = connectedClients.get(clientId);
-	  client.tell(reply, multicaster);
+    client.tell(reply, multicaster);
 	}
 
 	@Override
