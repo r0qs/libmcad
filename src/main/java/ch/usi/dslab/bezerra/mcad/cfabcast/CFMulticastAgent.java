@@ -59,7 +59,7 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
   }
 
   //TODO read config and initiate groups
-  public CFMulticastAgent(ActorRef clusterClient) {
+  public CFMulticastAgent(ActorRef clusterClient, boolean isServer) {
     log = Logging.getLogger(getContext().system(), this);
     this.clusterClient = clusterClient;
     this.serializer = new CFABCastSerializer((ExtendedActorSystem) getContext().system());

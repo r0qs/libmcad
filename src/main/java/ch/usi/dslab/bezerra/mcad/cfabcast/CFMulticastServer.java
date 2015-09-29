@@ -28,6 +28,7 @@ package ch.usi.dslab.bezerra.mcad.cfabcast;
 
 import ch.usi.dslab.bezerra.mcad.ClientMessage;
 import ch.usi.dslab.bezerra.mcad.MulticastServer;
+import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.netwrapper.Message;
 
 import com.typesafe.config.Config;
@@ -57,14 +58,14 @@ public class CFMulticastServer implements MulticastServer {
   private static BlockingQueue<Message> receivedReplies;
   static CFABCastSerializer serializer;
 	private final int serverId;
-	protected static Map<int, ActorRef> connectedClients;
-	protected static Map<ActorRef, int> connectedClientsIds;
+	protected static Map<Integer, ActorRef> connectedClients;
+	protected static Map<ActorRef, Integer> connectedClientsIds;
 
-  public MulticastServer(int serverId) {
+  public CFMulticastServer(int serverId) {
 		this.serverId = serverId;
     this.receivedReplies = new LinkedBlockingQueue<Message>();
-    this.connectedClients = new ConcurrentHashMap<int, ActorRef>();
-    this.connectedClientsIds = new ConcurrentHashMap<ActorRef, int>();
+    this.connectedClients = new ConcurrentHashMap<Integer, ActorRef>();
+    this.connectedClientsIds = new ConcurrentHashMap<ActorRef, Integer>();
     this.config = ConfigFactory.parseString("akka.cluster.roles = [server]")
       .withFallback(ConfigFactory.load("server"));
     this.system = ActorSystem.create("BenchServer", config);
@@ -93,13 +94,13 @@ public class CFMulticastServer implements MulticastServer {
       this.clusterClient = clusterClient;
       this.sid = sid;
       this.multicastAgent = getContext().watch(getContext()
-        .actorOf(MulticastAgent.props(clusterClient, true), "multicastAgent"));
+        .actorOf(CFMulticastAgent.props(clusterClient, true), "multicastAgent"));
     }
 
     @Override
     public void onReceive(Object message) throws Exception {
-      if(message instanceof Register) {
-        Register reg = (Register) message;
+      if(message instanceof RegisterMessage) {
+        RegisterMessage reg = (RegisterMessage) message;
         int clientId = reg.getId();
         ActorRef client = getSender();
         getContext().watch(client);
@@ -117,12 +118,13 @@ public class CFMulticastServer implements MulticastServer {
     Procedure<Object> active = new Procedure<Object>() {
       @Override
       public void apply(Object message) {
-        if(message instanceof Register) {
-          Register reg = (Register) message;
+        if(message instanceof RegisterMessage) {
+          RegisterMessage reg = (RegisterMessage) message;
           int clientId = reg.getId();
           ActorRef client = getSender();
           getContext().watch(client);
           connectedClients.put(clientId, client);
+          connectedClientsIds.put(client, clientId);
           log.info("Server {} receive Register from {} ID: {}", sid, client, clientId);
 
         } else if (message instanceof Terminated) {
@@ -130,7 +132,7 @@ public class CFMulticastServer implements MulticastServer {
           ActorRef deadClient = t.getActor();
           if (connectedClientsIds.containsKey(deadClient)) {
             int id = connectedClientsIds.get(deadClient);
-            connectedClients.remove(clientId);
+            connectedClients.remove(id);
             connectedClientsIds.remove(deadClient);
             // Stop server if there's no more client online?
             //getContext().stop(getSelf());
@@ -161,6 +163,11 @@ public class CFMulticastServer implements MulticastServer {
 	@Override
 	public boolean isConnectedToClient(int clientId) {
 		return connectedClients.containsKey(clientId);
+	}
+
+	@Override
+	public MulticastAgent getMulticastAgent() {
+		return null;
 	}
 
 	@Override
