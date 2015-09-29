@@ -154,12 +154,15 @@ public class CFMulticastClient implements MulticastClient {
     };
   }
 
-  public void connectToOneServerPerPartition() {
-    //wait for all servers up. Await a agent notification msg
-    //get and set group based on agent lookup
+  //wait for all servers up. Await a agent notification msg
+  //get and set group based on agent lookup
+	@Override
+  public void connectToServer(int serverId) {
+    //TODO
   }
 
-  public void connectToServer(int serverId) {
+  @Override
+  public void connectToOneServerPerPartition() {
     //TODO
   }
 

@@ -44,7 +44,7 @@ import ch.usi.dslab.bezerra.mcad.spread.SpreadMulticastServer;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMcastAgent;
 import ch.usi.dslab.bezerra.mcad.uringpaxos.URPMulticastClient;
 import ch.usi.dslab.bezerra.mcad.cfabcast.CFMulticastClient;
-//import ch.usi.dslab.bezerra.mcad.cfabcast.CFMulticastServer;
+import ch.usi.dslab.bezerra.mcad.cfabcast.CFMulticastServer;
 
 
 public class MulticastClientServerFactory {
@@ -130,10 +130,10 @@ public class MulticastClientServerFactory {
              System.out.println("SpreadMulticastAgent created!");
              return new SpreadMulticastServer(spreadAgent, serverId);
          }
-/*         else if (agent_type.equals("CFMulticastAgent")) {
+         else if (agent_type.equals("CFMulticastAgent")) {
              logger.info("Creating CFMulticastServer");
              return new CFMulticastServer(serverId);
-         }*/
+         }
          else {
             logger.error("agent_type field in " + configFile + " didn't match any known MulticastAgent type");
          }

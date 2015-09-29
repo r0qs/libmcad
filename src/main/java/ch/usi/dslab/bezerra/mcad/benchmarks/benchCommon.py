@@ -1,9 +1,10 @@
 #!/usr/bin/python
 
 import math, os, re, sys, shlex, threading, subprocess
-from os.path import expanduser
-HOME = expanduser("~")
-
+#from os.path import expanduser
+#HOME = expanduser("~")
+from os.path import join, expanduser
+SRC = join(expanduser('~'), "src/mestrado/scala/test/")
 
 
 
@@ -19,7 +20,8 @@ def noderange(first,last) :
     return ["node" + str(val) for val in range(first, last + 1)]
 
 #availableNodes = noderange(1,34) + noderange(41,50)
-availableNodes = noderange(1,35) + noderange(41,52) + noderange(54,60) + noderange(62,64) + noderange(66,67) + noderange(69,70)
+#availableNodes = noderange(1,35) + noderange(41,52) + noderange(54,60) + noderange(62,64) + noderange(66,67) + noderange(69,70)
+availableNodes = noderange(41,45)
 
 def testNodes() :
     for n in availableNodes :
@@ -60,7 +62,8 @@ onceRunner = {"libpaxos" : HOME + "/libmcad/benchLink/runOnce_libpaxos.py",
               "lpnorand" : HOME + "/libmcad/benchLink/runOnce_lpnorand.py",
               "mrp"      : HOME + "/libmcad/benchLink/runOnce_mrp.py",
               "ridge"    : HOME + "/libmcad/benchLink/runOnce_ridge.py",
-              "ridgeopt" : HOME + "/libmcad/benchLink/runOnce_ridgeOpt.py", }
+              "ridgeopt" : HOME + "/libmcad/benchLink/runOnce_ridgeOpt.py", 
+              "cfabcast" : HOME + "/libmcad/benchLink/runOnce_cfabcast.py", }
 cleaner = HOME + "/libmcad/benchLink/cleanUp.py"
 clockSynchronizer = HOME + "/libmcad/benchLink/clockSynchronizer.py"
 continousClockSynchronizer = HOME + "/libmcad/benchLink/continuousClockSynchronizer.py"
