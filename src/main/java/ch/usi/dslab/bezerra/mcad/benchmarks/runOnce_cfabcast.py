@@ -62,41 +62,42 @@ def cleanProcessOf(user):
 
 
 # (41 to 60)
-gathererNode = availableNodes[0] 
+gathererNode = "127.0.0.1" 
 
 # Server nodes
-server_list = availableNodes[1]
+server_list = 1
 
 # Clients nodes
-client_nodes = availableNodes[1]
+client_nodes = 1
 
 # Service nodes
-service_nodes = availableNodes[2:]
+service_nodes = availableNodes
 
 from os.path import join, expanduser
 SRC = join(expanduser('~'), "src/mestrado/scala")
 CFABCASTDIR = join(SRC, "cfabcast")
-LIBMCADDEPDIR = join(CFABCASTDIR, "libmcad_dep")
+LIBMCADDEPDIR = join(SRC, "libmcad_dep")
+CFABCASTLIBMCADDIR = join(LIBMCADDEPDIR, "libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/cfabcast")
 
-#sbtCommand = HOME + "/sbt/bin/sbt"
-sbtCommand = "sbt"
+cfabcastjar = CFABCASTDIR + "target/scala-2.11/CFABCast-assembly-0.1-SNAPSHOT.jar"
 
 # start CFABCast service on all nodes of cluster
-def runSbtOn(node) = sbtCommand + " 'run-main Main %s'" % node
 for node in service_nodes :
-    localcmdbg(join(CFABCASTDIR, "sbt 'run-main Main %s'" % node))
+    javaservicecmd = "%s -jar %s %s" % (javaCommand, cfabcastjar, node)
+    localcmdbg(javaservicecmd)
 #    sshcmdbg(node, runSbtOn(node))
 
-ensemblesConfigPath = ""
+configPath = CFABCASTLIBMCADDIR + "config_parameters.json"
 
 # start servers
 #mvn exec:java -Dexec.mainClass="sample.bench.BenchServer" -Dexec.args="1"
+#mvn exec:java -Dexec.mainClass="ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer" -Dexec.args="1 /home/rodrigo/src/mestrado/scala/libmcad_dep/libmcad/src/main/java/ch/usi/dslab/bezerra/mcad/cfabcast/config_parameters.json 127.0.0.1 60000 /home/rodrigo/src/mestrado/scala/test/logsmcast/ 60"
 serverId = 1
 for serverProcess in server_list :
     print serverProcess
     javaservercmd = "%s -cp %s %s %s %s %s %s %s %s" % (javaCommand,      \
          libmcadjar,           benchServerClass,        serverId, \
-         ensemblesConfigPath,  gathererNode,  gathererPort,        \
+         configPath,  gathererNode,  gathererPort,        \
          logdir,               benchDuration)
     localcmdbg(javaservercmd)
     serverId += 1
@@ -112,7 +113,7 @@ while remainingClients > 0 :
     for clinode in clientNodes :
         javaclientcmd = "%s -cp %s %s %s %s %s %s %s %s %s" % (javaCommand,
              libmcadjar,             benchClientClass,   clientId,    \
-             ensemblesConfigPath,    messageSize,        numPermits,  \
+             configPath,    messageSize,        numPermits,  \
              gathererNode, gathererPort,       benchDuration)
         localcmdbg(javaclientcmd)
 #        sshcmdbg(clinode, javaclientcmd)
@@ -139,7 +140,7 @@ javagatherercmd += " mistakes   server       " + str(numLearners)
 timetowait = benchDuration + (numClients + numGroups * numPxPerGroup * 2 + numLearners) * 10
 
 #exitcode = sshcmd(gathererNode, javagatherercmd, timetowait)
-exitcode = localcmd(gathererNode, javagatherercmd, timetowait)
+exitcode = localcmd(javagatherercmd, timetowait)
 if exitcode != 0 :
     localcmd("touch %s/FAILED.txt" % (logdir))
      
