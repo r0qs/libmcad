@@ -41,11 +41,11 @@ public class CFDummyGroup extends Group {
     membersRefList = new ArrayList<ActorRef>();
   }
 
-  //Add cluster member
   public void addMember(ActorRef ref) {
     membersRefList.add(ref);
   }
 
+  //unused
   @Override
   public List<Integer> getMembers() {
     return null;

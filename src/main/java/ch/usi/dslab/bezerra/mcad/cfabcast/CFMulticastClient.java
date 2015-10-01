@@ -78,7 +78,7 @@ public class CFMulticastClient implements MulticastClient {
 
   // TODO: use MulticastClient as TypedActor
   static public class Multicaster extends UntypedActor {
-//    private final String agentId = UUID.randomUUID().toString();
+  //private final String agentId = UUID.randomUUID().toString();
     private final ActorRef clusterClient;
     private final Integer cid;
     private final String serverPath;
@@ -97,9 +97,6 @@ public class CFMulticastClient implements MulticastClient {
       String serverHost = ConfigFactory.load("server").getConfig("akka.remote.netty.tcp").getString("hostname");
       // Find a server
       this.serverPath = String.format("akka.tcp://BenchServer@%s:%d/user/server*", serverHost, serverPort);
-
-//      sendIdentifyRequest(cid, serverPath);
-//      log.info("Multicast Client UP: id={} - {}", cid, getSelf());
     }
 
     private void sendIdentifyRequest(int id, String path) {
@@ -132,7 +129,7 @@ public class CFMulticastClient implements MulticastClient {
       } else if(message instanceof AckMessage) {
         synchronized(clientId) {
           clientId.notify();
-          // Register this client with some server
+          // Register this client with some listener server
           sendIdentifyRequest(cid, serverPath);
           log.info("Multicast Client UP: id={} - {}", cid, getSelf());
         }
@@ -170,8 +167,7 @@ public class CFMulticastClient implements MulticastClient {
     };
   }
 
-  //wait for all servers up. Await a agent notification msg
-  //get and set group based on agent lookup
+  //unused
 	@Override
   public void connectToServer(int serverId) {
     //TODO
@@ -189,10 +185,9 @@ public class CFMulticastClient implements MulticastClient {
     }
   }
 
-  //TODO Get destinations from Group (Actors refs)
   @Override
 	public void multicast(List<Group> destinations, ClientMessage clientMessage) {
-    //FIXME Not ignore destinations!
+    //FIXME Not ignore destinations! Implement broadcast using multicast
     // Encapsulate on a Multicast Message: Multicast(destinations, clientMessage)
     for(Group g : destinations) {
       CFDummyGroup group = (CFDummyGroup) g;

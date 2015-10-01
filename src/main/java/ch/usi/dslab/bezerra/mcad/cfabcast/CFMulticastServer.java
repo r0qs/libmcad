@@ -166,6 +166,7 @@ public class CFMulticastServer implements MulticastServer {
 		return connectedClients.containsKey(clientId);
 	}
 
+  //unused
 	@Override
 	public MulticastAgent getMulticastAgent() {
 		return null;
