@@ -57,4 +57,9 @@ public class CFDummyGroup extends Group {
   public List<Integer> getMembers() {
     return null;
   }
+
+  public List<ActorRef> getClusterMembers() {
+    return membersRefList;
+  }
+
 }

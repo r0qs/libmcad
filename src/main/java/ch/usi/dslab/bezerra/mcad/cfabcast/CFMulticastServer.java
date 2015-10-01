@@ -95,6 +95,7 @@ public class CFMulticastServer implements MulticastServer {
       this.sid = sid;
       this.multicastAgent = getContext().watch(getContext()
         .actorOf(CFMulticastAgent.props(clusterClient, true), "multicastAgent"));
+      log.info("Multicast Server UP: id={} - {}", sid, getSelf());
     }
 
     @Override

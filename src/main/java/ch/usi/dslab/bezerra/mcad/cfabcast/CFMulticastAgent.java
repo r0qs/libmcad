@@ -53,6 +53,7 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
   ActorRef proposer;
   private CFABCastSerializer serializer;
   private final ActorRef clusterClient;
+  CFDummyGroup localGroup = null;
 
   public static Props props(ActorRef clusterClient, boolean isServer) {
     return Props.create(CFMulticastAgent.class, clusterClient, isServer);
@@ -68,14 +69,6 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
     } else {
       clusterClient.tell(new ClusterClient.Send("/user/node*", RegisterClient.instance(), true), getSelf());
     }
-  }
-
-  @Override
-  public void preStart() {
-  }
-  
-  @Override
-  public void postStop() {
   }
 
   @Override
@@ -99,11 +92,6 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
     return null;
   }
 
-  public Group getLocalGroup() {
-    //TODO
-    return null;
-  }
-
   public void notifyCheckpointMade(DeliveryMetadata deliveryToKeep) {
     //TODO
   }
@@ -111,6 +99,15 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
   public boolean hasWholeDeliveryPreffix() {
     //TODO
     return true;
+  }
+
+  @Override
+  public Group getLocalGroup() {
+    return this.localGroup;
+  }
+
+  public void setLocalGroup(Group g) {
+    this.localGroup = (CFDummyGroup) g;
   }
 
   @Override
@@ -128,10 +125,21 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
       getContext().parent().tell(msg, getSelf());
    */ 
     } else if(message instanceof ClientRegistered) {
+      // FIXME Groups are not set properly, need to be done in connectToOneServerPerPartition
+      // method in CFMulticastClient.java
       ClientRegistered c = (ClientRegistered) message;
       proposer = c.getProposer();
       //TODO Create a CFDummyGroup
-      Set<ActorRef> group = c.getGroup();
+      Set<ActorRef> groupSet = c.getGroup();
+      log.info("Receive GROUP SET: {}", groupSet);
+      // Configure Group with all members of cluster
+      Group.changeGroupImplementationClass(CFDummyGroup.class);
+      // FIXME Pass groupId in configuration or sent it in message
+      CFDummyGroup group = (CFDummyGroup) Group.getOrCreateGroup((int) 1);
+      for(ActorRef member : groupSet)
+        group.addMember(member);
+      log.info("MEMBERS OF GROUP [{}] : {}", group.getId(), group.getClusterMembers());
+      setLocalGroup(group);
 
     } else {
       log.info("Agent {} receive unknown message: {} from {}", getSelf(), message, getSender());

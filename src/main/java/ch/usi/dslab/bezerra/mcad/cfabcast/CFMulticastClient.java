@@ -92,10 +92,12 @@ public class CFMulticastClient implements MulticastClient {
       this.cid = cid;
       this.mcAgent = getContext().watch(getContext().actorOf(CFMulticastAgent.props(clusterClient, false), "multicastAgent"));
       int serverPort = ConfigFactory.load("server").getConfig("akka.remote.netty.tcp").getInt("port");
-      String serverHost = ConfigFactory.load().getConfig("akka.remote.netty.tcp").getString("hostname");
+      String serverHost = ConfigFactory.load("server").getConfig("akka.remote.netty.tcp").getString("hostname");
       // Find a server
       this.serverPath = String.format("akka.tcp://BenchServer@%s:%d/user/server*", serverHost, serverPort);
+
       sendIdentifyRequest(cid, serverPath);
+      log.info("Multicast Client UP: id={} - {}", cid, getSelf());
     }
 
     private void sendIdentifyRequest(int id, String path) {
@@ -163,7 +165,8 @@ public class CFMulticastClient implements MulticastClient {
 
   @Override
   public void connectToOneServerPerPartition() {
-    //TODO
+    List<Group> groups = Group.getAllGroups();
+    System.out.println("CFMulticastClient GROUPS: " + groups);
   }
 
   //TODO Get destinations from Group (Actors refs)
