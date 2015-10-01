@@ -64,7 +64,7 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
     this.clusterClient = clusterClient;
     this.serializer = new CFABCastSerializer((ExtendedActorSystem) getContext().system());
     if (isServer) {
-      clusterClient.tell(new ClusterClient.Send("/user/node", RegisterServer.instance(), true), getSelf());
+      clusterClient.tell(new ClusterClient.Send("/user/node", new RegisterServer(getSelf()), true), getSelf());
     } 
   }
 
@@ -132,7 +132,7 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
       getContext().parent().tell(msg, getSelf());
    */
     } else if(message instanceof RegisterMessage) {
-      clusterClient.tell(new ClusterClient.Send("/user/node", RegisterClient.instance() , true), getSelf());
+      clusterClient.tell(new ClusterClient.Send("/user/node", new RegisterClient(getSelf()) , true), getSelf());
      
     } else if(message instanceof ClientRegistered) {
       // FIXME Groups are not set properly, need to be done in connectToOneServerPerPartition
