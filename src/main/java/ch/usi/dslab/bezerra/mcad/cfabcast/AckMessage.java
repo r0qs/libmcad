@@ -26,33 +26,9 @@
 
 package ch.usi.dslab.bezerra.mcad.cfabcast;
 
-import ch.usi.dslab.bezerra.mcad.Group;
+import java.io.Serializable;
 
-import java.util.ArrayList;
-import java.util.List;
+public class AckMessage implements Serializable {
 
-import akka.actor.ActorRef;
-
-public class CFDummyGroup extends Group {
-  ArrayList<ActorRef> membersRefList;
-  
-  public CFDummyGroup(int id) {
-    super(id);
-    membersRefList = new ArrayList<ActorRef>();
-  }
-
-  //Add cluster member
-  public void addMember(ActorRef ref) {
-    membersRefList.add(ref);
-  }
-
-  @Override
-  public List<Integer> getMembers() {
-    return null;
-  }
-
-  public List<ActorRef> getClusterMembers() {
-    return membersRefList;
-  }
-
+  public AckMessage() {}
 }

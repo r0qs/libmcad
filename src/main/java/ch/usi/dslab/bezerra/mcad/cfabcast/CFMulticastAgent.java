@@ -59,34 +59,40 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
     return Props.create(CFMulticastAgent.class, clusterClient, isServer);
   }
 
-  //TODO read config and initiate groups
   public CFMulticastAgent(ActorRef clusterClient, boolean isServer) {
     log = Logging.getLogger(getContext().system(), this);
     this.clusterClient = clusterClient;
     this.serializer = new CFABCastSerializer((ExtendedActorSystem) getContext().system());
     if (isServer) {
-      clusterClient.tell(new ClusterClient.Send("/user/node*", RegisterServer.instance(), true), getSelf());
-    } else {
-      clusterClient.tell(new ClusterClient.Send("/user/node*", RegisterClient.instance(), true), getSelf());
-    }
+      clusterClient.tell(new ClusterClient.Send("/user/node", RegisterServer.instance(), true), getSelf());
+    } 
   }
 
+  // unused
   @Override
   public void multicast(Group single_destination, Message message) {
     CFDummyGroup g = (CFDummyGroup) single_destination;
 
-    //TODO include group in message
+    //TODO include group in cfabcast message
     Broadcast broadcastMessage = new Broadcast(serializer.toBinary(message));
 
 //    for(ActorRef protocolAgents : g.membersRefList)
     proposer.tell(broadcastMessage, getSelf()); 
   }
+ 
+  // unused
   //TODO Pass a List with a single group
+  @Override
   public void multicast(List<Group> destinations, Message message) {
     for(Group g : destinations)
       multicast(g, message);
   }
- 
+
+  public void broadcast(List<ActorRef> destinations, Message message) {
+    Broadcast broadcastMessage = new Broadcast(serializer.toBinary(message));
+    proposer.tell(broadcastMessage, getSelf()); 
+  }
+
   public Message deliverMessage() {
     //TODO
     return null;
@@ -115,7 +121,8 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
     if(message instanceof CFMulticastMessage) {
       CFMulticastMessage msg = (CFMulticastMessage) message;
       log.info("Agent {} - Sending multicast: {} to {} ", getSelf(), msg, proposer);
-      multicast(msg.getDestinations(), msg.getMessage());
+      // Send to all destinations, ignore msg.getDestinations()
+      broadcast(null, msg.getMessage());
 
 /*  // Replies are sent directly to server associated with some learner 
     } else if(message instanceof Delivery) {
@@ -123,7 +130,10 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
       Message msg = (Message) serializer.fromBinary(response.getData());
       log.info("Agent {} - Receive response: {} from {} ", getSelf(), msg, getSender());
       getContext().parent().tell(msg, getSelf());
-   */ 
+   */
+    } else if(message instanceof RegisterMessage) {
+      clusterClient.tell(new ClusterClient.Send("/user/node", RegisterClient.instance() , true), getSelf());
+     
     } else if(message instanceof ClientRegistered) {
       // FIXME Groups are not set properly, need to be done in connectToOneServerPerPartition
       // method in CFMulticastClient.java
@@ -131,7 +141,6 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
       proposer = c.getProposer();
       //TODO Create a CFDummyGroup
       Set<ActorRef> groupSet = c.getGroup();
-      log.info("Receive GROUP SET: {}", groupSet);
       // Configure Group with all members of cluster
       Group.changeGroupImplementationClass(CFDummyGroup.class);
       // FIXME Pass groupId in configuration or sent it in message
@@ -140,6 +149,8 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
         group.addMember(member);
       log.info("MEMBERS OF GROUP [{}] : {}", group.getId(), group.getClusterMembers());
       setLocalGroup(group);
+
+      getContext().parent().tell(new AckMessage(), getSelf());
 
     } else {
       log.info("Agent {} receive unknown message: {} from {}", getSelf(), message, getSender());

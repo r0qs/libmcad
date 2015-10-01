@@ -50,9 +50,11 @@ import scala.concurrent.duration.Duration;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import cfabcast.messages.*;
+
 public class CFMulticastClient implements MulticastClient {
   
-  private final int clientId;
+  private static Integer clientId;
   private final ActorRef multicaster;
   private static Config config;
   private static ActorSystem system;
@@ -78,7 +80,7 @@ public class CFMulticastClient implements MulticastClient {
   static public class Multicaster extends UntypedActor {
 //    private final String agentId = UUID.randomUUID().toString();
     private final ActorRef clusterClient;
-    private final int cid;
+    private final Integer cid;
     private final String serverPath;
     private final ActorRef mcAgent;
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -96,8 +98,8 @@ public class CFMulticastClient implements MulticastClient {
       // Find a server
       this.serverPath = String.format("akka.tcp://BenchServer@%s:%d/user/server*", serverHost, serverPort);
 
-      sendIdentifyRequest(cid, serverPath);
-      log.info("Multicast Client UP: id={} - {}", cid, getSelf());
+//      sendIdentifyRequest(cid, serverPath);
+//      log.info("Multicast Client UP: id={} - {}", cid, getSelf());
     }
 
     private void sendIdentifyRequest(int id, String path) {
@@ -123,12 +125,24 @@ public class CFMulticastClient implements MulticastClient {
           getContext().become(active, true);
         }
 
+      } else if(message instanceof RegisterMessage) {
+        // Register Agent to cluster
+        mcAgent.tell(message, getSelf());
+      
+      } else if(message instanceof AckMessage) {
+        synchronized(clientId) {
+          clientId.notify();
+          // Register this client with some server
+          sendIdentifyRequest(cid, serverPath);
+          log.info("Multicast Client UP: id={} - {}", cid, getSelf());
+        }
+      
       } else if (message instanceof ReceiveTimeout) {
         log.info("Timeout expired, retrying identify server on: {}", serverPath);
         sendIdentifyRequest(cid, serverPath);
 
       } else {
-        log.info("Client {} not ready yet", cid);
+        log.info("Client {} not ready yet! Received: {}", cid, message);
       }
     }
 
@@ -165,8 +179,14 @@ public class CFMulticastClient implements MulticastClient {
 
   @Override
   public void connectToOneServerPerPartition() {
-    List<Group> groups = Group.getAllGroups();
-    System.out.println("CFMulticastClient GROUPS: " + groups);
+    synchronized(clientId) {
+      multicaster.tell(new RegisterMessage(clientId), null);
+      try {
+        clientId.wait();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 
   //TODO Get destinations from Group (Actors refs)
@@ -174,8 +194,12 @@ public class CFMulticastClient implements MulticastClient {
 	public void multicast(List<Group> destinations, ClientMessage clientMessage) {
     //FIXME Not ignore destinations!
     // Encapsulate on a Multicast Message: Multicast(destinations, clientMessage)
-    CFMulticastMessage message = new CFMulticastMessage(destinations, clientMessage);
-    multicaster.tell(message, null);
+    for(Group g : destinations) {
+      CFDummyGroup group = (CFDummyGroup) g;
+      List<ActorRef> groupMembers = group.getClusterMembers();
+      CFMulticastMessage message = new CFMulticastMessage(groupMembers, clientMessage);
+      multicaster.tell(message, null);
+    }
 	}
   
   @Override

@@ -26,23 +26,25 @@
 
 package ch.usi.dslab.bezerra.mcad.cfabcast;
 
+import ch.usi.dslab.bezerra.mcad.ClientMessage;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.io.Serializable;
 
-import ch.usi.dslab.bezerra.mcad.ClientMessage;
-import ch.usi.dslab.bezerra.mcad.Group;
+import akka.actor.ActorRef;
 
-public class CFMulticastMessage {
-  private final List<Group> destinations;
+public class CFMulticastMessage implements Serializable {
+  private final List<ActorRef> destinations;
   private final ClientMessage message;
  
-  public CFMulticastMessage(List<Group> destinations, ClientMessage clientMessage) {
-    this.destinations = Collections.unmodifiableList(new ArrayList<Group>(destinations));
+  public CFMulticastMessage(List<ActorRef> destinations, ClientMessage clientMessage) {
+    this.destinations = Collections.unmodifiableList(new ArrayList<ActorRef>(destinations));
     this.message = clientMessage;
   }
  
-  public List<Group> getDestinations() {
+  public List<ActorRef> getDestinations() {
     return this.destinations;
   }
  
