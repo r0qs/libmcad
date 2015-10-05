@@ -142,10 +142,9 @@ public class CFMulticastServer implements MulticastServer {
           }
         
         // Message received from some learner in the cluster
-        } else if(message instanceof Delivery) {
-          Delivery response = (Delivery) message;
-          Message msg = (Message) serializer.fromBinary(response.getData());
-          log.info("Server {} receive response: {} from {} ", getSelf(), msg, getSender());
+        } else if(message instanceof ClientMessage) {
+          ClientMessage msg = (ClientMessage) message;
+          log.info("Server {} receive DELIVERY: {} from {} ", getSelf(), msg, getSender());
           receivedReplies.add(msg);
 
         } else {
@@ -175,6 +174,7 @@ public class CFMulticastServer implements MulticastServer {
 	@Override
 	public void sendReply(int clientId, Message reply) {
     ActorRef client = connectedClients.get(clientId);
+    //TODO Send a specific message to client?
     client.tell(reply, multicaster);
 	}
 

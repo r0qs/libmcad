@@ -120,13 +120,7 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
 
   @Override
   public void onReceive(Object message) {
-    if(message instanceof CFMulticastMessage) {
-      CFMulticastMessage msg = (CFMulticastMessage) message;
-      log.info("Agent {} - Sending multicast: {} to {} ", getSelf(), msg, proposer);
-      // Send to all destinations, ignore msg.getDestinations()
-      broadcast(null, msg.getMessage());
-
-    } else if(message instanceof RegisterMessage) {
+    if(message instanceof RegisterMessage) {
       clusterClient.tell(new ClusterClient.Send("/user/node", new RegisterClient(getSelf()) , true), getSelf());
      
     } else if(message instanceof ClientRegistered) {
@@ -143,17 +137,21 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
 
       getContext().parent().tell(new AckMessage(), getSelf());
 
-    } else {
-      log.info("Agent {} receive unknown message: {} from {}", getSelf(), message, getSender());
-      unhandled(message);
-    }
-     /*  // Replies are sent directly to server associated with some learner 
+    } else if(message instanceof CFMulticastMessage) {
+      CFMulticastMessage msg = (CFMulticastMessage) message;
+      log.info("Agent {} BROADCAST Message to PROPOSER: {}", getSelf(), proposer);
+      // Send to all destinations, ignore msg.getDestinations()
+      broadcast(null, msg.getMessage());
+
     } else if(message instanceof Delivery) {
       Delivery response = (Delivery) message;
       Message msg = (Message) serializer.fromBinary(response.getData());
       log.info("Agent {} - Receive response: {} from {} ", getSelf(), msg, getSender());
       getContext().parent().tell(msg, getSelf());
-   */
 
+    } else {
+      log.info("Agent {} receive unknown message: {} from {}", getSelf(), message, getSender());
+      unhandled(message);
+    }
   }
 }
