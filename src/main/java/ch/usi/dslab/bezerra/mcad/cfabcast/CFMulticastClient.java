@@ -68,9 +68,14 @@ public class CFMulticastClient implements MulticastClient {
     this.system = ActorSystem.create("BenchClient", config);
 
     Set<ActorSelection> initialContacts = new HashSet<ActorSelection>();
-    for (String contactAddress : config.getStringList("contact-points")) {
-      initialContacts.add(system.actorSelection(contactAddress + "/user/receptionist"));
-    }
+    //TODO Round Robin on cfabcast
+    List<String> contactList = config.getStringList("contact-points");
+    int chosenContact = clientId % contactList.size();
+    System.out.println(String.format("CONTACTS: MyId: %d, Chosen: %d, Size: %d addr: %s", clientId, chosenContact, contactList.size(), contactList.get(chosenContact)));
+
+    initialContacts.add(system.actorSelection(contactList.get(chosenContact) + "/user/receptionist"));
+   
+
     final ActorRef clusterClient = system.actorOf(ClusterClient.defaultProps(initialContacts), "clusterClient");
     this.multicaster = system.actorOf(Multicaster.props(clusterClient, clientId), String.format("client-%d", clientId));
 
@@ -146,8 +151,14 @@ public class CFMulticastClient implements MulticastClient {
     Procedure<Object> active = new Procedure<Object>() {
       @Override
       public void apply(Object message) {
+        if (message instanceof ActorIdentity) {
+          ActorIdentity identity = (ActorIdentity) message;
+          ActorRef server = identity.getRef();
+          int serverId = (int) identity.correlationId();
+          log.info("Client {} already registred with some server but receive Identify from {} ID: {}. Ignoring...", cid, server, serverId);
+        
         // Reply received from server
-        if(message instanceof ClientMessage) {
+        } else if(message instanceof ClientMessage) {
           ClientMessage clientResponse = (ClientMessage) message;
           log.info("Client {} receive RESPONSE from Server {}", getSelf(), getSender());
           receivedReplies.add(clientResponse);

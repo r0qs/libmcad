@@ -41,6 +41,7 @@ import akka.contrib.pattern.ClusterClient;
 import akka.japi.Procedure;
 
 import java.util.Set;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,10 +73,15 @@ public class CFMulticastServer implements MulticastServer {
     this.serializer = new CFABCastSerializer((ExtendedActorSystem) system);
  
     Set<ActorSelection> initialContacts = new HashSet<ActorSelection>();
-    for (String contactAddress : config.getStringList("contact-points")) {
+
+    //TODO Round Robin on cfabcast
+    List<String> contactList = config.getStringList("contact-points");
+    int chosenContact = serverId % contactList.size();
+    initialContacts.add(system.actorSelection(contactList.get(chosenContact) + "/user/receptionist"));
+/*    for (String contactAddress : config.getStringList("contact-points")) {
       initialContacts.add(system.actorSelection(contactAddress + "/user/receptionist"));
     }
-
+*/
     final ActorRef clusterClient = system.actorOf(ClusterClient.defaultProps(initialContacts), "clusterClient");
     multicaster = system.actorOf(Multicaster.props(clusterClient, serverId), String.format("server-%d", serverId));
   }
