@@ -42,8 +42,8 @@ import akka.japi.Procedure;
 
 import java.util.Set;
 import java.util.List;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.Serializable;
 import java.util.concurrent.BlockingQueue;
@@ -67,13 +67,11 @@ public class CFMulticastServer implements MulticastServer {
     this.receivedReplies = new LinkedBlockingQueue<Message>();
     this.connectedClients = new ConcurrentHashMap<Integer, ActorRef>();
     this.connectedClientsIds = new ConcurrentHashMap<ActorRef, Integer>();
-    this.config = ConfigFactory.parseString("akka.cluster.roles = [server]")
-      .withFallback(ConfigFactory.load("server"));
+    this.config = ConfigFactory.load();
     this.system = ActorSystem.create("BenchServer", config);
     this.serializer = new CFABCastSerializer((ExtendedActorSystem) system);
  
     Set<ActorSelection> initialContacts = new HashSet<ActorSelection>();
-
     //TODO Round Robin on cfabcast
     List<String> contactList = config.getStringList("contact-points");
     int chosenContact = serverId % contactList.size();

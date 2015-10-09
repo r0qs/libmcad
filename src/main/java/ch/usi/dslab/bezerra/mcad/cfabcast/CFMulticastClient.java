@@ -63,8 +63,7 @@ public class CFMulticastClient implements MulticastClient {
   public CFMulticastClient(int clientId) {
     this.clientId = clientId;
     this.receivedReplies = new LinkedBlockingQueue<Message>();
-    this.config = ConfigFactory.parseString("akka.cluster.roles = [client]")
-      .withFallback(ConfigFactory.load("client"));
+    this.config = ConfigFactory.load(); 
     this.system = ActorSystem.create("BenchClient", config);
 
     Set<ActorSelection> initialContacts = new HashSet<ActorSelection>();
@@ -74,11 +73,8 @@ public class CFMulticastClient implements MulticastClient {
     System.out.println(String.format("CONTACTS: MyId: %d, Chosen: %d, Size: %d addr: %s", clientId, chosenContact, contactList.size(), contactList.get(chosenContact)));
 
     initialContacts.add(system.actorSelection(contactList.get(chosenContact) + "/user/receptionist"));
-   
-
     final ActorRef clusterClient = system.actorOf(ClusterClient.defaultProps(initialContacts), "clusterClient");
-    this.multicaster = system.actorOf(Multicaster.props(clusterClient, clientId), String.format("client-%d", clientId));
-
+    this.multicaster = system.actorOf(Multicaster.props(clusterClient, clientId), String.format("client-%d", clientId)); 
   }
 
   // TODO: use MulticastClient as TypedActor
@@ -98,8 +94,13 @@ public class CFMulticastClient implements MulticastClient {
       this.clusterClient = clusterClient;
       this.cid = cid;
       this.mcAgent = getContext().watch(getContext().actorOf(CFMulticastAgent.props(clusterClient, false), "multicastAgent"));
-      int serverPort = ConfigFactory.load("server").getConfig("akka.remote.netty.tcp").getInt("port");
-      String serverHost = ConfigFactory.load("server").getConfig("akka.remote.netty.tcp").getString("hostname");
+      
+      Config appConfig = ConfigFactory.load().getConfig("app");
+      String serverHost = appConfig.getString("server_host");
+      int serverPort = appConfig.getInt("server_port"); 
+
+//      int serverPort = ConfigFactory.load("server").getConfig("akka.remote.netty.tcp").getInt("port");
+//      String serverHost = ConfigFactory.load("server").getConfig("akka.remote.netty.tcp").getString("hostname");
       // Find a server
       this.serverPath = String.format("akka.tcp://BenchServer@%s:%d/user/server*", serverHost, serverPort);
     }
