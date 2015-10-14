@@ -132,25 +132,25 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
       CFDummyGroup group = (CFDummyGroup) Group.getOrCreateGroup((int) 1);
       for(ActorRef member : groupSet)
         group.addMember(member);
-      log.info("MEMBERS OF GROUP [{}] : {}", group.getId(), group.getClusterMembers());
+      log.debug("MEMBERS OF GROUP [{}] : {}", group.getId(), group.getClusterMembers());
       setLocalGroup(group);
 
       getContext().parent().tell(new AckMessage(), getSelf());
 
     } else if(message instanceof CFMulticastMessage) {
       CFMulticastMessage msg = (CFMulticastMessage) message;
-      log.info("Agent {} BROADCAST Message to PROPOSER: {}", getSelf(), proposer);
+      log.debug("Agent {} BROADCAST Message to PROPOSER: {}", getSelf(), proposer);
       // Send to all destinations, ignore msg.getDestinations()
       broadcast(null, msg.getMessage());
 
     } else if(message instanceof Delivery) {
       Delivery response = (Delivery) message;
       Message msg = (Message) serializer.fromBinary(response.getData());
-      log.info("Agent {} - Receive response: {} from {} ", getSelf(), msg, getSender());
+      log.debug("Agent {} - Receive response: {} from {} ", getSelf(), msg, getSender());
       getContext().parent().tell(msg, getSelf());
 
     } else {
-      log.info("Agent {} receive unknown message: {} from {}", getSelf(), message, getSender());
+      log.warning("Agent {} receive unknown message: {} from {}", getSelf(), message, getSender());
       unhandled(message);
     }
   }

@@ -161,13 +161,13 @@ public class CFMulticastClient implements MulticastClient {
         // Reply received from server
         } else if(message instanceof ClientMessage) {
           ClientMessage clientResponse = (ClientMessage) message;
-          log.info("Client {} receive RESPONSE from Server {}", getSelf(), getSender());
+          log.debug("Client {} receive RESPONSE from Server {}", getSelf(), getSender());
           receivedReplies.add(clientResponse);
 
         // Message to multicast
         } else if(message instanceof CFMulticastMessage) {
           CFMulticastMessage cfmessage = (CFMulticastMessage) message;
-          log.info("Client {} receive MULTICAST REQUEST from {}", getSelf(), getSender());
+          log.debug("Client {} receive MULTICAST REQUEST from {}", getSelf(), getSender());
           mcAgent.tell(cfmessage, getSelf());
 
         } else if (message instanceof ReceiveTimeout) {
@@ -178,11 +178,11 @@ public class CFMulticastClient implements MulticastClient {
         // is encapsulates it on the server in method sendReply
         } else if(message instanceof Message) {
           Message clientResponse = (Message) message;
-          log.info("Client {} receive RESPONSE:{} from Server {}", getSelf(), clientResponse, getSender());
+          log.debug("Client {} receive RESPONSE:{} from Server {}", getSelf(), clientResponse, getSender());
           receivedReplies.add(clientResponse);
 
         } else {
-          log.info("Client receive unknown message {} from {}", message, getSender());
+          log.warning("Client receive unknown message {} from {}", message, getSender());
           unhandled(message);
         }  
       }

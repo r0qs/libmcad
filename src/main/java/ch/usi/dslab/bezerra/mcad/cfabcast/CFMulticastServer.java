@@ -148,11 +148,11 @@ public class CFMulticastServer implements MulticastServer {
         // Message received from some learner in the cluster
         } else if(message instanceof ClientMessage) {
           ClientMessage msg = (ClientMessage) message;
-          log.info("Server {} receive DELIVERY: {} from {} ", getSelf(), msg, getSender());
+          log.debug("Server {} receive DELIVERY: {} from {} ", getSelf(), msg, getSender());
           receivedReplies.add(msg);
 
         } else {
-          log.info("Server receive unknown message from {}", getSender());
+          log.warning("Server receive unknown message from {}", getSender());
           unhandled(message);
         } 
       }
