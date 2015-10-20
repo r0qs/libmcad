@@ -108,8 +108,8 @@ public class BenchClient implements Runnable {
    }
    
    protected void sendMessage() {
-      /* int num = */ getSendPermit();
-//      System.out.println("permits: " + num);
+      int num = getSendPermit();
+      System.out.println("permits: " + num);
       ClientMessage msg = new ClientMessage(new byte[msgSize]);
       
       List<Group> allGroups = Group.getAllGroups();
@@ -122,7 +122,9 @@ public class BenchClient implements Runnable {
       
       optimisticStarts  .put(msg.getMessageSequence(), startTime);
       conservativeStarts.put(msg.getMessageSequence(), startTime);
-      
+     
+      //System.out.println(String.format("Bench Client %d sending message: %d, startTime: %d", clientId, msg.getMessageSequence(), startTime));
+
       mcclient.multicast(dests, msg);
    }
 
@@ -146,6 +148,7 @@ public class BenchClient implements Runnable {
             addSendPermit();
             long sendTime = conservativeStarts.remove(reqId);
             long recvTime = nowNano;
+         //   System.out.println(String.format("Bench Client %d Receive reply: %d, %s, Sent: %d - Received: %d ", clientId, reqId, Boolean.toString(optimistic), sendTime, recvTime));
             consTPMonitor.incrementCount();
             consLatMonitor.logLatency(sendTime, recvTime);
             consLatDistMonitor.logLatencyForDistribution(sendTime, recvTime);
@@ -163,6 +166,15 @@ public class BenchClient implements Runnable {
    public boolean experimentTimeHasPassed(long start_ms) {
       return System.currentTimeMillis() > start_ms + DataGatherer.getDuration();
    }
+
+   static void sleep(Integer time) {
+      try {
+        Thread.sleep(time);
+      } catch ( java.lang.InterruptedException ie) {
+        System.out.println(ie);
+      }
+    }
+
 
    public static void main(String[] args) {
 
@@ -185,9 +197,10 @@ public class BenchClient implements Runnable {
       Thread benchClientThread = new Thread(cli, "BenchClient");
       benchClientThread.start();
       
+      sleep(10000);
+
       while (true) {
          cli.sendMessage();
       }
    }
-   
 }
