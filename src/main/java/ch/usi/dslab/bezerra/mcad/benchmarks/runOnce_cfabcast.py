@@ -15,14 +15,14 @@ runLocal = False
 SRC = HOME + "/cfabcast/benchmark" 
 DEPLOY = join(SRC, "deploy")
 DEBUG = join(SRC, "debug")
-JARS = join(SRC, "jars")
+#JARS = join(SRC, "jars")
 
 # Jars
-sensejar = join(JARS, "libsense-git.jar")
-netwrapperjar = join(JARS, "libnetwrapper-git.jar")
-ridgejar = join(JARS, "ridge-git.jar")
-cfabcastjar = join(JARS, "CFABCast-assembly-0.1-SNAPSHOT.jar")
-libmcadjar = join(JARS, "libmcad-git-allinone.jar")
+#sensejar = join(JARS, "libsense-git.jar")
+#netwrapperjar = join(JARS, "libnetwrapper-git.jar")
+#ridgejar = join(JARS, "ridge-git.jar")
+#cfabcastjar = join(JARS, "CFABCast-assembly-0.1-SNAPSHOT.jar")
+#libmcadjar = join(JARS, "libmcad-git-allinone.jar")
 
 ################################################################################
 # functions

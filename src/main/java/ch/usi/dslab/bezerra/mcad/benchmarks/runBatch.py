@@ -51,13 +51,13 @@ loadsGlobal = range(1,11)
 numsLearners = [1]
 ##########################################
 #algorithms = ["mrp", "ridge", "lpnorand"]
-#algorithms = ["ridge"]
+algorithms = ["ridge"]
 #algorithms = ["mrp"]
 #algorithms = ["libpaxos"]
 #algorithms = ["lpnorand"]
 #algorithms = ["ridge", "mrp"]
 #algorithms = ["ridgeopt"]
-algorithms = ["cfabcast"]
+#algorithms = ["cfabcast"]
 ##########################################
 #messageSizes = [200, 8192, 65536]
 #messageSizes = [65536]

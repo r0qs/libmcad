@@ -4,6 +4,13 @@ import math, os, re, sys, shlex, threading, subprocess
 from os.path import join, expanduser
 HOME = expanduser("~")
 
+JARS = join(HOME, "jars")
+sensejar = join(JARS, "libsense-git.jar")
+netwrapperjar = join(JARS, "libnetwrapper-git.jar")
+ridgejar = join(JARS, "ridge-git.jar")
+cfabcastjar = join(JARS, "CFABCast-assembly-0.1-SNAPSHOT.jar")
+libmcadjar = join(JARS, "libmcad-git-allinone.jar")
+
 # ===================================================
 # ===================================================
 # definitions
@@ -17,7 +24,7 @@ def noderange(first,last) :
 
 #availableNodes = noderange(1,34) + noderange(41,50)
 #availableNodes = noderange(1,35) + noderange(41,52) + noderange(54,60) + noderange(62,64) + noderange(66,67) + noderange(69,70)
-availableNodes = noderange(42,52)
+availableNodes = noderange(42,45)
 
 def testNodes() :
     for n in availableNodes :

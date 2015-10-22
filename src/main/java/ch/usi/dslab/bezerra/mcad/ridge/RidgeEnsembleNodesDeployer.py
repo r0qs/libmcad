@@ -99,7 +99,8 @@ for process in config["ensemble_processes"] :
     host = process["host"]
     port = process["port"]
     
-    class_path   = "-cp " + script_dir() + "/../../../../../../../../../target/libmcad-git.jar" + extra_classpath
+#    class_path   = "-cp " + script_dir() + "/../../../../../../../../../target/libmcad-git.jar" + extra_classpath
+    class_path   = "-cp " + script_dir() + "/../../../../../../../../../../../jars/libmcad-git-allinone.jar" + extra_classpath
     node_path    = "ch.usi.dslab.bezerra.mcad.ridge.RidgeEnsembleNode"
     java_string  = "java -XX:+UseG1GC -Xms3g -Xmx3g " + class_path + " " + node_path
     arguments    = system_config_file + " " + str(pid)
