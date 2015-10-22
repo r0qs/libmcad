@@ -17,12 +17,14 @@ prettynamesbcast = {"libpaxos" : "LibPaxos",
                     "lpnorand" : "LibPaxos",
                     "ridge"    : "Ridge"   ,
                     "mrp"      : "\"Ring Paxos\"",
-                    "spread"   : "Spread"}
+                    "spread"   : "Spread",
+                    "cfabcast" : "CFABCast"}
 prettynamesmcast = {"libpaxos" : "LibPaxos",
                     "lpnorand" : "LibPaxos",
                     "ridge"    : "Ridge"   ,
                     "mrp"      : "\"Multi-Ring Paxos\"",
-                    "spread"   : "Spread"}
+                    "spread"   : "Spread",
+                    "cfabcast" : "CFABCast"}
 
 class DataUnit :
     #load

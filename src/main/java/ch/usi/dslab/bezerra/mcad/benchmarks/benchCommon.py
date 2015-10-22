@@ -1,12 +1,8 @@
 #!/usr/bin/python
 
 import math, os, re, sys, shlex, threading, subprocess
-#from os.path import expanduser
-#HOME = expanduser("~")
 from os.path import join, expanduser
-SRC = join(expanduser('~'), "src/mestrado/scala/test/")
-
-
+HOME = expanduser("~")
 
 # ===================================================
 # ===================================================
@@ -21,7 +17,7 @@ def noderange(first,last) :
 
 #availableNodes = noderange(1,34) + noderange(41,50)
 #availableNodes = noderange(1,35) + noderange(41,52) + noderange(54,60) + noderange(62,64) + noderange(66,67) + noderange(69,70)
-availableNodes = noderange(41,45)
+availableNodes = noderange(42,52)
 
 def testNodes() :
     for n in availableNodes :
@@ -64,12 +60,14 @@ onceRunner = {"libpaxos" : HOME + "/libmcad/benchLink/runOnce_libpaxos.py",
               "ridge"    : HOME + "/libmcad/benchLink/runOnce_ridge.py",
               "ridgeopt" : HOME + "/libmcad/benchLink/runOnce_ridgeOpt.py", 
               "cfabcast" : HOME + "/libmcad/benchLink/runOnce_cfabcast.py", }
-cleaner = HOME + "/libmcad/benchLink/cleanUp.py"
+
+user = "lasaro"
+cleaner = HOME + "/libmcad/benchLink/cleanUp.py " + user
 clockSynchronizer = HOME + "/libmcad/benchLink/clockSynchronizer.py"
 continousClockSynchronizer = HOME + "/libmcad/benchLink/continuousClockSynchronizer.py"
 clockSyncInterval = 3
 systemParamSetter = HOME + "/libmcad/benchLink/systemParamSetter.py"
-libmcadjar = HOME + "/libmcad/target/libmcad-git.jar"
+#libmcadjar = HOME + "/libmcad/target/libmcad-git.jar"
 javaCommand = "java -XX:+UseG1GC -Xms3g -Xmx3g"
 benchServerClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer"
 benchClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient"
