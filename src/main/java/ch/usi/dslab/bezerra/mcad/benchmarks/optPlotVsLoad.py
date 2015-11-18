@@ -639,3 +639,4 @@ for alg in all_algs :
                         lat_max_median = generate_max_and_75_and_power_tp_lat_files(allThroughputsLatencies, int(size), overall_dir_name, alg, learners, groups, pxpg, size, wdisk)
                         if doOverallPlotting :
                             plot_overall(overall_dir_name, size, lat_max_median * 1.5)
+

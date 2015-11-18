@@ -114,7 +114,8 @@ clinode = clients[0]
 # start the bw monitor at the client node
 sshcmdbg(clinode, "bwm-ng %s/bwm-ng.conf > %s/client_%s.csv 2>&1" % (lpexecdir,logdir,1))
 # start the client and try to run it 3 times before giving up
-exitcode = sshcmd(clinode, "%s %s/paxos.conf %s %s %s %s" % (lpclient,lpexecdir,0,NUM_OUTSTADINGS,messageSize,1), 60)
+#exitcode = sshcmd(clinode, "%s %s/paxos.conf %s %s %s %s" % (lpclient,lpexecdir,0,NUM_OUTSTADINGS,messageSize,1), 60)
+exitcode = sshcmd(clinode, "%s %s/paxos.conf -p %s -o %s -v %s" % (lpclient,lpexecdir,0,NUM_OUTSTADINGS,messageSize), 60)
 
 # copy client's throughput and latency log
 localcmd("mv %s/client1-%s-%sB.csv %s/client_tp_lat.csv" % (HOME,NUM_OUTSTADINGS,messageSize,logdir))

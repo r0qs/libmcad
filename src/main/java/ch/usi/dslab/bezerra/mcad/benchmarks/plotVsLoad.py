@@ -187,7 +187,7 @@ def plot_broadcast_cdfs(logdir, data_table, all_algs, all_learners, all_sizes) :
             cdf_paths = dict()
             max_lat = dict()
             for size in all_sizes :
-                #print "Plotting broadcast cdf graphs for (%s learners, %s bytes, %s) " % (learners, size, tptype)
+                print "Plotting broadcast cdf graphs for (%s learners, %s bytes, %s) " % (learners, size, tptype)
                 gnuplot_params = ""
                 cdf_paths[size] = dict()
                 max_lat[size] = 0
@@ -394,7 +394,7 @@ def createBroadcastData() :
     
     all_algs_dirs_glob = [d for d in glob.glob("../*") if "broadcast" not in d and ".p" not in d  and "multicast" not in d]
     all_algs_dirs = []
-    for alg in ["spread", "lpnorand", "mrp", "ridge"] :
+    for alg in ["spread", "lpnorand", "mrp", "ridge", "cfabcast"] :
         algdir = "../" + alg
         if algdir in all_algs_dirs_glob :
             all_algs_dirs.append(algdir)
@@ -480,7 +480,7 @@ def createMulticastData() :
     
     all_algs_dirs_glob = [d for d in glob.glob("../*") if "broadcast" not in d and ".p" not in d and "multicast" not in d]
     all_algs_dirs = []
-    for alg in ["spread", "mrp", "ridge"] :
+    for alg in ["spread", "mrp", "ridge", "cfabcast"] :
         algdir = "../" + alg
         if algdir in all_algs_dirs_glob :
             all_algs_dirs.append(algdir)
@@ -540,15 +540,15 @@ def createMulticastData() :
 ####################################################################################################
 # main code
 ####################################################################################################
-doOverallPlotting = False
+doOverallPlotting = True
 if len(sys.argv) > 1 :
     doOverallPlotting = sys.argv[1] in ["True", "true", "T", "t", "1"]
 
-doBroadcastPlotting = False
+doBroadcastPlotting = True
 if len(sys.argv) > 2 :
     doBroadcastPlotting = sys.argv[2] in ["True", "true", "T", "t", "1"]
 
-doCdfPlotting = False
+doCdfPlotting = True
 if len(sys.argv) > 3 :
     doCdfPlotting = sys.argv[3] in ["True", "true", "T", "t", "1"]
 
@@ -560,12 +560,19 @@ doMulticastPlotting = True
 alldirs = "*_clients_*learners*groups*pxpergroup*"
 
 all_algs = getAllValsFromDirs(alldirs, 0)
+print(all_algs)
 all_clis = getAllValsFromDirs(alldirs, 1)
+print(all_clis)
 all_learners = getAllValsFromDirs(alldirs, 3)
+print(all_learners)
 all_groups = getAllValsFromDirs(alldirs, 5)
+print(all_groups)
 all_pxpg = getAllValsFromDirs(alldirs, 7)
+print(all_pxpg)
 all_sizes = getAllValsFromDirs(alldirs, 9)
+print(all_sizes)
 all_disks = getAllValsFromDirs(alldirs, 12)
+print(all_disks)
 
 for alg in all_algs :
     for learners in all_learners :
@@ -620,3 +627,4 @@ if doCdfPlotting :
 data_table,all_algs,all_groups,all_sizes = createMulticastData()
 if doMulticastPlotting :
     plot_multicast_tp_lat()
+

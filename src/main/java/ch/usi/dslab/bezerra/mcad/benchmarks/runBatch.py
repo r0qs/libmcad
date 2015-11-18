@@ -48,10 +48,10 @@ loadsGlobal = range(1,11)
 ##########################################
 #numsLearners = [1, 2, 4, 8, 16, 32]
 #numsLearners = [1, 2, 4, 8, 32]
-numsLearners = [1]
+numsLearners = [1,2,3,4,5,8,10]
 ##########################################
 #algorithms = ["mrp", "ridge", "lpnorand"]
-algorithms = ["ridge"]
+algorithms = ["cfabcast"]
 #algorithms = ["mrp"]
 #algorithms = ["libpaxos"]
 #algorithms = ["lpnorand"]
@@ -59,9 +59,9 @@ algorithms = ["ridge"]
 #algorithms = ["ridgeopt"]
 #algorithms = ["cfabcast"]
 ##########################################
-#messageSizes = [200, 8192, 65536]
+messageSizes = [200, 8192, 65536]
 #messageSizes = [65536]
-messageSizes = [8192]
+#messageSizes = [8192]
 #messageSizes = [200]
 ##########################################
 groups = 0

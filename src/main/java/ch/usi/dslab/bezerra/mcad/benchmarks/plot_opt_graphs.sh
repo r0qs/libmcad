@@ -166,4 +166,4 @@ set grid noytics
      
 END_GNUPLOT
 
-pstopdf $outfile  ; rm $outfile
+ps2pdf $outfile  ; rm $outfile

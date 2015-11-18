@@ -55,8 +55,8 @@ localcmd(cleaner)
 clean_ridge_storage(sysConfig.acceptor_list + sysConfig.coordinator_list)
 
 # clock synchronizer (necessary for efficient merging from multiple ensembles)
-for node in nodespool.all() :
-    sshcmdbg(node, continousClockSynchronizer)
+#for node in nodespool.all() :
+#    sshcmdbg(node, continousClockSynchronizer)
 
 # start ensembles
 localcmd(ridgeDeployer + " " + ensemblesConfigPath)

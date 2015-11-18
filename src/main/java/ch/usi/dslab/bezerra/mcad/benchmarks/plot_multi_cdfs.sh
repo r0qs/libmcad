@@ -117,7 +117,7 @@ plot "$alg1path200" using ((\$1)/1e6):2 with lines title "$alg1" lc rgb "red"   
      "$alg4path200" using ((\$1)/1e6):2 with lines title "$alg4" lc rgb "black"   lt 1 lw 2
 ##########################################################
 END_GNUPLOT
-pstopdf $output
+ps2pdf $output
 rm $output
 ##########################################################
 ##########################################################

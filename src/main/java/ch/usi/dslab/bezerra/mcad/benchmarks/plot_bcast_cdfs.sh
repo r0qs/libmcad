@@ -40,5 +40,5 @@ plot "$alg1path" using ((\$1)/1e6):2 with lines title "$alg1" lc rgb "red"   ,\
 
 END_GNUPLOT
 
-pstopdf $output
+ps2pdf $output
 rm $output

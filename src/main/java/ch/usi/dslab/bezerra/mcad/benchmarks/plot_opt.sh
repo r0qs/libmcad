@@ -67,7 +67,7 @@ replot
 
 END_GNUPLOT
 
-pstopdf $output
+ps2pdf $output
 rm $output
 
 cdfmaxconsinput=${path}/cdf_max_cons.log
@@ -108,5 +108,5 @@ plot "$cdfmaxconsinput"     using ((\$1)/1e6):2 with lines title "max"      lc r
 
 END_GNUPLOT
 
-pstopdf $output
+ps2pdf $output
 rm $output

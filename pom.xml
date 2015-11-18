@@ -87,6 +87,15 @@
       <url>http://akka.io/repository</url>
     </repository>
 
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Maven Central Repository</name>
+      <url>http://repo1.maven.org/maven2</url>
+    </repository>
+
   </repositories>
 
 
@@ -111,9 +120,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.esotericsoftware.kryo</groupId>
+			<groupId>com.esotericsoftware</groupId>
 			<artifactId>kryo</artifactId>
-			<version>2.21</version>
+			<version>3.0.0</version>
 			<scope>compile</scope>
 		</dependency>
 
@@ -172,6 +181,12 @@
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-slf4j_2.11</artifactId>
       <version>${akka.version}</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.github.romix.akka</groupId>
+        <artifactId>akka-kryo-serialization_2.11</artifactId>
+        <version>0.3.3</version>
     </dependency>
 
     <dependency>

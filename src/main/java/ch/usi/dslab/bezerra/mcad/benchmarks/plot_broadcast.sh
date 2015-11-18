@@ -62,7 +62,7 @@ plot "$input" using $[tpcol+alglinelength*0]:xtic(1) title column($[algnamecol+a
 
 END_GNUPLOT
 
-pstopdf $output_tp
+ps2pdf $output_tp
 rm $output_tp
 
 gnuplot << END_GNUPLOT
@@ -90,7 +90,7 @@ plot "$input" using $[lat95col+alglinelength*0]:$[latavgcol+alglinelength*0]:$[l
 
 END_GNUPLOT
 
-pstopdf $output_lat
+ps2pdf $output_lat
 rm $output_lat
 
 done

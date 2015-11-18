@@ -5,11 +5,13 @@ from os.path import join, expanduser
 HOME = expanduser("~")
 
 JARS = join(HOME, "jars")
-sensejar = join(JARS, "libsense-git.jar")
-netwrapperjar = join(JARS, "libnetwrapper-git.jar")
-ridgejar = join(JARS, "ridge-git.jar")
+#sensejar = join(JARS, "libsense-git.jar")
+#netwrapperjar = join(JARS, "libnetwrapper-git.jar")
+#ridgejar = join(JARS, "ridge-git.jar")
 cfabcastjar = join(JARS, "CFABCast-assembly-0.1-SNAPSHOT.jar")
+aspectjweaverjar = join(JARS, "aspectjweaver-1.8.2.jar")
 libmcadjar = join(JARS, "libmcad-git-allinone.jar")
+
 
 # ===================================================
 # ===================================================
@@ -24,7 +26,7 @@ def noderange(first,last) :
 
 #availableNodes = noderange(1,34) + noderange(41,50)
 #availableNodes = noderange(1,35) + noderange(41,52) + noderange(54,60) + noderange(62,64) + noderange(66,67) + noderange(69,70)
-availableNodes = noderange(42,45)
+availableNodes = noderange(41,57)
 
 def testNodes() :
     for n in availableNodes :
@@ -79,6 +81,8 @@ javaCommand = "java -XX:+UseG1GC -Xms3g -Xmx3g"
 benchServerClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchServer"
 benchClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.BenchClient"
 dynamicClientClass = "ch.usi.dslab.bezerra.mcad.benchmarks.DynamicBenchClient"
+
+#benchDuration = 60
 benchDuration = 60
 
 # batching parameters
@@ -90,7 +94,8 @@ client_batch_size_threshold_bytes = 2048
 client_batch_time_threshold_ms    = 1
 
 # libpaxos
-lpexecdir  = HOME + "/paxosudp/build/sample"
+#lpexecdir  = HOME + "/paxosudp/build/sample"
+lpexecdir  = HOME + "/libpaxos/build/sample"
 lpacceptor = lpexecdir + "/acceptor"
 lpproposer = lpexecdir + "/proposer"
 lplearner  = lpexecdir + "/learner"

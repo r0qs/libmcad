@@ -162,7 +162,7 @@ plot "$input200" using (\$$[tpcol+alglinelength*0]):xtic(1) title column($[algna
      ''          using (\$$[tpcol+alglinelength*2]):xtic(1) title column($[algnamecol+alglinelength*2]) fs solid lc rgb "#666666"
 ##########################################################
 END_GNUPLOT
-pstopdf $output_tp
+ps2pdf $output_tp
 rm $output_tp
 ##########################################################
 ##########################################################
@@ -270,7 +270,7 @@ plot "$input200" using $[lat95col+alglinelength*0]:$[latavgcol+alglinelength*0]:
      ''          using $[lat95col+alglinelength*2]:$[latavgcol+alglinelength*2]:$[latavgcol+alglinelength*2]:xtic(1) title column($[algnamecol+alglinelength*2]) fs solid lc rgb "#666666"
 ##########################################################
 END_GNUPLOT
-pstopdf $output_lat
+ps2pdf $output_lat
 rm $output_lat
 ##########################################################
 ##########################################################
@@ -425,7 +425,7 @@ plot "$input200" using (\$$[tpcol+alglinelength*0])/$tpnormalspread200:xtic(1) t
      f(x) notitle lc rgb "black" lw 1.5
 ##########################################################
 END_GNUPLOT
-pstopdf $output_scale
+ps2pdf $output_scale
 rm $output_scale
 ##########################################################
 ##########################################################
@@ -582,7 +582,7 @@ plot "$input200" using (\$$[tpcol+alglinelength*0])/($tpnormalspread200*(\$1)):x
 f(x) notitle lc rgb "black" lw 1.5
 ##########################################################
 END_GNUPLOT
-pstopdf $output_scale
+ps2pdf $output_scale
 rm $output_scale
 ##########################################################
 ##########################################################

@@ -162,7 +162,7 @@ plot "$input200" using (\$$[tpcol+alglinelength*0]):xtic(1) title column($[algna
      ''          using (\$$[tpcol+alglinelength*3]):xtic(1) title column($[algnamecol+alglinelength*3]) fs solid lc rgb "#666666"
 ##########################################################
 END_GNUPLOT
-pstopdf $output_tp
+ps2pdf $output_tp
 rm $output_tp
 ##########################################################
 ##########################################################
@@ -270,7 +270,7 @@ plot "$input200" using $[lat95col+alglinelength*0]:$[latavgcol+alglinelength*0]:
      ''          using $[lat95col+alglinelength*3]:$[latavgcol+alglinelength*3]:$[latavgcol+alglinelength*3]:xtic(1) title column($[algnamecol+alglinelength*3]) fs solid lc rgb "#666666"
 ##########################################################
 END_GNUPLOT
-pstopdf $output_lat
+ps2pdf $output_lat
 rm $output_lat
 ##########################################################
 ##########################################################

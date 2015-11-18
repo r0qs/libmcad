@@ -86,7 +86,7 @@ public class BenchClient implements Runnable {
       optLatDistMonitor  = new LatencyDistributionPassiveMonitor(clientId, "optimistic", false);
       consLatDistMonitor = new LatencyDistributionPassiveMonitor(clientId, "conservative");
       
-      System.out.println(String.format("Creating client %d with %d permits", clientId, numPermits));
+      //System.out.println(String.format("Creating client %d with %d permits", clientId, numPermits));
       permits = new Semaphore(numPermits);
    }
 
@@ -109,7 +109,7 @@ public class BenchClient implements Runnable {
    
    protected void sendMessage() {
       int num = getSendPermit();
-      System.out.println("permits: " + num);
+      //System.out.println("permits: " + num);
       ClientMessage msg = new ClientMessage(new byte[msgSize]);
       
       List<Group> allGroups = Group.getAllGroups();

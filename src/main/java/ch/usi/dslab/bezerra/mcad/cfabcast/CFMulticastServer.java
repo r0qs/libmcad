@@ -75,7 +75,9 @@ public class CFMulticastServer implements MulticastServer {
     //TODO Round Robin on cfabcast
     List<String> contactList = config.getStringList("contact-points");
     int chosenContact = serverId % contactList.size();
+    System.out.println(String.format("CONTACTS: MyId: %d, Chosen: %d, Size: %d addr: %s", serverId, chosenContact, contactList.size(), contactList.get(chosenContact)));
     initialContacts.add(system.actorSelection(contactList.get(chosenContact) + "/user/receptionist"));
+
 /*    for (String contactAddress : config.getStringList("contact-points")) {
       initialContacts.add(system.actorSelection(contactAddress + "/user/receptionist"));
     }
