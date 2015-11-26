@@ -540,15 +540,15 @@ def createMulticastData() :
 ####################################################################################################
 # main code
 ####################################################################################################
-doOverallPlotting = True
+doOverallPlotting = False
 if len(sys.argv) > 1 :
     doOverallPlotting = sys.argv[1] in ["True", "true", "T", "t", "1"]
 
-doBroadcastPlotting = True
+doBroadcastPlotting = False
 if len(sys.argv) > 2 :
     doBroadcastPlotting = sys.argv[2] in ["True", "true", "T", "t", "1"]
 
-doCdfPlotting = True
+doCdfPlotting = False
 if len(sys.argv) > 3 :
     doCdfPlotting = sys.argv[3] in ["True", "true", "T", "t", "1"]
 
