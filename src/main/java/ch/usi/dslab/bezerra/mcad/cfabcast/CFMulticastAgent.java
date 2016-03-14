@@ -31,6 +31,7 @@ import ch.usi.dslab.bezerra.mcad.MulticastAgent;
 import ch.usi.dslab.bezerra.mcad.DeliveryMetadata;
 import ch.usi.dslab.bezerra.mcad.cfabcast.CFDummyGroup;
 import ch.usi.dslab.bezerra.netwrapper.Message;
+import ch.usi.dslab.bezerra.mcad.ClientMessage;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
@@ -88,7 +89,14 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
   }
 
   public void broadcast(List<ActorRef> destinations, Message message) {
-    Broadcast broadcastMessage = new Broadcast(serializer.toBinary(message));
+    ClientMessage msg = (ClientMessage) message;
+
+    int clientId = msg.getSourceClientId();
+    long msgSeq = msg.getMessageSequence();
+    byte[] payload = new byte[msg.getByteArraysAggregatedLength()];
+    ProposalMessage pmsg = new ProposalMessage(clientId, msgSeq, payload);
+
+    Broadcast broadcastMessage = new Broadcast(serializer.toBinary(pmsg));
     proposer.tell(broadcastMessage, getSelf()); 
   }
   
@@ -145,9 +153,15 @@ public class CFMulticastAgent extends UntypedActor implements MulticastAgent {
 
     } else if(message instanceof Delivery) {
       Delivery response = (Delivery) message;
-      Message msg = (Message) serializer.fromBinary(response.getData());
-      log.debug("Agent {} - Receive response: {} from {} ", getSelf(), msg, getSender());
-      getContext().parent().tell(msg, getSelf());
+      //Message msg = (Message) serializer.fromBinary(response.getData());
+      ProposalMessage msg = (ProposalMessage) serializer.fromBinary(response.getData());
+
+      ClientMessage cmsg = new ClientMessage(msg.getMessagePayload());
+      cmsg.setMessageSequence(msg.getMessageSequence());
+      cmsg.setSourceClientId(msg.getSourceClientId());
+
+      log.debug("Agent {} - Receive response: {} from {} ", getSelf(), cmsg, getSender());
+      getContext().parent().tell(cmsg, getSelf());
 
     } else {
       log.warning("Agent {} receive unknown message: {} from {}", getSelf(), message, getSender());
