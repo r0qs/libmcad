@@ -67,7 +67,7 @@ messageSize   = iarg(5)
 # quantidade de nós do protocolo:
 numService = numLearners
 quorumSize = (numService / 2) + 1 
-numCFPs = numService
+numCFPs = quorumSize
 
 # número de requisições que o cliente pode fazer por vez antes de receber alguma resposta
 numPermits = 10
@@ -142,6 +142,10 @@ for node in servers:
     counter += 1
     port += 1
 
+cfpIds = ""
+for n in xrange(1, numCFPs + 1):
+    cfpIds += "-Dcfabcast.role.cfproposer.ids.%d=p%d" % (n, n)
+
 print("Seed nodes: " + seedNodes)
 print("Contact points: " + contactNodes)
 
@@ -153,8 +157,8 @@ nativeFolder = libmcad_logdir + "/native/"
 for node in servers:
     node_stdout = logdir + "/cfabcast-" + node + ".out"
     sigarFolder = nativeFolder + node
-    javaservicecmd = "%s -javaagent:%s -DLOG_DIR=%s -cp %s -Dkamon.system-metrics.sigar-native-folder=%s -Dconfig.file=%s -Dcfabcast.role.cfproposer.min-nr-of-agents=%d -Dcfabcast.min-nr-of-nodes=%d -Dcfabcast.quorum-size=%d %s Main %s" % (javaCommand, aspectjweaverjar, logdir, cfabcastjar, sigarFolder, cfabcast_config, numCFPs, numService, quorumSize, seedNodes, node)
-#    javaservicecmd = "%s -DLOG_DIR=%s -cp %s -Dconfig.file=%s -Dcfabcast.role.cfproposer.min-nr-of-agents=%d -Dcfabcast.min-nr-of-nodes=%d -Dcfabcast.quorum-size=%d %s Main %s" % (javaCommand, logdir, cfabcastjar, cfabcast_config, numCFPs, numService, quorumSize, seedNodes, node)
+    #javaservicecmd = "%s -javaagent:%s -DLOG_DIR=%s -cp %s -Dkamon.system-metrics.sigar-native-folder=%s -Dconfig.file=%s -Dcfabcast.role.cfproposer.min-nr-of-agents=%d -Dcfabcast.min-nr-of-nodes=%d -Dcfabcast.quorum-size=%d %s Main %s" % (javaCommand, aspectjweaverjar, logdir, cfabcastjar, sigarFolder, cfabcast_config, numCFPs, numService, quorumSize, seedNodes, node)
+    javaservicecmd = "%s -DLOG_DIR=%s -cp %s -Dconfig.file=%s -Dcfabcast.role.cfproposer.min-nr-of-agents=%d %s -Dcfabcast.min-nr-of-nodes=%d -Dcfabcast.quorum-size=%d %s Main %s" % (javaCommand, logdir, cfabcastjar, cfabcast_config, numCFPs, cfpIds, numService, quorumSize, seedNodes, node)
     esshcmdbg(node, javaservicecmd, node_stdout)
     sleep(1)
 
