@@ -24,7 +24,7 @@ set title '$path' #offset 0,-0.5
 set xlabel "Latency (ms)"
 set xtics
 set yrange [0:1]
-set xrange [0:${maxlat}*1.5]
+set xrange [0:${maxlat}]
 set ylabel
 set ytics
 set ytics add (0.90)
@@ -35,10 +35,9 @@ set output "$output"
 
 plot "$alg1path" using ((\$1)/1e6):2 with lines title "$alg1" lc rgb "red"   ,\
      "$alg2path" using ((\$1)/1e6):2 with lines title "$alg2" lc rgb "green" ,\
-     "$alg3path" using ((\$1)/1e6):2 with lines title "$alg3" lc rgb "blue"  ,\
-     "$alg4path" using ((\$1)/1e6):2 with lines title "$alg4" lc rgb "black"
+     "$alg3path" using ((\$1)/1e6):2 with lines title "$alg3" lc rgb "blue"  
 
 END_GNUPLOT
 
 ps2pdf $output
-rm $output
+#rm $output

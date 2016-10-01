@@ -17,6 +17,7 @@ prettynamesbcast = {"libpaxos" : "LibPaxos",
                     "ridge"    : "Ridge"   ,
                     "mrp"      : "\"Ring Paxos\"",
                     "spread"   : "Spread",
+                    "paxos"    : "Paxos",
                     "cfabcast" : "CFABCast"}
 
 prettynamesmcast = {"libpaxos" : "LibPaxos",
@@ -24,6 +25,7 @@ prettynamesmcast = {"libpaxos" : "LibPaxos",
                     "ridge"    : "Ridge"   ,
                     "mrp"      : "\"Multi-Ring Paxos\"",
                     "spread"   : "Spread",
+                    "paxos"    : "Paxos",
                     "cfabcast" : "CFABCast"}
 
 class DataUnit :
@@ -118,7 +120,7 @@ def ds(d, n) :
     return re.split("_", d)[n]
 
 def getAllValsFromDirs(pattern, position) :
-#     print "pattern = %s, position = %s" % (pattern, position)
+    #print "pattern = %s, position = %s" % (pattern, position)
     allVals = []
     alldirs = glob.glob(pattern)
     for d in alldirs :
@@ -171,9 +173,9 @@ def plot_overalls(dirPath, msgSize, lat_max_avg) :
     os.system("%s %s %s %s" % (simple_gnuplot_script_sh_path, dirPath, msgSize, lat_max_avg))
 
 def plot_broadcast_tp_lat(sizes) :
-#     for size in sizes :
-#         print "Plotting broadcast graphs for %s bytes" % (size)
-#         os.system("%s %s %s" % (broadcast_gnuplot_sh_path, os.getcwd() + "/../", size))
+    for size in sizes :
+#        print "Plotting broadcast graphs for %s bytes" % (size)
+        os.system("%s %s %s" % (broadcast_gnuplot_sh_path, os.getcwd() + "/../", size))
     print "Plotting broadcast multi graphs"
     os.system("%s %s" % (bcast_multi_bcast_gnuplot_sh_path, os.getcwd() + "/../"))
 
@@ -198,7 +200,7 @@ def plot_broadcast_cdfs(logdir, data_table, all_algs, all_learners, all_sizes) :
                     if lat99 > max_lat[size] : max_lat[size] = lat99
                     
                     gnuplot_params += " " + prettynamesbcast[alg] + " " + cdf_paths[size][alg]
-                #os.system("%s %s %s %s %s %s %s" % (bcast_cdfs_gnuplot_sh_path, size, learners, os.getcwd() + "/../", tptype, gnuplot_params, max_lat[size]))
+                os.system("%s %s %s %s %s %s %s" % (bcast_cdfs_gnuplot_sh_path, size, learners, os.getcwd() + "/../", tptype, gnuplot_params, max_lat[size]))
             
             print "Plotting broadcast cdf multiplot for (%s learners, %s)" % (learners, tptype)
             multi_params = "%s %s " % (learners, os.getcwd() + "/../")
@@ -242,7 +244,7 @@ def plot_broadcast_cdfs(logdir, data_table, all_algs, all_learners, all_sizes) :
             
 
 def create_cdf_plot(line_cdf_file, plot_file_name) :
-#     print "Createing cdf plot file for (%s,%s)" % (line_cdf_file, plot_file_name)
+#    print "Createing cdf plot file for (%s,%s)" % (line_cdf_file, plot_file_name)
     lineCdf = getfileline(line_cdf_file, 3)
     lineCdfElements = lineCdf.split()
     properCdf = []
@@ -321,7 +323,7 @@ def generate_max_and_75_and_power_tp_lat_files(allThroughputsLatencies, msgSize,
     # latency cdf 1 client
     load_1client_directory = getDirectoryPattern(alg, load_1client, learners, groups, pxpg, size, wdisk)
     cdf_1client_file = load_1client_directory + "/latencydistribution_conservative_aggregate.log"
-#     print "cdf_1c_file for (%s, %s, %s) = %s" % (alg, learners, size, cdf_1client_file)
+#    print "cdf_1c_file for (%s, %s, %s) = %s" % (alg, learners, size, cdf_1client_file)
     latency_50th_1client, latency_95th_1client, latency_99th_1client = create_cdf_plot(cdf_1client_file, overall_dir_name + "/cdf_1client.log")
     
     # max file
@@ -394,7 +396,7 @@ def createBroadcastData() :
     
     all_algs_dirs_glob = [d for d in glob.glob("../*") if "broadcast" not in d and ".p" not in d  and "multicast" not in d]
     all_algs_dirs = []
-    for alg in ["spread", "lpnorand", "mrp", "ridge", "cfabcast"] :
+    for alg in ["mrp", "cfabcast", "paxos"] :
         algdir = "../" + alg
         if algdir in all_algs_dirs_glob :
             all_algs_dirs.append(algdir)
@@ -444,7 +446,7 @@ def createBroadcastData() :
             logLine += "\n"
             broadcast_file.write(logLine)
         broadcast_file.close()
-    
+
     return (data_table, all_found_algs, all_found_learners, all_found_msgsizes)
 
 def createMulticastData() :
@@ -480,7 +482,7 @@ def createMulticastData() :
     
     all_algs_dirs_glob = [d for d in glob.glob("../*") if "broadcast" not in d and ".p" not in d and "multicast" not in d]
     all_algs_dirs = []
-    for alg in ["spread", "mrp", "ridge", "cfabcast"] :
+    for alg in ["mrp", "cfabcast", "paxos"] :
         algdir = "../" + alg
         if algdir in all_algs_dirs_glob :
             all_algs_dirs.append(algdir)
@@ -509,10 +511,8 @@ def createMulticastData() :
                 data_table[(alg_name, numGroups, msgSize)] = \
                   DataSummary(alg_name, numGroups*4, numGroups, msgSize, prettynamesmcast[alg_name], \
                   data_units["max"], data_units["75"], data_units["power"], data_units["1client"])
-        
         all_found_groups += [ g for g in alg_groups if g not in all_found_groups ]
         all_found_msgsizes += [ s for s in alg_sizes    if s not in all_found_msgsizes ]
-
     all_found_groups.sort()
     all_found_msgsizes.sort()
 
@@ -530,7 +530,7 @@ def createMulticastData() :
             logLine += "\n"
             multicast_file.write(logLine)
         multicast_file.close()
-    
+ 
     return (data_table, all_found_algs, all_found_groups, all_found_msgsizes)
 ####################################################################################################
 ####################################################################################################
@@ -540,11 +540,11 @@ def createMulticastData() :
 ####################################################################################################
 # main code
 ####################################################################################################
-doOverallPlotting = False
+doOverallPlotting = True
 if len(sys.argv) > 1 :
     doOverallPlotting = sys.argv[1] in ["True", "true", "T", "t", "1"]
 
-doBroadcastPlotting = False
+doBroadcastPlotting = True
 if len(sys.argv) > 2 :
     doBroadcastPlotting = sys.argv[2] in ["True", "true", "T", "t", "1"]
 
@@ -552,7 +552,7 @@ doCdfPlotting = False
 if len(sys.argv) > 3 :
     doCdfPlotting = sys.argv[3] in ["True", "true", "T", "t", "1"]
 
-doMulticastPlotting = True
+#doMulticastPlotting = True
 
 
 
@@ -614,6 +614,8 @@ for alg in all_algs :
                         saveToFile(overall_throughput_file, allThroughputs)
                         saveToFile(overall_power_file, allPowers)
                         lat_max_median = generate_max_and_75_and_power_tp_lat_files(allThroughputsLatencies, int(size), overall_dir_name, alg, learners, groups, pxpg, size, wdisk)
+
+                        doOverallPlotting = True
                         if doOverallPlotting :
                             plot_overalls(overall_dir_name, size, lat_max_median * 1.5)
 
@@ -624,7 +626,7 @@ if doBroadcastPlotting :
 if doCdfPlotting :
     plot_broadcast_cdfs("..", data_table, all_algs, all_learners, all_sizes)
 
-data_table,all_algs,all_groups,all_sizes = createMulticastData()
-if doMulticastPlotting :
-    plot_multicast_tp_lat()
+#data_table,all_algs,all_groups,all_sizes = createMulticastData()
+#if doMulticastPlotting :
+#    plot_multicast_tp_lat()
 

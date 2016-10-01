@@ -39,39 +39,6 @@ set origin 0,0
 set multiplot layout 3,1 title ""
 
 ##########################################################
-# throughput plot 65536 bytes
-set size 1,0.33333
-set origin 0,0.66667
-
-set tmargin 1.25
-set bmargin 2
-
-set lmargin 5
-set rmargin 5
-
-set ytics offset 0.75
-
-set title "64 kilobytes messages" offset 0,-0.75
-
-set key top left samplen 1.5 reverse Left
-unset xlabel
-set xtics offset 0,0.5
-#set ylabel "Latency (ms)" offset 2
-set grid ytics
-
-#set style fill solid border rgb "black"
-set auto x
-
-set xrange[0:${maxlat64k}]
-set yrange[0:1]
-
-plot "$alg1path64k" using (\$1/1e6):2 with lines title "$alg1" lc rgb "red"     lt 4 lw 2,\
-     "$alg2path64k" using (\$1/1e6):2 with lines title "$alg2" lc rgb "#006400" lt 3 lw 2.5,\
-     "$alg3path64k" using (\$1/1e6):2 with lines title "$alg3" lc rgb "blue"    lt 2 lw 3,\
-     "$alg4path64k" using (\$1/1e6):2 with lines title "$alg4" lc rgb "black"   lt 1 lw 2
-##########################################################
-
-##########################################################
 # throughput plot 8192 bytes
 set size 1,0.33333
 set origin 0,0.33333
@@ -118,7 +85,7 @@ plot "$alg1path200" using ((\$1)/1e6):2 with lines title "$alg1" lc rgb "red"   
 ##########################################################
 END_GNUPLOT
 ps2pdf $output
-rm $output
+#rm $output
 ##########################################################
 ##########################################################
 ##########################################################

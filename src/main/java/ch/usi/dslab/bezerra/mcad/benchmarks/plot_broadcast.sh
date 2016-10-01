@@ -42,8 +42,8 @@ set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18
 
 set title "Throughput - ${size}-bytes messages - ${name}"
 
-set xlabel "Destinations"
-set ylabel "Throughput (Mbps)"
+set xlabel "Replicas"
+set ylabel "Throughput (Msg/sec)"
 set grid ytics
 set style data histogram
 set style histogram cluster gap 1
@@ -51,26 +51,25 @@ set style histogram cluster gap 1
 set style fill solid border rgb "black"
 set auto x
 
-#set yrange[0:1000]
+set yrange[0:2500]
 
 set output "$output_tp"
 
 plot "$input" using $[tpcol+alglinelength*0]:xtic(1) title column($[algnamecol+alglinelength*0]) fs solid lc rgb "#FFFFFF",\
     ''        using $[tpcol+alglinelength*1]:xtic(1) title column($[algnamecol+alglinelength*1]) fs solid lc rgb "#CCCCCC",\
-    ''        using $[tpcol+alglinelength*2]:xtic(1) title column($[algnamecol+alglinelength*2]) fs solid lc rgb "#999999",\
-    ''        using $[tpcol+alglinelength*3]:xtic(1) title column($[algnamecol+alglinelength*3]) fs solid lc rgb "#666666"
+    ''        using $[tpcol+alglinelength*2]:xtic(1) title column($[algnamecol+alglinelength*2]) fs solid lc rgb "#999999"
 
 END_GNUPLOT
 
 ps2pdf $output_tp
-rm $output_tp
+#rm $output_tp
 
 gnuplot << END_GNUPLOT
 set terminal postscript eps enhanced color solid lw 2 "Helvetica" 18
 
 set title "Latency - ${size}-bytes messages - ${name}"
 
-set xlabel "Destinations"
+set xlabel "Replicas"
 set ylabel "Latency (ms)"
 set grid ytics
 set style data histogram
@@ -79,18 +78,17 @@ set style histogram errorbars gap 2 lw 1
 set style fill solid border rgb "black"
 set auto x
 
-set yrange[0:25]
+set yrange[0:60]
 
 set output "$output_lat"
 
 plot "$input" using $[lat95col+alglinelength*0]:$[latavgcol+alglinelength*0]:$[latavgcol+alglinelength*0]:xtic(1) title column($[algnamecol+alglinelength*0]) fs solid lc rgb "#FFFFFF",\
     ''        using $[lat95col+alglinelength*1]:$[latavgcol+alglinelength*1]:$[latavgcol+alglinelength*1]:xtic(1) title column($[algnamecol+alglinelength*1]) fs solid lc rgb "#CCCCCC",\
-    ''        using $[lat95col+alglinelength*2]:$[latavgcol+alglinelength*2]:$[latavgcol+alglinelength*2]:xtic(1) title column($[algnamecol+alglinelength*2]) fs solid lc rgb "#999999",\
-    ''        using $[lat95col+alglinelength*3]:$[latavgcol+alglinelength*3]:$[latavgcol+alglinelength*3]:xtic(1) title column($[algnamecol+alglinelength*3]) fs solid lc rgb "#666666"
+    ''        using $[lat95col+alglinelength*2]:$[latavgcol+alglinelength*2]:$[latavgcol+alglinelength*2]:xtic(1) title column($[algnamecol+alglinelength*2]) fs solid lc rgb "#999999"
 
 END_GNUPLOT
 
 ps2pdf $output_lat
-rm $output_lat
+#rm $output_lat
 
 done
